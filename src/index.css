@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  --font-devanagari: 'Noto Sans Devanagari', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-border: var(--color-primary-border);
+  --color-accent: var(--color-accent);
+  --color-secondary: var(--color-secondary);
+  --color-govt-red: var(--color-govt-red);
+  --color-govt-red-hover: var(--color-primary-hover);
+  --color-govt-navy: var(--color-govt-navy);
+  --color-accent-orange: var(--color-accent-orange);
+  --color-saffron: #FF9933;
+  --color-success: #16A34A;
+  --color-background: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6B7280;
+}
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  --font-devanagari: 'Noto Sans Devanagari', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-primary: #003399;        /* Navy default */
+  --color-primary-hover: #002266;  /* Deep Navy hover default */
+  --color-primary-light: #EFF6FF;  /* Light blue (blue-50) default */
+  --color-primary-border: #DBEAFE; /* Border blue (blue-100) default */
+  --color-accent: #E31E24;         /* Crimson default */
+  --color-secondary: #FF9933;      /* Saffron default */
+  --color-govt-red: #E31E24;       /* Crimson default */
+  --color-govt-navy: #003399;      /* Navy default */
+  --color-accent-orange: #E31E24;
+  --color-success: #16A34A;
+  --color-background: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-text-primary: #1a1a1a;   /* Deep charcoal */
+  --color-text-secondary: #6B7280;
+}
+
+/* Themes selectors */
+[data-theme="nic-blue"] {
+  --color-primary: #003399;
+  --color-primary-hover: #002266;
+  --color-primary-light: #EFF6FF;
+  --color-primary-border: #DBEAFE;
+  --color-accent: #E31E24;
+  --color-secondary: #FF9933;
+  --color-govt-red: #E31E24;
+  --color-govt-navy: #003399;
+  --color-accent-orange: #E31E24;
+}
+
+[data-theme="digital-emerald"] {
+  --color-primary: #047857;
+  --color-primary-hover: #065f46;
+  --color-primary-light: #ECFDF5;
+  --color-primary-border: #D1FAE5;
+  --color-accent: #10B981;
+  --color-secondary: #F59E0B;
+  --color-govt-red: #047857;
+  --color-govt-navy: #065f46;
+  --color-accent-orange: #10B981;
+}
+
+[data-theme="finance-indigo"] {
+  --color-primary: #4F46E5;
+  --color-primary-hover: #3730A3;
+  --color-primary-light: #EEF2FF;
+  --color-primary-border: #E0E7FF;
+  --color-accent: #6366F1;
+  --color-secondary: #EC4899;
+  --color-govt-red: #4F46E5;
+  --color-govt-navy: #3730A3;
+  --color-accent-orange: #6366F1;
+}
+
+[data-theme="high-contrast"] {
+  --color-primary: #000000;
+  --color-primary-hover: #1A1A1A;
+  --color-primary-light: #F3F4F6;
+  --color-primary-border: #D1D5DB;
+  --color-accent: #FFFF00;
+  --color-secondary: #FFFF00;
+  --color-govt-red: #000000;
+  --color-govt-navy: #000000;
+  --color-accent-orange: #FFFF00;
+}
+
+[data-theme="red-rose"] {
+  --color-primary: #BE123C;        /* Ruby Rose (rose-700) */
+  --color-primary-hover: #9F1239;  /* Deep Velvet Rose (rose-800) */
+  --color-primary-light: #FFF1F2;  /* Soft Rose Petal (rose-50) */
+  --color-primary-border: #FFE4E6; /* Rose border (rose-100) */
+  --color-accent: #E11D48;         /* Rose Crimson */
+  --color-secondary: #FDA4AF;      /* Accent Rose */
+  --color-govt-red: #BE123C;       /* Rose Red */
+  --color-govt-navy: #4C0519;      /* Deep Midnight Maroon (rose-950) */
+  --color-accent-orange: #F43F5E;
+}
+
+/* Accessibility Font Size Modifiers */
+html.font-size-sm {
+  font-size: 14px;
+}
+html.font-size-md {
+  font-size: 16px;
+}
+html.font-size-lg {
+  font-size: 18px;
+}
+
+html, body, #root {
+  font-family: var(--font-sans);
+  background-color: #FFFFFF;
+  color: #1a1a1a;
+  line-height: 1.6;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.025em; /* Subtle tracking-tight for authoritative, institutional feel */
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+input, button, select, textarea {
+  font-family: inherit;
+}
+
+/* india.gov.in Section Title Underline Accent */
+.india-gov-heading {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 6px;
+}
+
+.india-gov-heading::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 48px;
+  height: 3px;
+  background-color: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* india.gov.in Crimson Red Action Button */
+.india-gov-red-btn {
+  background-color: #E31E24;
+  color: #FFFFFF;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 10px 20px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.india-gov-red-btn:hover {
+  background-color: #C81016;
+}
+
+/* india.gov.in BETA Badge */
+.india-gov-beta-badge {
+  background-color: #E31E24;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* National Tricolor Top Stripe */
+.india-gov-tricolor-stripe {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #FF9933 0%, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%, #138808 100%);
+}
+
+/* Empowered Indian Card Style Utility */
+.empowered-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Icon Container (50x50px square with light tint) */
+.empowered-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #EFF6FF; /* light blue tint */
+  color: #2563EB;
+  border: 1px solid #DBEAFE;
+  flex-shrink: 0;
+}
+
+/* Empowered Primary Button Utility */
+.btn-primary {
+  background-color: #2563EB;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 10px 18px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary:hover {
+  background-color: #1D4ED8;
+}
+.btn-primary:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+
+/* Status Badges */
+.badge-live {
+  background-color: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #DCFCE7;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.badge-coming-soon {
+  background-color: #FFF7ED;
+  color: #EA580C;
+  border: 1px solid #FFEDD5;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+/* Ticker marquee animation for news ribbon */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.6);
+}
+
+/* Institutional Typography Refinements */
+h1, h2, h3, h4, .dashboard-section-title, .section-title {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif !important;
+  color: #1a1a1a !important; /* Deep charcoal */
+}
+
+/* Ensure body text inside tables, lists, list items, and form labels uses standard system sans-serif */
+table, tbody, tr, td:not(.font-mono), th:not(.font-mono), ul, ol, li, .list-item, label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+}
+
