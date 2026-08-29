@@ -13,6 +13,7 @@ import {
 import { RiskAlert, WorkRecord, Language } from "../types";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { getTranslation, translateText } from "../data/translations";
+import { EmptyState } from "../components/common/EmptyState";
 
 interface AlertCenterViewProps {
   alerts: RiskAlert[];
@@ -65,6 +66,16 @@ export const AlertCenterView: React.FC<AlertCenterViewProps> = ({
 
   return (
     <div id="alert-center-inbox-view" className="space-y-6 animate-in fade-in duration-200">
+      {/* Show empty state if no works */}
+      {(!works || works.length === 0) && (
+        <EmptyState
+          title={isHindi ? "कोई कार्य नहीं मिला" : "No Works Found"}
+          description={isHindi ? "डेटाबेस में कोई परियोजना उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।" : "No projects available in the database. Please try again later."}
+        />
+      )}
+
+      {works && works.length > 0 && (
+        <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
@@ -221,6 +232,8 @@ export const AlertCenterView: React.FC<AlertCenterViewProps> = ({
           );
         })}
       </div>
+        </>
+      )}
     </div>
   );
 };

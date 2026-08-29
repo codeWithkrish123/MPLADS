@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { UserRole, Language, GovTheme, WorkRecord, RiskAlert, AuditLogEntry } from "./types";
-import {
-  MOCK_WORKS,
-  MOCK_STATES,
-  MOCK_DISTRICTS,
-  MOCK_ALERTS,
-  MOCK_RULES,
-  MOCK_AGENCIES,
-  MOCK_AUDIT_LOGS,
-} from "./data/mockData";
+
+// Custom hook for URL syncing
+import { useURLSync } from "./hooks/useURLSync";
+
+// API Service Layer (replaces mockData)
+import { 
+  workApi, 
+  stateApi, 
+  districtApi, 
+  alertApi, 
+  agencyApi, 
+  complianceApi, 
+  auditApi 
+} from "./services/api";
 
 // Layout & Global Components
 import { Topbar } from "./components/layout/Topbar";
@@ -20,6 +26,8 @@ import { OnboardingTour } from "./components/common/OnboardingTour";
 
 // Views
 import { LandingPage } from "./views/LandingPage";
+import { LoginPage } from "./views/LoginPage";
+import { ContactPage } from "./views/ContactPage";
 import { RoleSelectorPage } from "./views/RoleSelectorPage";
 import { NationalOverviewView } from "./views/NationalOverviewView";
 import { StateIntelligenceView } from "./views/StateIntelligenceView";
@@ -41,6 +49,9 @@ import { CustomDatasetView } from "./views/CustomDatasetView";
 import { MapIntelligenceView } from "./views/MapIntelligenceView";
 
 export default function App() {
+  // Authentication State
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  
   // Navigation State
   const [currentView, setCurrentView] = useState<string>("landing");
   const [currentRole, setCurrentRole] = useState<UserRole>("Ministry");
@@ -51,20 +62,62 @@ export default function App() {
   const [currentTheme, setCurrentTheme] = useState<GovTheme>("nic-blue");
 
   // Dynamic States for Interactive Workflows
-  const [alerts, setAlerts] = useState<RiskAlert[]>(MOCK_ALERTS);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(MOCK_AUDIT_LOGS);
+  const [alerts, setAlerts] = useState<RiskAlert[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  
+  // Data Loading States
+  const [isLoadingAlerts, setIsLoadingAlerts] = useState<boolean>(false);
+  const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState<boolean>(false);
+  const [alertsError, setAlertsError] = useState<string | null>(null);
+  const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
   
   // Accessibility Control States
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
   const [isHighContrast, setIsHighContrast] = useState<boolean>(false);
   const [savedThemeBeforeContrast, setSavedThemeBeforeContrast] = useState<GovTheme>("nic-blue");
 
+  // Load font size preference from localStorage on mount
+  useEffect(() => {
+    const savedFontSize = localStorage.getItem("mplads_font_size") as "small" | "medium" | "large" | null;
+    if (savedFontSize && savedFontSize !== fontSize) {
+      setFontSize(savedFontSize);
+    }
+  }, []);
+
+  // Sync URL with currentView state
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Wrapper function to navigate both URL and state
+  const navigateTo = (view: string) => {
+    setCurrentView(view);
+    navigate("/" + (view === "landing" ? "" : view), { replace: false });
+  };
+  
+  useEffect(() => {
+    const path = location.pathname.replace(/^\//, "") || "landing";
+    if (path !== currentView) {
+      setCurrentView(path);
+    }
+  }, [location.pathname]);
+
+  // Load high contrast preference from localStorage on mount
+  useEffect(() => {
+    const savedContrast = localStorage.getItem("mplads_high_contrast") === "true";
+    if (savedContrast !== isHighContrast) {
+      setIsHighContrast(savedContrast);
+      if (savedContrast) {
+        setCurrentTheme("high-contrast");
+      }
+    }
+  }, []);
+
   // Sync theme attribute to document root
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", currentTheme);
   }, [currentTheme]);
 
-  // Sync accessibility font size class to documentElement
+  // Sync accessibility font size class to documentElement and persist to localStorage
   useEffect(() => {
     document.documentElement.classList.remove("font-size-sm", "font-size-md", "font-size-lg");
     if (fontSize === "small") {
@@ -74,6 +127,8 @@ export default function App() {
     } else if (fontSize === "large") {
       document.documentElement.classList.add("font-size-lg");
     }
+    // Persist font size preference
+    localStorage.setItem("mplads_font_size", fontSize);
   }, [fontSize]);
 
   // Handle contrast toggle effect
@@ -86,6 +141,8 @@ export default function App() {
       } else {
         setCurrentTheme(savedThemeBeforeContrast === "high-contrast" ? "red-rose" : savedThemeBeforeContrast);
       }
+      // Persist high contrast preference
+      localStorage.setItem("mplads_high_contrast", next ? "true" : "false");
       return next;
     });
   };
@@ -94,24 +151,27 @@ export default function App() {
     if (theme === "high-contrast") {
       setIsHighContrast(true);
       setCurrentTheme("high-contrast");
+      localStorage.setItem("mplads_high_contrast", "true");
     } else {
       setIsHighContrast(false);
       setSavedThemeBeforeContrast(theme);
       setCurrentTheme(theme);
+      localStorage.setItem("mplads_high_contrast", "false");
     }
   };
 
   // Grievance flow integration
   const handleAddGrievanceAlert = (workId: string, category: string, details: string) => {
-    const work = MOCK_WORKS.find(w => w.work_id === workId);
+    // TODO: Fetch work data from API when available
+    // For now, create alert with minimal data
     const newAlert: RiskAlert = {
       id: `ALT-GRIEV-${Date.now().toString().slice(-4)}`,
       severity: "HIGH",
       work_id: workId,
-      work_name: work ? work.description : "Citizen Query Submitted Work",
-      state: work ? work.state : "Uttar Pradesh",
-      district: work ? work.district : "Ghaziabad",
-      category: work ? work.category : category,
+      work_name: "Work (Data Unavailable)",
+      state: "Uttar Pradesh",
+      district: "Ghaziabad",
+      category: category || "General",
       reason: `Citizen Grievance Filed: ${details}`,
       detected_at: new Date().toLocaleString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
       confidence: 100,
@@ -261,13 +321,35 @@ export default function App() {
       <div className="flex flex-col min-h-screen">
         <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
         <LandingPage
-          onExplore={() => setCurrentView("overview")}
+          onExplore={() => {
+            // Navigate directly to overview dashboard
+            setIsLoggedIn(true);
+            navigateTo("overview");
+          }}
           onSelectRole={handleRoleSelection}
           language={language}
           onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
         />
       </div>
     );
+  }
+
+  if (currentView === "login") {
+    return (
+      <LoginPage
+        onLoginSuccess={(role) => {
+          setIsLoggedIn(true);
+          setCurrentRole(role as UserRole);
+          setCurrentView("overview");
+        }}
+        language={language}
+        onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
+      />
+    );
+  }
+
+  if (currentView === "contact") {
+    return <ContactPage language={language} />;
   }
 
   if (currentView === "roleSelector") {
@@ -283,6 +365,7 @@ export default function App() {
     <div
       id="mplads-sentinel-app"
       className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 selection:bg-blue-600 selection:text-white"
+      lang={language === "hi" ? "hi-IN" : "en-US"}
     >
       {/* Permanent Tricolor Strip */}
       <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
@@ -331,15 +414,18 @@ export default function App() {
 
         {/* Content View Container */}
         <main
-          className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ease-in-out p-4 sm:p-6 lg:p-8 ${
-            isSidebarCollapsed ? "lg:ml-16" : "lg:ml-64"
+          id="main-content"
+          role="main"
+          aria-label={language === "hi" ? "मुख्य सामग्री" : "Main content"}
+          className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ease-in-out p-3 sm:p-4 md:p-6 lg:p-8 ${
+            isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
           }`}
         >
           <div className="max-w-7xl mx-auto space-y-6">
             {currentView === "overview" && (
               <NationalOverviewView
-                states={MOCK_STATES}
-                works={MOCK_WORKS}
+                states={[]}
+                works={[]}
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}
@@ -353,7 +439,7 @@ export default function App() {
 
             {currentView === "stateIntel" && (
               <StateIntelligenceView
-                districts={MOCK_DISTRICTS}
+                districts={[]}
                 selectedState={currentState}
                 onChangeState={handleSelectStateDrilldown}
                 onSelectDistrict={handleSelectDistrictDrilldown}
@@ -364,7 +450,7 @@ export default function App() {
             {currentView === "districtIntel" && (
               <DistrictDashboardView
                 districtName={currentDistrict}
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 onBackToState={() => setCurrentView("stateIntel")}
                 language={language}
@@ -373,7 +459,7 @@ export default function App() {
 
             {currentView === "works" && (
               <WorkIntelligenceTableView
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -389,7 +475,7 @@ export default function App() {
             {currentView === "alerts" && (
               <AlertCenterView
                 alerts={alerts}
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -397,8 +483,8 @@ export default function App() {
 
             {currentView === "map" && (
               <MapIntelligenceView
-                states={MOCK_STATES}
-                works={MOCK_WORKS}
+                states={[]}
+                works={[]}
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}
@@ -410,7 +496,7 @@ export default function App() {
 
             {currentView === "costAnomaly" && (
               <CostAnomalyView
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -418,7 +504,7 @@ export default function App() {
 
             {currentView === "duplicate" && (
               <DuplicateDetectionView
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -426,7 +512,7 @@ export default function App() {
 
             {currentView === "expenditure" && (
               <ExpenditureProgressView
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -434,7 +520,7 @@ export default function App() {
 
             {currentView === "delay" && (
               <DelayPredictionView
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -442,14 +528,14 @@ export default function App() {
 
             {currentView === "compliance" && (
               <ComplianceCenterView
-                rules={MOCK_RULES}
+                rules={[]}
                 onOpenPolicy={() => setCurrentView("policy")}
                 language={language}
               />
             )}
 
             {currentView === "policy" && (
-              <PolicyKnowledgeView rules={MOCK_RULES} language={language} />
+              <PolicyKnowledgeView rules={[]} language={language} />
             )}
 
             {currentView === "aiAssistant" && (
@@ -462,7 +548,7 @@ export default function App() {
 
             {currentView === "mpDashboard" && (
               <MPDashboardView
-                works={MOCK_WORKS}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -470,7 +556,7 @@ export default function App() {
 
             {currentView === "stateNodal" && (
               <StateNodalDashboardView
-                districts={MOCK_DISTRICTS}
+                districts={[]}
                 onSelectDistrict={handleSelectDistrictDrilldown}
                 language={language}
               />
@@ -478,8 +564,8 @@ export default function App() {
 
             {currentView === "agencies" && (
               <AgencyRiskView
-                agencies={MOCK_AGENCIES}
-                works={MOCK_WORKS}
+                agencies={[]}
+                works={[]}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -591,7 +677,7 @@ export default function App() {
         isOpen={isNotificationsDrawerOpen}
         onClose={() => setIsNotificationsDrawerOpen(false)}
         alerts={alerts}
-        works={MOCK_WORKS}
+        works={[]}
         onSelectWork={handleOpenWorkDetail}
         onViewAllAlerts={() => {
           setIsNotificationsDrawerOpen(false);
@@ -603,10 +689,10 @@ export default function App() {
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        works={MOCK_WORKS}
+        works={[]}
         alerts={alerts}
-        districts={MOCK_DISTRICTS}
-        rules={MOCK_RULES}
+        districts={[]}
+        rules={[]}
         onSelectWork={handleOpenWorkDetail}
         onNavigate={setCurrentView}
       />

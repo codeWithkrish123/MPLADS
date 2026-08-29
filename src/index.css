@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
-  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  --font-sans: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-devanagari: 'Noto Sans Devanagari', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   
@@ -26,8 +26,8 @@
 }
 
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
-  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  --font-sans: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-devanagari: 'Noto Sans Devanagari', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -46,9 +46,37 @@
   --color-border: #E5E7EB;
   --color-text-primary: #1a1a1a;   /* Deep charcoal */
   --color-text-secondary: #6B7280;
+  --color-text-tertiary: #4B5563;  /* Better contrast for secondary text */
 }
 
-/* Themes selectors */
+/* ========== LANGUAGE-SPECIFIC TYPOGRAPHY ========== */
+
+/* Hindi language support with proper font and line-height */
+html[lang="hi"],
+html[lang="hi-IN"] {
+  font-family: 'Noto Sans Devanagari', 'Noto Sans', system-ui, sans-serif;
+  line-height: 1.85; /* Increased for Hindi diacritics */
+}
+
+html[lang="en"],
+html[lang="en-US"] {
+  font-family: 'Noto Sans', system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+/* Hindi text in body needs more line-height for diacritics */
+[lang="hi"],
+[lang="hi-IN"],
+.hindi-text {
+  line-height: 1.85;
+}
+
+p[lang="hi"],
+.hindi-paragraph {
+  line-height: 2;
+}
+
+/* ========== THEME SELECTORS ========== */
 [data-theme="nic-blue"] {
   --color-primary: #003399;
   --color-primary-hover: #002266;
@@ -109,6 +137,70 @@
   --color-accent-orange: #F43F5E;
 }
 
+/* ========== STANDARDIZED TYPOGRAPHY HIERARCHY ========== */
+@layer components {
+  h1, .h1 {
+    @apply text-5xl font-bold leading-tight;
+  }
+  
+  h2, .h2 {
+    @apply text-4xl font-bold leading-tight;
+  }
+  
+  h3, .h3 {
+    @apply text-2xl font-semibold leading-snug;
+  }
+  
+  h4, .h4 {
+    @apply text-xl font-semibold leading-snug;
+  }
+  
+  h5, .h5 {
+    @apply text-lg font-medium leading-relaxed;
+  }
+  
+  h6, .h6 {
+    @apply text-base font-medium leading-relaxed;
+  }
+  
+  /* Body text consistency */
+  p, span {
+    @apply leading-relaxed;
+  }
+  
+  /* Small text for captions and helper text */
+  .text-caption, small {
+    @apply text-xs font-normal leading-tight;
+  }
+  
+  /* Better contrast for secondary/helper text (meets WCAG AA) */
+  .text-secondary-contrast {
+    @apply text-[#4B5563];
+  }
+  
+  /* Focus and accessibility styles */
+  input:focus, select:focus, textarea:focus {
+    @apply ring-4 ring-blue-400 border-blue-600 outline-none;
+  }
+  
+  a:focus {
+    @apply ring-4 ring-blue-400 rounded outline-none;
+  }
+  
+  /* Standardized button styles */
+  .btn-primary {
+    @apply px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px];
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg font-semibold transition-colors min-h-[44px];
+  }
+  
+  .btn-icon {
+    @apply p-2.5 hover:bg-slate-100 rounded-lg transition-colors min-h-[44px] min-w-[44px];
+  }
+}
+
 /* Accessibility Font Size Modifiers */
 html.font-size-sm {
   font-size: 14px;
@@ -132,9 +224,19 @@ html, body, #root {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 600;
   color: #1a1a1a;
   letter-spacing: -0.025em; /* Subtle tracking-tight for authoritative, institutional feel */
+}
+
+/* Proper typography hierarchy */
+h1, h2, h3 {
+  font-weight: 700; /* Bold for major headings */
+  letter-spacing: -0.03em;
+}
+
+h4, h5, h6 {
+  font-weight: 600; /* Semibold for subheadings */
+  letter-spacing: -0.02em;
 }
 
 .font-heading {
@@ -322,3 +424,245 @@ table, tbody, tr, td:not(.font-mono), th:not(.font-mono), ul, ol, li, .list-item
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
 }
 
+/* ========== KEYBOARD ACCESSIBILITY - WCAG 2.1 Level AA ========== */
+
+/* Global focus styles for all interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-background), 0 0 0 6px var(--color-primary);
+  border-radius: 4px;
+}
+
+/* Alternative for already-rounded elements */
+[class*="rounded-full"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-background), 0 0 0 6px var(--color-primary) !important;
+}
+
+/* Ensure focus visible works in all browsers - removes default outline */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode focus - bright yellow ring on black */
+[data-theme="high-contrast"] button:focus-visible,
+[data-theme="high-contrast"] a:focus-visible,
+[data-theme="high-contrast"] input:focus-visible,
+[data-theme="high-contrast"] select:focus-visible,
+[data-theme="high-contrast"] textarea:focus-visible {
+  box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 6px #FFFF00 !important;
+}
+
+
+
+/* ========== PHASE 3: MINOR POLISH & CONSISTENCY ========== */
+
+/* Standardized Card Border Radius (8px throughout) */
+.card, .card-container {
+  @apply rounded-lg; /* 8px */
+}
+
+/* Interactive element hover states */
+button:not(:disabled) {
+  @apply transition-all duration-200;
+}
+
+button:not(:disabled):hover {
+  @apply shadow-md;
+}
+
+a:not([class*="no-hover"]) {
+  @apply transition-colors duration-200;
+}
+
+a:not([class*="no-hover"]):hover {
+  @apply opacity-80;
+}
+
+/* Consistent icon sizing throughout app */
+.icon-sm { @apply w-4 h-4; } /* 16px */
+.icon-base { @apply w-5 h-5; } /* 20px - default */
+.icon-md { @apply w-6 h-6; } /* 24px */
+.icon-lg { @apply w-8 h-8; } /* 32px */
+
+/* Sidebar hover and focus states */
+.sidebar-item {
+  @apply transition-all duration-200 rounded-lg;
+}
+
+.sidebar-item:hover:not(.sidebar-item--active) {
+  @apply bg-slate-100;
+}
+
+.sidebar-item:focus-visible {
+  @apply ring-4 ring-blue-400/30;
+}
+
+.sidebar-item--active {
+  @apply bg-blue-50 text-blue-700 border-l-4 border-blue-600;
+}
+
+/* Table horizontal scroll improvement */
+.table-container {
+  @apply overflow-x-auto rounded-lg border border-slate-200;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-container table {
+  @apply min-w-full;
+}
+
+/* Form label alignment consistency */
+form label {
+  @apply block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2;
+}
+
+form label .required {
+  @apply text-red-600;
+}
+
+/* Success toast notification styles */
+.toast-success {
+  @apply bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-4 flex items-start gap-3;
+}
+
+.toast-success-icon {
+  @apply w-5 h-5 text-emerald-600 shrink-0 mt-0.5;
+}
+
+/* Confirmation dialog overlay */
+.dialog-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-200;
+}
+
+.dialog-content {
+  @apply bg-white rounded-xl shadow-2xl max-w-md mx-auto mt-20 p-6 space-y-4 z-50 relative;
+}
+
+/* Breadcrumb navigation */
+.breadcrumb {
+  @apply flex items-center gap-2 text-sm mb-4;
+}
+
+.breadcrumb-item {
+  @apply text-slate-700 hover:text-blue-600 transition-colors;
+}
+
+.breadcrumb-item.active {
+  @apply text-slate-900 font-semibold;
+}
+
+.breadcrumb-separator {
+  @apply text-slate-400;
+}
+
+/* Loading skeleton animation */
+@keyframes skeleton-loading {
+  0% { background-position: 1000px 0; }
+  100% { background-position: -1000px 0; }
+}
+
+.skeleton {
+  @apply bg-slate-200 rounded;
+  background-image: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+  background-size: 1000px 100%;
+  animation: skeleton-loading 2s infinite;
+}
+
+/* Spacing standardization utilities */
+.gap-consistent { @apply gap-8; } /* Standard gap */
+.space-consistent { @apply space-y-8; } /* Standard vertical space */
+
+/* Card with consistent padding and shadows */
+.card-elevated {
+  @apply bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+.card-elevated-padding {
+  @apply p-6;
+}
+
+/* Destructive action button styling */
+.btn-destructive {
+  @apply px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors min-h-[44px];
+}
+
+/* Confirmation required for destructive actions */
+.action-destructive-warning {
+  @apply text-xs text-red-700 bg-red-50 p-3 rounded-lg border border-red-200 flex items-start gap-2;
+}
+
+/* Improved table row hover effect */
+tbody tr {
+  @apply transition-colors duration-150;
+}
+
+tbody tr:hover {
+  @apply bg-blue-50;
+}
+
+/* Improved form input styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+  @apply transition-all duration-200;
+}
+
+input[type="text"]:hover,
+input[type="email"]:hover,
+input[type="password"]:hover,
+input[type="number"]:hover,
+select:hover,
+textarea:hover {
+  @apply border-slate-400;
+}
+
+/* Badge consistency */
+.badge {
+  @apply inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold;
+}
+
+.badge-primary {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.badge-success {
+  @apply bg-emerald-100 text-emerald-700;
+}
+
+.badge-warning {
+  @apply bg-amber-100 text-amber-700;
+}
+
+.badge-danger {
+  @apply bg-red-100 text-red-700;
+}
+
+/* Smooth transitions for state changes */
+.transition-smooth {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Increased spacing in data-heavy views */
+[class*="data-view"] {
+  @apply space-y-8;
+}
+
+/* Responsive padding consistency */
+@media (max-width: 768px) {
+  .card-elevated-padding {
+    @apply p-4;
+  }
+}
+
+@media (min-width: 769px) {
+  .card-elevated-padding {
+    @apply p-6;
+  }
+}

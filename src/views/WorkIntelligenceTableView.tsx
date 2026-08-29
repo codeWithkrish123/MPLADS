@@ -22,6 +22,7 @@ import { WorkRecord, RiskSeverity, Language } from "../types";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { formatINR } from "../lib/utils";
 import { getTranslation, translateText } from "../data/translations";
+import { EmptyState } from "../components/common/EmptyState";
 
 interface WorkIntelligenceTableViewProps {
   works: WorkRecord[];
@@ -216,6 +217,17 @@ export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps>
 
   return (
     <div id="works-intelligence-table-view" className="space-y-4 animate-in fade-in duration-200 relative pb-16">
+      {/* Show empty state if no works */}
+      {(!works || works.length === 0) && (
+        <EmptyState
+          title={isHindi ? "कोई कार्य नहीं मिला" : "No Works Found"}
+          description={isHindi ? "डेटाबेस में कोई परियोजना उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।" : "No projects available in the database. Please try again later."}
+        />
+      )}
+
+      {/* Main content - only show if works exist */}
+      {works && works.length > 0 && (
+        <>
       {/* Toast Notification */}
       {bulkActionToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl border border-slate-700 shadow-2xl flex items-center gap-2.5 text-xs animate-in slide-in-from-bottom duration-200">
@@ -595,6 +607,8 @@ export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps>
             <X className="w-4 h-4" />
           </button>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -13,6 +13,7 @@ import {
 import { WorkRecord, Language } from "../types";
 import { formatINR } from "../lib/utils";
 import { getTranslation } from "../data/translations";
+import { EmptyState } from "../components/common/EmptyState";
 
 interface CostAnomalyViewProps {
   works: WorkRecord[];
@@ -28,8 +29,16 @@ export const CostAnomalyView: React.FC<CostAnomalyViewProps> = ({
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
-  const [selectedWorkId, setSelectedWorkId] = useState(works[0]?.work_id || "UP-GZB-2024-001");
-  const currentWork = works.find((w) => w.work_id === selectedWorkId) || works[0];
+  
+  // Fallback data for when no works exist
+  const fallbackWork = {
+    work_id: "UP-GZB-2024-001",
+    district: "Ghaziabad",
+    sanctioned_cost: 4500000,
+  };
+  
+  const [selectedWorkId, setSelectedWorkId] = useState(works[0]?.work_id || fallbackWork.work_id);
+  const currentWork = works.find((w) => w.work_id === selectedWorkId) || works[0] || fallbackWork;
 
   const peerBenchmarks = [
     { label: isHindi ? `चयनित कार्य लागत (${currentWork.work_id})` : `Selected Work Cost (${currentWork.work_id})`, amount: currentWork.sanctioned_cost, isTarget: true, color: "bg-red-600" },
@@ -43,6 +52,16 @@ export const CostAnomalyView: React.FC<CostAnomalyViewProps> = ({
 
   return (
     <div id="cost-anomaly-benchmark-view" className="space-y-6 animate-in fade-in duration-200">
+      {/* Show empty state if no works */}
+      {(!works || works.length === 0) && (
+        <EmptyState
+          title={isHindi ? "कोई कार्य नहीं मिला" : "No Works Found"}
+          description={isHindi ? "डेटाबेस में कोई परियोजना उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।" : "No projects available in the database. Please try again later."}
+        />
+      )}
+
+      {works && works.length > 0 && (
+        <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
@@ -201,6 +220,8 @@ export const CostAnomalyView: React.FC<CostAnomalyViewProps> = ({
           </span>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

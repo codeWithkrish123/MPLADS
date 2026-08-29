@@ -15,6 +15,7 @@ import {
 import { WorkRecord, Language } from "../types";
 import { formatINR } from "../lib/utils";
 import { getTranslation } from "../data/translations";
+import { EmptyState } from "../components/common/EmptyState";
 
 interface DuplicateDetectionViewProps {
   works: WorkRecord[];
@@ -32,9 +33,30 @@ export const DuplicateDetectionView: React.FC<DuplicateDetectionViewProps> = ({
   const t = getTranslation(currentLang);
   const [resolutionStatus, setResolutionStatus] = useState<string | null>(null);
 
+  // Fallback works when empty
+  const fallbackWorkA = {
+    work_id: "UP-GZB-2024-001",
+    description: "Community Hall Construction",
+    category: "Community Infrastructure",
+    sanctioned_cost: 4500000,
+    location: "Loni, Ghaziabad",
+    latitude: 28.8234,
+    longitude: 77.2857,
+  };
+  
+  const fallbackWorkB = {
+    work_id: "UP-GZB-2023-089",
+    description: "Community Centre Erection",
+    category: "Community Infrastructure",
+    sanctioned_cost: 4450000,
+    location: "Loni, Ghaziabad",
+    latitude: 28.8235,
+    longitude: 77.2856,
+  };
+
   // Focus Pair from mock data (Work 1 and its duplicate match)
-  const workA = works[0]; // UP-GZB-2024-001 (Construction of Community Hall at Ward 12, Loni)
-  const workB = works[1]; // UP-GZB-2023-089 (Erection of Community Centre at Ward 12, Loni)
+  const workA = works[0] || fallbackWorkA;
+  const workB = works[1] || fallbackWorkB;
 
   const similarityMetrics = [
     {
@@ -69,6 +91,16 @@ export const DuplicateDetectionView: React.FC<DuplicateDetectionViewProps> = ({
 
   return (
     <div id="duplicate-detection-view" className="space-y-6 animate-in fade-in duration-200">
+      {/* Show empty state if no works */}
+      {(!works || works.length === 0) && (
+        <EmptyState
+          title={isHindi ? "कोई कार्य नहीं मिला" : "No Works Found"}
+          description={isHindi ? "डेटाबेस में कोई परियोजना उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।" : "No projects available in the database. Please try again later."}
+        />
+      )}
+
+      {works && works.length > 0 && (
+        <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
@@ -308,6 +340,8 @@ export const DuplicateDetectionView: React.FC<DuplicateDetectionViewProps> = ({
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

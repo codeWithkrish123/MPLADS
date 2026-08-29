@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { WorkRecord, Language } from "../types";
 import { getTranslation } from "../data/translations";
+import { EmptyState } from "../components/common/EmptyState";
 
 interface DelayPredictionViewProps {
   works: WorkRecord[];
@@ -27,8 +28,15 @@ export const DelayPredictionView: React.FC<DelayPredictionViewProps> = ({
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
-  const [selectedWorkId, setSelectedWorkId] = useState(works[0]?.work_id || "UP-GZB-2024-001");
-  const currentWork = works.find((w) => w.work_id === selectedWorkId) || works[0];
+  
+  // Fallback data
+  const fallbackWork = {
+    work_id: "UP-GZB-2024-001",
+    description: "Community Hall Construction",
+  };
+  
+  const [selectedWorkId, setSelectedWorkId] = useState(works[0]?.work_id || fallbackWork.work_id);
+  const currentWork = works.find((w) => w.work_id === selectedWorkId) || works[0] || fallbackWork;
 
   const delayFactors = [
     {
@@ -59,6 +67,16 @@ export const DelayPredictionView: React.FC<DelayPredictionViewProps> = ({
 
   return (
     <div id="delay-prediction-view" className="space-y-6 animate-in fade-in duration-200">
+      {/* Show empty state if no works */}
+      {(!works || works.length === 0) && (
+        <EmptyState
+          title={isHindi ? "कोई कार्य नहीं मिला" : "No Works Found"}
+          description={isHindi ? "डेटाबेस में कोई परियोजना उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।" : "No projects available in the database. Please try again later."}
+        />
+      )}
+
+      {works && works.length > 0 && (
+        <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
@@ -218,6 +236,8 @@ export const DelayPredictionView: React.FC<DelayPredictionViewProps> = ({
           ))}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

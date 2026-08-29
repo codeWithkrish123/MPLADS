@@ -12,6 +12,7 @@ import {
 import { WorkRecord, Language } from "../types";
 import { formatINR } from "../lib/utils";
 import { getTranslation } from "../data/translations";
+import { EmptyState } from "../components/common/EmptyState";
 
 interface ExpenditureProgressViewProps {
   works: WorkRecord[];
@@ -27,8 +28,17 @@ export const ExpenditureProgressView: React.FC<ExpenditureProgressViewProps> = (
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
-  const [selectedWorkId, setSelectedWorkId] = useState(works[0]?.work_id || "UP-GZB-2024-001");
-  const currentWork = works.find((w) => w.work_id === selectedWorkId) || works[0];
+  
+  // Fallback data
+  const fallbackWork = {
+    work_id: "UP-GZB-2024-001",
+    financial_progress: 65,
+    physical_progress: 45,
+    actual_expenditure: 2500000,
+  };
+  
+  const [selectedWorkId, setSelectedWorkId] = useState(works[0]?.work_id || fallbackWork.work_id);
+  const currentWork = works.find((w) => w.work_id === selectedWorkId) || works[0] || fallbackWork;
 
   const monthlyTimeline = [
     { month: isHindi ? "माह 1 (अप्रैल)" : "Month 1 (Apr)", physical: 5, financial: 20 },
@@ -42,6 +52,16 @@ export const ExpenditureProgressView: React.FC<ExpenditureProgressViewProps> = (
 
   return (
     <div id="expenditure-progress-view" className="space-y-6 animate-in fade-in duration-200">
+      {/* Show empty state if no works */}
+      {(!works || works.length === 0) && (
+        <EmptyState
+          title={isHindi ? "कोई कार्य नहीं मिला" : "No Works Found"}
+          description={isHindi ? "डेटाबेस में कोई परियोजना उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।" : "No projects available in the database. Please try again later."}
+        />
+      )}
+
+      {works && works.length > 0 && (
+        <>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
@@ -221,6 +241,8 @@ export const ExpenditureProgressView: React.FC<ExpenditureProgressViewProps> = (
             : "When financial utilization exceeds physical milestone progress by >25%, the system automatically suspends next tranche transfer. The implementing agency must submit Utilization Certificate (UC) and geotagged MB (Measurement Book) photographs certified by the Executive Engineer."}
         </p>
       </div>
+        </>
+      )}
     </div>
   );
 };

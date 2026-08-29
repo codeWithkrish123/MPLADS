@@ -19,6 +19,7 @@ import {
   Globe,
   Sliders,
   Database,
+  HelpCircle,
 } from "lucide-react";
 import { UserRole, Language } from "../../types";
 import { cn } from "../../lib/utils";
@@ -95,6 +96,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { id: "auditLogs", label: t.nav.auditLogs, icon: History, badge: undefined },
       ],
     },
+    {
+      group: isHindi ? "समर्थन और सेटिंग्स" : "Support & Settings",
+      items: [
+        { id: "contact", label: isHindi ? "हमसे संपर्क करें" : "Contact Us", icon: HelpCircle, badge: undefined },
+      ],
+    },
   ];
 
   return (
@@ -110,6 +117,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar Element */}
       <aside
         id="mplads-sentinel-sidebar"
+        role="navigation"
+        aria-label={language === "hi" ? "मुख्य नेविगेशन" : "Main Navigation"}
         className={cn(
           "fixed top-[124px] bottom-0 left-0 z-40 transition-all duration-200 ease-in-out flex flex-col justify-between border-r bg-white text-[#0F172A] border-[#E2E8F0] h-[calc(100vh-124px)] shadow-xs",
           isCollapsed ? "w-16" : "w-64",
@@ -134,6 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       key={item.id}
                       onClick={() => {
                         onSelectView(item.id);
+                        // Close mobile/tablet sidebar after navigation
                         if (isOpenMobile) onCloseMobile();
                       }}
                       className={cn(

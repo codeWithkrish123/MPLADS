@@ -79,13 +79,15 @@ export const Topbar: React.FC<TopbarProps> = ({
       <div className="india-gov-tricolor-stripe" />
 
       {/* 1. Official Government Top Utility Bar */}
-      <div className="bg-[#0B192C] text-slate-100 text-[11px] py-1.5 px-3 sm:px-6 flex flex-wrap items-center justify-between font-sans select-none border-b border-slate-800">
+      <div className="bg-[#0B192C] text-slate-100 text-[11px] py-1.5 px-3 sm:px-6 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 font-sans select-none border-b border-slate-800">
         {/* Left: Official Emblem & Ministry Title */}
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-700">
-            <div className="w-5 h-5 rounded-full bg-amber-400/20 border border-amber-300/40 flex items-center justify-center text-amber-300 font-extrabold text-[10px]">
-              🇮🇳
-            </div>
+            <img 
+              src={new URL("../../assets/images/Emblem_of_India.svg", import.meta.url).href}
+              alt="Emblem of India"
+              className="h-6 w-6 object-contain"
+            />
             <div className="flex flex-col text-[10px] leading-none">
               <span className="font-semibold text-white">
                 {isHindi ? "भारत सरकार | NATIONAL PORTAL OF INDIA" : "GOVERNMENT OF INDIA | INDIA.GOV.IN"}
@@ -106,7 +108,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           {/* Citizen Helpline Number */}
           <a
             href="tel:1800111992"
-            className="hidden sm:flex items-center gap-1 text-amber-400 hover:text-amber-300 font-semibold"
+            className="hidden md:flex items-center gap-1 text-amber-400 hover:text-amber-300 font-semibold text-[10px] sm:text-[11px]"
             title="Toll Free Citizen Helpline Number"
           >
             <PhoneCall className="w-3 h-3 text-amber-400" />
@@ -247,9 +249,11 @@ export const Topbar: React.FC<TopbarProps> = ({
           {/* State Selector */}
           <div className="hidden xl:flex items-center">
             <select
+              id="state-selector"
               value={currentState}
               onChange={(e) => onChangeState(e.target.value)}
-              className="text-xs rounded-[8px] px-2.5 py-1.5 border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] outline-none cursor-pointer font-medium transition-colors focus:border-primary"
+              className="text-xs rounded-[8px] px-2.5 py-2 border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] outline-none cursor-pointer font-medium transition-colors focus:border-primary ring-offset-0 min-h-[44px]"
+              aria-label={isHindi ? "राज्य चुनें" : "Select State"}
             >
               <option value="All States">National (All States)</option>
               <option value="Uttar Pradesh">Uttar Pradesh (UP)</option>
@@ -266,9 +270,11 @@ export const Topbar: React.FC<TopbarProps> = ({
           {/* Financial Year Selector */}
           <div className="hidden lg:flex items-center">
             <select
+              id="fy-selector"
               value={currentFY}
               onChange={(e) => onChangeFY(e.target.value)}
-              className="text-xs rounded-[8px] px-2.5 py-1.5 border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] outline-none cursor-pointer font-medium transition-colors focus:border-primary"
+              className="text-xs rounded-[8px] px-2.5 py-2 border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] outline-none cursor-pointer font-medium transition-colors focus:border-primary ring-offset-0 min-h-[44px]"
+              aria-label={isHindi ? "वित्तीय वर्ष चुनें" : "Select Financial Year"}
             >
               <option value="FY 2025-26">FY 2025-26 (Active)</option>
               <option value="FY 2024-25">FY 2024-25</option>
@@ -279,9 +285,11 @@ export const Topbar: React.FC<TopbarProps> = ({
           {/* Role Selector */}
           <div className="flex items-center">
             <select
+              id="role-selector"
               value={currentRole}
               onChange={(e) => onChangeRole(e.target.value as UserRole)}
-              className="text-xs font-semibold rounded-[8px] px-2.5 py-1.5 border border-primary/30 bg-primary-light text-primary outline-none cursor-pointer transition-colors focus:border-primary"
+              className="text-xs font-semibold rounded-[8px] px-2.5 py-1.5 border border-primary/30 bg-primary-light text-primary outline-none cursor-pointer transition-colors focus:border-primary ring-offset-0"
+              aria-label={isHindi ? "भूमिका चुनें" : "Select Role"}
             >
               <option value="Ministry">{t.roles.ministry}</option>
               <option value="State Nodal Authority">{t.roles.stateNodal}</option>
@@ -294,10 +302,12 @@ export const Topbar: React.FC<TopbarProps> = ({
           {onChangeTheme && (
             <div className="hidden sm:flex items-center">
               <select
+                id="theme-selector"
                 value={currentTheme}
                 onChange={(e) => onChangeTheme(e.target.value as GovTheme)}
-                className="text-xs font-semibold rounded-[8px] px-2.5 py-1.5 border border-primary/30 bg-primary-light text-primary outline-none cursor-pointer transition-colors focus:border-primary"
+                className="text-xs font-semibold rounded-[8px] px-2.5 py-1.5 border border-primary/30 bg-primary-light text-primary outline-none cursor-pointer transition-colors focus:border-primary ring-offset-0"
                 title="Select Portal Theme / पोर्टल थीम चुनें"
+                aria-label={isHindi ? "पोर्टल थीम चुनें" : "Select Portal Theme"}
               >
                 <option value="red-rose">🌹 Rose Theme</option>
                 <option value="nic-blue">🏛️ NIC Blue</option>

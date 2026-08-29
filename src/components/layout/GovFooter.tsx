@@ -10,7 +10,11 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
   const isHindi = language === "hi";
 
   return (
-    <footer className="bg-white text-[#111827] border-t border-[#E5E7EB] mt-16 font-sans select-none shadow-xs">
+    <footer
+      id="site-footer"
+      role="contentinfo"
+      className="bg-white text-[#111827] border-t border-[#E5E7EB] mt-16 font-sans select-none shadow-xs"
+    >
       {/* Top Decorative Bar: National Tricolor Stripe */}
       <div className="india-gov-tricolor-stripe" />
 
@@ -27,13 +31,13 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
                 <h4 className="font-semibold text-[#111827] text-[15px] font-heading leading-snug">
                   {isHindi ? "सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय" : "Ministry of Statistics & PI"}
                 </h4>
-                <p className="text-[11px] text-[#6B7280]">
+                <p className="text-[11px] text-[#4B5563]">
                   {isHindi ? "भारत सरकार" : "Government of India"}
                 </p>
               </div>
             </div>
             
-            <p className="text-[12px] text-[#6B7280] leading-relaxed">
+            <p className="text-[12px] text-[#4B5563] leading-relaxed">
               {isHindi
                 ? "सांसद स्थानीय क्षेत्र विकास योजना (MPLADS) आम नागरिक पारदर्शिता एवं एआई-संचालित निगरानी पोर्टल।"
                 : "MPLADS e-Passbook & AI Surveillance Portal ensuring transparent public development for all 543 constituencies."}
@@ -58,31 +62,31 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
             </h4>
             <ul className="space-y-2.5 pt-3 text-[12px]">
               <li>
-                <a href="https://india.gov.in" target="_blank" rel="noreferrer" className="text-[#6B7280] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors">
+                <a href="https://india.gov.in" target="_blank" rel="noreferrer" className="text-[#4B5563] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors rounded-[4px] px-1">
                   <ExternalLink className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0 mt-0.5" />
                   <span>National Portal of India (India.gov.in)</span>
                 </a>
               </li>
               <li>
-                <a href="https://igod.gov.in" target="_blank" rel="noreferrer" className="text-[#6B7280] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors">
+                <a href="https://igod.gov.in" target="_blank" rel="noreferrer" className="text-[#4B5563] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors rounded-[4px] px-1">
                   <ExternalLink className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0 mt-0.5" />
                   <span>IGOD — Govt Online Directory</span>
                 </a>
               </li>
               <li>
-                <a href="https://umang.gov.in" target="_blank" rel="noreferrer" className="text-[#6B7280] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors">
+                <a href="https://umang.gov.in" target="_blank" rel="noreferrer" className="text-[#4B5563] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors rounded-[4px] px-1">
                   <ExternalLink className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0 mt-0.5" />
                   <span>UMANG Services App</span>
                 </a>
               </li>
               <li>
-                <a href="https://parivahan.gov.in" target="_blank" rel="noreferrer" className="text-[#6B7280] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors">
+                <a href="https://parivahan.gov.in" target="_blank" rel="noreferrer" className="text-[#4B5563] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors rounded-[4px] px-1">
                   <ExternalLink className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0 mt-0.5" />
                   <span>Parivahan Driving &amp; Vehicle Portal</span>
                 </a>
               </li>
               <li>
-                <a href="https://digilocker.gov.in" target="_blank" rel="noreferrer" className="text-[#6B7280] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors">
+                <a href="https://digilocker.gov.in" target="_blank" rel="noreferrer" className="text-[#4B5563] hover:text-[#E31E24] flex items-start gap-2.5 transition-colors rounded-[4px] px-1">
                   <ExternalLink className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0 mt-0.5" />
                   <span>DigiLocker Digital Documents</span>
                 </a>
@@ -97,23 +101,23 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
               <span>{isHindi ? "आम नागरिक सेवाएँ" : "Aam Nagarik Services"}</span>
             </h4>
             <ul className="space-y-2.5 pt-3 text-[12px]">
-              <li className="flex items-start gap-2.5 text-[#6B7280]">
+              <li className="flex items-start gap-2.5 text-[#4B5563]">
                 <ChevronRight className="w-3.5 h-3.5 text-[#EA580C] shrink-0 mt-0.5" />
                 <span>{isHindi ? "संसदीय विकास कार्य खोज" : "Track MP Fund Projects"}</span>
               </li>
-              <li className="flex items-start gap-2.5 text-[#6B7280]">
+              <li className="flex items-start gap-2.5 text-[#4B5563]">
                 <ChevronRight className="w-3.5 h-3.5 text-[#EA580C] shrink-0 mt-0.5" />
                 <span>{isHindi ? "एमपी निधि ई-पासबुक डाउनलोड" : "Download MP Expenditure Passbook"}</span>
               </li>
-              <li className="flex items-start gap-2.5 text-[#6B7280]">
+              <li className="flex items-start gap-2.5 text-[#4B5563]">
                 <ChevronRight className="w-3.5 h-3.5 text-[#EA580C] shrink-0 mt-0.5" />
                 <span>{isHindi ? "सड़क एवं पेयजल कार्य जीपीएस फोटो" : "View Geo-Tagged Work Photos"}</span>
               </li>
-              <li className="flex items-start gap-2.5 text-[#6B7280]">
+              <li className="flex items-start gap-2.5 text-[#4B5563]">
                 <ChevronRight className="w-3.5 h-3.5 text-[#EA580C] shrink-0 mt-0.5" />
                 <span>{isHindi ? "लागत में देरी व शिकायत निवारण" : "File Project Delays & Grievance"}</span>
               </li>
-              <li className="flex items-start gap-2.5 text-[#6B7280]">
+              <li className="flex items-start gap-2.5 text-[#4B5563]">
                 <ChevronRight className="w-3.5 h-3.5 text-[#EA580C] shrink-0 mt-0.5" />
                 <span>{isHindi ? "आस्क सांसद निधि एआई सहायता" : "Ask MPLADS AI 24x7 Assistant"}</span>
               </li>
@@ -127,7 +131,7 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
               <span>{isHindi ? "नागरिक सहायता एवं संपर्क" : "Citizen Support & Address"}</span>
             </h4>
             <div className="space-y-3 pt-3 text-[12px]">
-              <div className="flex items-start gap-2.5 text-[#6B7280]">
+              <div className="flex items-start gap-2.5 text-[#4B5563]">
                 <MapPin className="w-4 h-4 text-[#9CA3AF] shrink-0 mt-0.5" />
                 <span>
                   MoSPI, Khurshid Lal Bhawan, Janpath, New Delhi - 110001
@@ -137,7 +141,7 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
                 <PhoneCall className="w-4 h-4 text-[#E31E24] shrink-0" />
                 <span>Toll Free: 1800-11-1992</span>
               </div>
-              <div className="flex items-center gap-2.5 text-[#6B7280]">
+              <div className="flex items-center gap-2.5 text-[#4B5563]">
                 <Mail className="w-4 h-4 text-[#9CA3AF] shrink-0" />
                 <span>support-mplads@nic.in</span>
               </div>
@@ -146,8 +150,8 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
         </div>
 
         {/* Bottom Strip: Visitor Counter & Legal Copyright */}
-        <div className="pt-6 border-t border-[#E5E7EB] flex flex-col lg:flex-row items-center justify-between text-[12px] text-[#6B7280] gap-4">
-          <div className="flex flex-wrap items-center gap-2 text-center lg:text-left justify-center lg:justify-start">
+        <div className="pt-6 border-t border-[#E5E7EB] flex flex-col lg:flex-row lg:items-center lg:justify-between text-[12px] text-[#4B5563] gap-3 lg:gap-6">
+          <div className="flex flex-col lg:flex-row flex-wrap items-center gap-2 text-center lg:text-left justify-center lg:justify-start">
             <span>
               © 2026 {isHindi ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय (MoSPI), भारत सरकार" : "Ministry of Statistics & PI, Government of India."}
             </span>
@@ -160,10 +164,10 @@ export const GovFooter: React.FC<GovFooterProps> = ({ language }) => {
           {/* Bordered Stat Pill on the Right */}
           <div className="flex items-center gap-2 bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-4 py-1.5 text-[11px] font-sans">
             <Eye className="w-3.5 h-3.5 text-[#16A34A]" />
-            <span className="text-[#6B7280]">{isHindi ? "कुल विज़िटर्स:" : "Total Visitors:"}</span>
+            <span className="text-[#4B5563]">{isHindi ? "कुल विज़िटर्स:" : "Total Visitors:"}</span>
             <span className="font-semibold text-[#111827] tabular-nums">18,492,038</span>
             <span className="text-[#E5E7EB]">|</span>
-            <span className="text-[#6B7280]">{isHindi ? "अंतिम अद्यतन:" : "Last Updated:"}</span>
+            <span className="text-[#4B5563]">{isHindi ? "अंतिम अद्यतन:" : "Last Updated:"}</span>
             <span className="font-semibold text-[#111827]">26 Aug 2026</span>
           </div>
         </div>
