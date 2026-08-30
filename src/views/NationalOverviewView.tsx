@@ -93,7 +93,7 @@ export const NationalOverviewView: React.FC<NationalOverviewViewProps> = ({
           <button
             onClick={() => {
               const csvContent = "data:text/csv;charset=utf-8,State,Total Works,Sanctioned (Cr),Actual Expenditure (Cr),Avg Risk Score\n" +
-                states.map(s => `"${s.name}",${s.total_works},${s.sanctioned_cr},${s.expenditure_cr},${s.avg_risk_score}`).join("\n");
+                states.map(s => `"${s.name ?? s.state}",${s.total_works},${s.sanctioned_cr ?? 0},${s.expenditure_cr ?? 0},${s.avg_risk_score}`).join("\n");
               const encodedUri = encodeURI(csvContent);
               const link = document.createElement("a");
               link.setAttribute("href", encodedUri);

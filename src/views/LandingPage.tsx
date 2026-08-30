@@ -254,62 +254,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         className="relative w-full overflow-hidden"
         style={{ minHeight: "520px", perspective: "1000px" }}
       >
-        {/* Full-width Parliament background image with advanced filters */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        {/* Full-width Parliament image, rendered directly to preserve sharpness */}
+        <img
+          src={portalHeroImg}
+          alt="Parliament of India"
+          className="absolute inset-0 h-full w-full object-cover object-center"
           style={{
-            backgroundImage: `url(${portalHeroImg})`,
-            backgroundAttachment: "fixed",
-            backgroundSize: "cover",
-            transform: "scale(1.05) translateZ(0)",
-            filter: "brightness(0.90) contrast(1.12) saturate(1.2) hue-rotate(3deg)",
-            WebkitBackfaceVisibility: "hidden",
+            display: "block",
+            imageRendering: "auto",
           }}
         />
 
-        {/* Premium gradient overlay - multiple sophisticated layers */}
+        {/* Soft left-side fade to keep text readable */}
         <div className="absolute inset-0" style={{
           background: `
-            linear-gradient(135deg, rgba(31, 58, 122, 0.25) 0%, rgba(255,255,255,0) 45%),
-            linear-gradient(45deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255,255,255,0) 100%),
-            linear-gradient(to right, 
-              rgba(255,255,255,0.99) 0%, 
-              rgba(255,255,255,0.95) 18%, 
-              rgba(255,255,255,0.85) 32%, 
-              rgba(255,255,255,0.55) 50%, 
-              rgba(255,255,255,0.25) 70%,
-              rgba(255,255,255,0.05) 88%,
-              rgba(255,255,255,0.0) 100%
-            ),
-            linear-gradient(to bottom, 
-              rgba(150, 190, 255, 0.12) 0%, 
-              rgba(255,255,255,0.06) 45%,
-              rgba(0,0,0,0.03) 100%
-            )
+            linear-gradient(90deg, rgba(255,255,255,0.94) 0%, rgba(255,255,255,0.90) 26%, rgba(255,255,255,0.54) 48%, rgba(255,255,255,0.12) 68%, rgba(255,255,255,0.0) 100%),
+            linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)
           `,
-          backdropFilter: "blur(1px)",
-        }} />
-
-        {/* Sophisticated dual vignette effect */}
-        <div className="absolute inset-0" style={{
-          background: `
-            radial-gradient(ellipse 900px 650px at 25% 35%, transparent 35%, rgba(0,0,0,0.12) 75%, rgba(0,0,0,0.2) 100%),
-            radial-gradient(ellipse 700px 900px at 90% 50%, transparent 45%, rgba(0,0,0,0.05) 100%)
-          `,
-        }} />
-
-        {/* Premium ambient lighting effect */}
-        <div className="absolute inset-0 opacity-40" style={{
-          background: `
-            radial-gradient(ellipse at 20% 30%, rgba(255, 182, 193, 0.15) 0%, transparent 40%),
-            radial-gradient(ellipse at 80% 70%, rgba(173, 216, 230, 0.1) 0%, transparent 50%)
-          `,
-        }} />
-
-        {/* Subtle texture overlay for depth perception */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><filter id=\"noise\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.9\" numOctaves=\"4\" seed=\"2\" /></filter><rect width=\"100\" height=\"100\" filter=\"url(%23noise)\" /></svg>')",
-          backgroundSize: "200px 200px",
         }} />
 
         {/* Content layer with 3D perspective */}
@@ -360,8 +321,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 }}
               >
                 {isHindi
-                  ? "उन्नत एआई विश्लेषण और डेटा-संचालित अंतर्दृष्टि का उपयोग करके सांसद निधि परियोजनाओं में विसंगतियों का पता लगाएं, धोखाधड़ी को रोकें और दक्षता में सुधार करें।"
-                  : "Detect anomalies, prevent fraud, and improve efficiency in MPLADS projects using advanced AI analytics and data-driven insights."}
+                  ? "उन्नत एआई विश्लेषण और डेटा-संचालित अंतर्दृष्टि का उपयोग करके सांसद निधि परियोजनाओं में विसंगतियों का पता लगाएं, जोखिम को कम करें और दक्षता में सुधार करें।"
+                  : "Detect anomalies, reduce governance risk, and improve efficiency in MPLADS projects using advanced AI analytics and data-driven insights."}
               </p>
 
               {/* Premium CTA buttons */}
@@ -438,10 +399,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div
                 className="w-full max-w-[340px] rounded-2xl p-7 text-white space-y-0 shadow-2xl transform transition-transform duration-300 hover:scale-105"
                 style={{
-                  backgroundColor: "rgba(13, 30, 64, 0.92)",
-                  boxShadow: "0 20px 50px rgba(13, 30, 64, 0.4), 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset",
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)"
+                  backgroundColor: "rgba(13, 30, 64, 0.80)",
+                  boxShadow: "0 20px 50px rgba(13, 30, 64, 0.25), 0 10px 30px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.08) inset",
+                  backdropFilter: "blur(4px)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)"
                 }}
               >
                 {/* Feature row 1 */}

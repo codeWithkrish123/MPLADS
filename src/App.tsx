@@ -1,20 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { UserRole, Language, GovTheme, WorkRecord, RiskAlert, AuditLogEntry } from "./types";
-
-// Custom hook for URL syncing
-import { useURLSync } from "./hooks/useURLSync";
-
-// API Service Layer (replaces mockData)
-import { 
-  workApi, 
-  stateApi, 
-  districtApi, 
-  alertApi, 
-  agencyApi, 
-  complianceApi, 
-  auditApi 
-} from "./services/api";
 
 // Layout & Global Components
 import { Topbar } from "./components/layout/Topbar";
@@ -29,10 +15,12 @@ import { LandingPage } from "./views/LandingPage";
 import { LoginPage } from "./views/LoginPage";
 import { ContactPage } from "./views/ContactPage";
 import { RoleSelectorPage } from "./views/RoleSelectorPage";
-import { NationalOverviewView } from "./views/NationalOverviewView";
+import { ExecutiveAuditDashboardView } from "./views/ExecutiveAuditDashboardView";
+import { ProjectReviewQueueView } from "./views/ProjectReviewQueueView";
+import { ProjectDetailView } from "./views/ProjectDetailView";
+import { RiskSimulatorView } from "./views/RiskSimulatorView";
 import { StateIntelligenceView } from "./views/StateIntelligenceView";
 import { DistrictDashboardView } from "./views/DistrictDashboardView";
-import { WorkIntelligenceTableView } from "./views/WorkIntelligenceTableView";
 import { DuplicateDetectionView } from "./views/DuplicateDetectionView";
 import { CostAnomalyView } from "./views/CostAnomalyView";
 import { ExpenditureProgressView } from "./views/ExpenditureProgressView";
@@ -48,12 +36,25 @@ import { AuditLogView } from "./views/AuditLogView";
 import { CustomDatasetView } from "./views/CustomDatasetView";
 import { MapIntelligenceView } from "./views/MapIntelligenceView";
 
+function parseAppRoute(pathname: string): { view: string; projectId: string | null } {
+  const trimmed = pathname.replace(/\/+$/, "") || "/";
+  if (trimmed === "/" || trimmed === "/landing") return { view: "landing", projectId: null };
+  const parts = trimmed.split("/").filter(Boolean);
+  const head = parts[0] || "landing";
+  if (head === "dashboard") return { view: "overview", projectId: null };
+  if (head === "works" && parts.length >= 2) {
+    return { view: "workDetail", projectId: decodeURIComponent(parts.slice(1).join("/")) };
+  }
+  return { view: head, projectId: null };
+}
+
 export default function App() {
   // Authentication State
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   
   // Navigation State
   const [currentView, setCurrentView] = useState<string>("landing");
+  const [routeProjectId, setRouteProjectId] = useState<string | null>(null);
   const [currentRole, setCurrentRole] = useState<UserRole>("Ministry");
   const [currentState, setCurrentState] = useState<string>("All States");
   const [currentDistrict, setCurrentDistrict] = useState<string>("Ghaziabad");
@@ -90,15 +91,21 @@ export default function App() {
   
   // Wrapper function to navigate both URL and state
   const navigateTo = (view: string) => {
-    setCurrentView(view);
-    navigate("/" + (view === "landing" ? "" : view), { replace: false });
+    const path = view === "landing" ? "/" : `/${view}`;
+    setCurrentView(view === "dashboard" ? "overview" : view);
+    navigate(path, { replace: false });
+  };
+
+  const openProject = (rawId: string) => {
+    setCurrentView("workDetail");
+    setRouteProjectId(rawId);
+    navigate(`/works/${encodeURIComponent(rawId)}`);
   };
   
   useEffect(() => {
-    const path = location.pathname.replace(/^\//, "") || "landing";
-    if (path !== currentView) {
-      setCurrentView(path);
-    }
+    const parsed = parseAppRoute(location.pathname);
+    if (parsed.view !== currentView) setCurrentView(parsed.view);
+    setRouteProjectId(parsed.projectId);
   }, [location.pathname]);
 
   // Load high contrast preference from localStorage on mount
@@ -291,13 +298,13 @@ export default function App() {
   const handleRoleSelection = (role: UserRole) => {
     setCurrentRole(role);
     if (role === "Member of Parliament") {
-      setCurrentView("mpDashboard");
+      navigateTo("mpDashboard");
     } else if (role === "District Authority") {
-      setCurrentView("districtIntel");
+      navigateTo("districtIntel");
     } else if (role === "State Nodal Authority") {
-      setCurrentView("stateNodal");
+      navigateTo("stateNodal");
     } else {
-      setCurrentView("overview");
+      navigateTo("overview");
     }
   };
 
@@ -340,7 +347,7 @@ export default function App() {
         onLoginSuccess={(role) => {
           setIsLoggedIn(true);
           setCurrentRole(role as UserRole);
-          setCurrentView("overview");
+          navigateTo("overview");
         }}
         language={language}
         onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
@@ -386,7 +393,7 @@ export default function App() {
         onToggleNotifications={() => setIsNotificationsDrawerOpen(true)}
         onToggleSidebarMobile={() => setIsSidebarMobileOpen((o) => !o)}
         alerts={alerts}
-        onOpenLanding={() => setCurrentView("landing")}
+        onOpenLanding={() => navigateTo("landing")}
         onStartTour={() => {
           setTourStep(0);
           setIsOnboardingTourOpen(true);
@@ -402,7 +409,7 @@ export default function App() {
         {/* Navigation Sidebar */}
         <Sidebar
           currentView={currentView}
-          onSelectView={setCurrentView}
+          onSelectView={navigateTo}
           currentRole={currentRole}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((c) => !c)}
@@ -422,19 +429,8 @@ export default function App() {
           }`}
         >
           <div className="max-w-7xl mx-auto space-y-6">
-            {currentView === "overview" && (
-              <NationalOverviewView
-                states={[]}
-                works={[]}
-                selectedState={currentState}
-                onSelectState={handleSelectStateDrilldown}
-                onSelectWork={handleOpenWorkDetail}
-                onNavigateToWorks={() => setCurrentView("works")}
-                onNavigateToAlerts={() => setCurrentView("alerts")}
-                language={language}
-                selectedDistrict={currentDistrict}
-                onAddGrievanceAlert={handleAddGrievanceAlert}
-              />
+            {(currentView === "overview" || currentView === "dashboard") && (
+              <ExecutiveAuditDashboardView onNavigateToWorks={() => navigateTo("works")} />
             )}
 
             {currentView === "stateIntel" && (
@@ -458,12 +454,14 @@ export default function App() {
             )}
 
             {currentView === "works" && (
-              <WorkIntelligenceTableView
-                works={[]}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-              />
+              <ProjectReviewQueueView onOpenProject={openProject} />
             )}
+
+            {currentView === "workDetail" && routeProjectId && (
+              <ProjectDetailView projectId={routeProjectId} onBack={() => navigateTo("works")} />
+            )}
+
+            {currentView === "simulator" && <RiskSimulatorView />}
 
             {currentView === "customDataset" && (
               <CustomDatasetView
@@ -694,7 +692,7 @@ export default function App() {
         districts={[]}
         rules={[]}
         onSelectWork={handleOpenWorkDetail}
-        onNavigate={setCurrentView}
+        onNavigate={navigateTo}
       />
 
       {/* State-Based Guided Onboarding Tour */}

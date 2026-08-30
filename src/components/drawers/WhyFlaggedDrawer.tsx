@@ -17,6 +17,7 @@ import { WorkRecord } from "../../types";
 import { RiskBadge } from "../common/RiskBadge";
 import { RiskScoreGauge } from "../common/RiskScoreGauge";
 import { GanttTimelineChart } from "../common/GanttTimelineChart";
+import { LegalDisclaimer } from "../common/LegalDisclaimer";
 import { formatINR } from "../../lib/utils";
 
 interface WhyFlaggedDrawerProps {
@@ -159,13 +160,7 @@ Generated on: ${new Date().toISOString()} via MPLADS Sentinel Decision Support S
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5 text-sm">
-          {/* Institutional Decision Support Disclaimer matching Image 2 */}
-          <div className="p-3 bg-[#EFF6FF] border border-blue-200 rounded-lg text-xs text-[#1E40AF] flex items-start gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              <strong className="font-bold">Decision Support Signal:</strong> This assessment indicates potential irregularity requiring administrative verification. The platform does not assert intentional malfeasance.
-            </div>
-          </div>
+          <LegalDisclaimer compact />
 
           {/* Risk Score Gauge & AI Explanation Header Card matching Image 2 */}
           <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">

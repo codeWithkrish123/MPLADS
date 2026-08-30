@@ -15,7 +15,10 @@ export const AppRoutes: React.FC = () => {
       <Route path="/login" element={<App />} />
       <Route path="/contact" element={<App />} />
       <Route path="/overview" element={<App />} />
+      <Route path="/dashboard" element={<App />} />
       <Route path="/works" element={<App />} />
+      <Route path="/works/:projectId" element={<App />} />
+      <Route path="/simulator" element={<App />} />
       <Route path="/alerts" element={<App />} />
       <Route path="/map" element={<App />} />
       <Route path="/costAnomaly" element={<App />} />

@@ -20,6 +20,7 @@ import {
   Sliders,
   Database,
   HelpCircle,
+  LucideIcon,
 } from "lucide-react";
 import { UserRole, Language } from "../../types";
 import { cn } from "../../lib/utils";
@@ -51,13 +52,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const t = getTranslation(language);
   const isHindi = language === "hi";
 
-  const navSections = [
+  const navSections: Array<{
+    group: string;
+    groupColor?: string;
+    items: Array<{ id: string; label: string; icon: LucideIcon; badge?: string; badgeColor?: string }>;
+  }> = [
     {
       group: isHindi ? "आम नागरिक सेवाएँ और प्रोजेक्ट्स" : "Aam Nagarik Services & Projects",
       groupColor: "text-[#64748B] font-semibold",
       items: [
-        { id: "overview", label: t.nav.overview, icon: LayoutDashboard, badge: undefined },
-        { id: "works", label: t.nav.works, icon: FileSpreadsheet, badge: "12.8k" },
+        { id: "overview", label: "Executive Audit Dashboard", icon: LayoutDashboard, badge: undefined },
+        { id: "works", label: "Project Review Queue", icon: FileSpreadsheet, badge: undefined },
+        { id: "simulator", label: "Risk Simulator", icon: BarChart3, badge: undefined },
         { id: "customDataset", label: t.nav.customDataset || "Download Project Records", icon: Database, badge: isHindi ? "नया" : "New", badgeColor: "bg-blue-50 text-[#1D4ED8] border border-blue-200" },
         { id: "aiAssistant", label: t.nav.aiAssistant || "Help Chatbot & Voice Support", icon: Bot, badge: "24x7 Help", badgeColor: "bg-blue-50 text-[#1D4ED8] border border-blue-200" },
       ],
@@ -137,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="space-y-0.5">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = currentView === item.id;
+                  const isActive = currentView === item.id || (item.id === "works" && currentView === "workDetail");
                   return (
                     <button
                       key={item.id}
