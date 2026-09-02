@@ -70,6 +70,19 @@ export const RoleSelectorPage: React.FC<RoleSelectorPageProps> = ({
         "Statutory guideline revision & policy enforcement",
       ],
     },
+    {
+      id: "Citizen",
+      title: "Citizen & Social Auditor",
+      description: "Explore localized works in your village or constituency, verify geo-tagged photos, and report delays.",
+      icon: Landmark,
+      badge: "Public Transparency Scope",
+      scope: "All India Citizen Transparency Portal",
+      features: [
+        "Interactive Constituency Work Locator",
+        "Public Expenditure & Geo-tagged Photo Inspection",
+        "Direct CPGRAMS Grievance & Anomaly Lodging",
+      ],
+    },
   ];
 
   return (

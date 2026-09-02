@@ -18,7 +18,7 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { WorkRecord, RiskSeverity, WorkStatus, Language } from "../types";
-import { MOCK_WORKS } from "../data/mockData";
+import { REAL_WORKS } from "../data/realWorksData";
 import { getTranslation, translateText } from "../data/translations";
 
 interface CustomDatasetViewProps {
@@ -30,9 +30,9 @@ export const CustomDatasetView: React.FC<CustomDatasetViewProps> = ({ onOpenWork
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
-  // Custom dataset records state, initialized with a subset of MOCK_WORKS or custom user entries
+  // Custom dataset records state, initialized with real CSV works
   const [datasetRecords, setDatasetRecords] = useState<WorkRecord[]>([
-    ...MOCK_WORKS.slice(0, 5),
+    ...REAL_WORKS.slice(0, 15),
   ]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRisk, setFilterRisk] = useState<string>("ALL");
@@ -160,7 +160,7 @@ export const CustomDatasetView: React.FC<CustomDatasetViewProps> = ({ onOpenWork
   };
 
   const handleLoadSampleDataset = () => {
-    setDatasetRecords([...MOCK_WORKS.slice(0, 15)]);
+    setDatasetRecords([...REAL_WORKS.slice(0, 15)]);
   };
 
   const filteredRecords = datasetRecords.filter((r) => {

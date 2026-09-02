@@ -13,7 +13,8 @@ export type UserRole =
   | "Ministry" 
   | "State Nodal Authority" 
   | "District Authority" 
-  | "Member of Parliament";
+  | "Member of Parliament"
+  | "Citizen";
 
 export type Language = "en" | "hi";
 
@@ -152,6 +153,10 @@ export interface StateSummary {
   state: string;
   code: string;
   total_works: number;
+  completed_works?: number;
+  sanctioned_works?: number;
+  recommended_works?: number;
+  allocated_cr?: number;
   sanctioned_cr?: number;
   expenditure_cr?: number;
   total_expenditure_cr: number;
@@ -179,6 +184,8 @@ export interface ImplementingAgency {
   risk_category: RiskSeverity;
   active_expenditure_cr: number;
   monthly_trend: { month: string; risk: number; completion: number }[];
+  state?: string;
+  district?: string;
 }
 
 export interface ComplianceRule {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BarChart3, ShieldAlert, Activity, Gauge, Layers } from "lucide-react";
 import { MetricCard } from "../components/common/MetricCard";
+import { IndiaMap } from "../components/common/IndiaMap";
 import { LegalDisclaimer } from "../components/common/LegalDisclaimer";
 import { ApiErrorState, LoadingSkeleton } from "../components/common/AnalyticalStatus";
 import { EmptyState } from "../components/common/EmptyState";
@@ -11,6 +12,8 @@ import { CITIZEN_COPY } from "../lib/terminology";
 
 interface ExecutiveAuditDashboardViewProps {
   onNavigateToWorks?: () => void;
+  onSelectState?: (state: string) => void;
+  selectedState?: string;
 }
 
 const LEVEL_ORDER = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
@@ -23,6 +26,8 @@ const LEVEL_COLORS: Record<string, string> = {
 
 export const ExecutiveAuditDashboardView: React.FC<ExecutiveAuditDashboardViewProps> = ({
   onNavigateToWorks,
+  onSelectState,
+  selectedState,
 }) => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [states, setStates] = useState<StateAnalyticsRow[]>([]);
@@ -156,6 +161,15 @@ export const ExecutiveAuditDashboardView: React.FC<ExecutiveAuditDashboardViewPr
               </ul>
             )}
           </section>
+
+          {/* National Geographic Risk Choropleth Map */}
+          <IndiaMap
+            selectedState={selectedState || "All States"}
+            onSelectState={(st) => {
+              if (onSelectState) onSelectState(st);
+            }}
+            mapHeight="560px"
+          />
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <section className="overflow-hidden rounded-md border border-[#E2E8F0] bg-white">
