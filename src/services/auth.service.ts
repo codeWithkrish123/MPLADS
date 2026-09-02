@@ -40,16 +40,24 @@ export class AuthService {
   public static async login(email: string, password?: string, roleOverride?: string) {
     let user = await db.findUserByEmail(email);
 
+    const normalizeRole = (r?: string): string => {
+      const s = (r || "").toUpperCase().replace(/\s+/g, "_");
+      if (s.includes("MINISTRY")) return "MINISTRY";
+      if (s.includes("STATE") || s.includes("NODAL")) return "STATE_NODAL";
+      if (s.includes("DISTRICT") || s.includes("DM")) return "DISTRICT_AUTHORITY";
+      if (s.includes("PARLIAMENT") || s.includes("MP")) return "MP";
+      return "CITIZEN";
+    };
+
+    const targetRole = normalizeRole(roleOverride);
+
     if (!user) {
-      const role = (roleOverride || "CITIZEN").toUpperCase();
       const hashedPassword = await this.hashPassword(password || "password123");
       user = await db.createUser({
         email: email.toLowerCase().trim(),
         password_hash: hashedPassword,
         full_name: email.split("@")[0].replace(".", " ").toUpperCase(),
-        role: ["MINISTRY", "STATE_NODAL", "DISTRICT_AUTHORITY", "MP", "CITIZEN"].includes(role)
-          ? role
-          : "CITIZEN",
+        role: targetRole,
       });
     }
 

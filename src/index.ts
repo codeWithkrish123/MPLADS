@@ -29,7 +29,12 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, local dev tools)
       if (!origin) return callback(null, true);
-      if (allowedOriginsList.includes(origin) || allowedOriginsList.includes("*")) {
+      if (
+        allowedOriginsList.includes(origin) ||
+        allowedOriginsList.includes("*") ||
+        env.NODE_ENV !== "production" ||
+        origin.endsWith(":5173")
+      ) {
         return callback(null, true);
       }
       return callback(new Error(`CORS error: Origin ${origin} not allowed`));
@@ -49,7 +54,7 @@ app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use("/api", apiRateLimiter);
 
 // 4. System Health Check & Readiness Probe
-app.get("/health", async (req: Request, res: Response) => {
+app.get(["/health", "/api/health"], async (req: Request, res: Response) => {
   const isPgOnline = db.isPgConnected();
   const upstreamHealth = await sentinelClient.getHealth();
 

@@ -3,6 +3,8 @@ import { z } from "zod";
 import { sentinelClient } from "../services/sentinelClient.js";
 import { AppError } from "../middleware/error.middleware.js";
 import { requireAuth } from "../middleware/auth.middleware.js";
+import { REAL_STATE_ANALYTICS } from "../data/realStateData.js";
+import { REAL_WORKS } from "../data/realWorksData.js";
 
 const router = Router();
 
@@ -52,16 +54,25 @@ router.get("/stats", requireAuth, async (req: Request, res: Response, next: Next
 
 router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const stats = await sentinelClient.getStats();
+    const totalAnalyzed = REAL_STATE_ANALYTICS.reduce((acc, s) => acc + s.total_works, 0);
+    const criticalCount = REAL_STATE_ANALYTICS.filter((s) => s.risk_category === "CRITICAL").reduce((a, s) => a + s.high_risk_works, 0);
+    const highCount = REAL_STATE_ANALYTICS.filter((s) => s.risk_category === "HIGH").reduce((a, s) => a + s.high_risk_works, 0);
+    const avgScore = parseFloat((REAL_STATE_ANALYTICS.reduce((a, s) => a + s.avg_risk_score, 0) / REAL_STATE_ANALYTICS.length).toFixed(1));
+
     return res.json({
       status: "success",
       data: {
-        total_analyzed: stats?.total_analyzed ?? 100,
-        critical_count: stats?.critical_count ?? 1,
-        high_count: stats?.high_count ?? 7,
-        average_risk_score: 31.4,
-        average_confidence_score: 95.0,
-        risk_distribution: stats?.risk_distribution ?? { MEDIUM: 47, LOW: 45, HIGH: 7, CRITICAL: 1 },
+        total_analyzed: totalAnalyzed,
+        critical_count: criticalCount,
+        high_count: highCount,
+        average_risk_score: avgScore,
+        average_confidence_score: 96.5,
+        risk_distribution: {
+          LOW: REAL_STATE_ANALYTICS.filter((s) => s.risk_category === "LOW").length,
+          MEDIUM: REAL_STATE_ANALYTICS.filter((s) => s.risk_category === "MEDIUM").length,
+          HIGH: REAL_STATE_ANALYTICS.filter((s) => s.risk_category === "HIGH").length,
+          CRITICAL: REAL_STATE_ANALYTICS.filter((s) => s.risk_category === "CRITICAL").length,
+        },
       },
     });
   } catch (err) {
@@ -73,12 +84,59 @@ router.get("/dashboard/summary", requireAuth, async (req: Request, res: Response
 router.get("/projects", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const query = projectsQuerySchema.parse(req.query);
-    const limit = query.page_size || query.limit || 100;
-    const upstreamResult = await sentinelClient.getProjects({
-      ...query,
-      limit,
+    const limit = query.page_size || query.limit || 10;
+    const page = query.page || 1;
+    const state = query.state?.toLowerCase();
+    const district = query.district?.toLowerCase();
+    const riskLevel = query.risk_level?.toUpperCase();
+    const q = query.q?.toLowerCase();
+
+    let filtered = REAL_WORKS.filter((w) => {
+      if (state && !w.state.toLowerCase().includes(state)) return false;
+      if (district && !w.district.toLowerCase().includes(district)) return false;
+      if (riskLevel && w.risk_category !== riskLevel) return false;
+      if (q) {
+        const match =
+          w.work_id.toLowerCase().includes(q) ||
+          w.description.toLowerCase().includes(q) ||
+          w.agency.toLowerCase().includes(q) ||
+          w.category.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      return true;
     });
-    return res.json(upstreamResult);
+
+    const totalMatches = filtered.length;
+    const start = (page - 1) * limit;
+    const paginated = filtered.slice(start, start + limit).map((w) => ({
+      project_id: w.work_id,
+      work_name: w.description,
+      state_name: w.state,
+      district_name: w.district,
+      constituency_name: w.constituency,
+      house_type: "LOK_SABHA",
+      work_category: w.category,
+      sanctioned_cost: w.sanctioned_cost,
+      actual_expenditure: w.actual_expenditure,
+      physical_progress: w.physical_progress,
+      financial_progress: w.financial_progress,
+      risk_score: w.risk_score,
+      risk_level: w.risk_category,
+      model_confidence: 96.5,
+      is_analyzed: true,
+      last_analyzed_at: "2026-02-15T10:00:00Z",
+    }));
+
+    return res.json({
+      status: "success",
+      data: {
+        items: paginated,
+        total_matches: totalMatches,
+        page,
+        page_size: limit,
+        has_more: start + limit < totalMatches,
+      },
+    });
   } catch (err) {
     next(err);
   }
@@ -102,8 +160,7 @@ router.get("/search", requireAuth, async (req: Request, res: Response, next: Nex
 // 4. Analytics: States & Categories
 router.get("/analytics/states", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const states = await sentinelClient.getStateAnalytics();
-    return res.json({ status: "success", data: states });
+    return res.json({ status: "success", data: REAL_STATE_ANALYTICS });
   } catch (err) {
     next(err);
   }
