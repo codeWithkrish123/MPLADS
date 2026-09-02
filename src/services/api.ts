@@ -27,9 +27,13 @@ import {
   RiskFactor,
 } from "../types";
 
+export const DIRECT_ML_URL = "https://sih-2026-23oy.onrender.com/api";
+
 export const API_BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ||
-  (typeof window !== "undefined"
+  (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && window.location.hostname !== "20.20.6.200"
+    ? DIRECT_ML_URL
+    : typeof window !== "undefined"
     ? `${window.location.protocol}//${window.location.hostname}:5000/api`
     : "http://localhost:5000/api");
 
@@ -116,8 +120,10 @@ async function parseError(response: Response): Promise<ApiError> {
 }
 
 async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-  try {
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  let url = `${API_BASE_URL}${cleanEndpoint}`;
+
+  const executeFetch = async (targetUrl: string) => {
     const token = localStorage.getItem("mplads_auth_token");
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -128,7 +134,7 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
+    const response = await fetch(targetUrl, {
       ...options,
       headers,
     });
@@ -139,8 +145,20 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
       return undefined as T;
     }
     return (await response.json()) as T;
+  };
+
+  try {
+    return await executeFetch(url);
   } catch (error) {
     if (error instanceof ApiError) throw error;
+    // Fallback: If gateway is unreachable, try direct live Render ML API
+    if (API_BASE_URL !== DIRECT_ML_URL) {
+      try {
+        return await executeFetch(`${DIRECT_ML_URL}${cleanEndpoint}`);
+      } catch (fallbackError) {
+        if (fallbackError instanceof ApiError) throw fallbackError;
+      }
+    }
     throw new ApiError(0, `Network error: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
