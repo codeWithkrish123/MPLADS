@@ -1,8 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm ci && npm run build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "nodeVersion": "20.x",
-  "regions": ["sfo1"]
+  "framework": "vite"
 }
