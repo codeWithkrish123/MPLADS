@@ -35,7 +35,7 @@ import {
 import { UserRole, Language } from "../types";
 import { StateEmblem } from "../components/gov/StateEmblem";
 import { SatyamevJayateLogo } from "../components/gov/SatyamevJayateLogo";
-import mpladsLogo from "../../../assets/MPLADS_logo.jpg";
+import mpladsLogo from "../assets/MPLADS_logo.jpg";
 
 const portalHeroImg = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
 
