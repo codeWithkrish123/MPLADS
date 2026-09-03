@@ -36,6 +36,16 @@ import { AuditLogView } from "./views/AuditLogView";
 import { CustomDatasetView } from "./views/CustomDatasetView";
 import { MapIntelligenceView } from "./views/MapIntelligenceView";
 
+// Authentic Real Datasets generated from the 6 Government of India CSVs
+import { REAL_STATE_ANALYTICS } from "./data/realStateData";
+import { REAL_WORKS } from "./data/realWorksData";
+import { REAL_DISTRICTS } from "./data/realDistrictData";
+import { REAL_AGENCIES } from "./data/realAgenciesData";
+import { REAL_ALERTS } from "./data/realAlertsData";
+import { REAL_NEAR_DUPLICATES } from "./data/realDuplicatesData";
+import { REAL_RULES } from "./data/realComplianceData";
+import { alertApi, auditApi, authApi } from "./services/api";
+
 function parseAppRoute(pathname: string): { view: string; projectId: string | null } {
   const trimmed = pathname.replace(/\/+$/, "") || "/";
   if (trimmed === "/" || trimmed === "/landing") return { view: "landing", projectId: null };
@@ -62,8 +72,8 @@ export default function App() {
   const [language, setLanguage] = useState<Language>("en");
   const [currentTheme, setCurrentTheme] = useState<GovTheme>("nic-blue");
 
-  // Dynamic States for Interactive Workflows
-  const [alerts, setAlerts] = useState<RiskAlert[]>([]);
+  // Dynamic States for Interactive Workflows - Initialized with authentic datasets
+  const [alerts, setAlerts] = useState<RiskAlert[]>(REAL_ALERTS);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   
   // Data Loading States
@@ -295,8 +305,16 @@ export default function App() {
     setIsFlaggedDrawerOpen(true);
   };
 
+  const handleLogout = () => {
+    authApi.logout();
+    setIsLoggedIn(false);
+    navigateTo("landing");
+  };
+
   const handleRoleSelection = (role: UserRole) => {
     setCurrentRole(role);
+    localStorage.setItem("mplads_role", role);
+    setIsLoggedIn(true);
     if (role === "Member of Parliament") {
       navigateTo("mpDashboard");
     } else if (role === "District Authority") {
@@ -322,6 +340,18 @@ export default function App() {
     setCurrentView("districtIntel");
   };
 
+  // Restore authenticated session and role on mount
+  useEffect(() => {
+    const savedRole = localStorage.getItem("mplads_role") as UserRole | null;
+    const savedToken = localStorage.getItem("mplads_auth_token");
+    if (savedRole) {
+      setCurrentRole(savedRole);
+    }
+    if (savedToken) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   // If on public Landing Page or Role Selector
   if (currentView === "landing") {
     return (
@@ -345,9 +375,7 @@ export default function App() {
     return (
       <LoginPage
         onLoginSuccess={(role) => {
-          setIsLoggedIn(true);
-          setCurrentRole(role as UserRole);
-          navigateTo("overview");
+          handleRoleSelection(role);
         }}
         language={language}
         onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
@@ -402,6 +430,9 @@ export default function App() {
         onChangeFontSize={setFontSize}
         isHighContrast={isHighContrast}
         onToggleHighContrast={handleToggleHighContrast}
+        isLoggedIn={isLoggedIn}
+        onLogout={handleLogout}
+        onOpenLogin={() => navigateTo("login")}
       />
 
       {/* Main Layout Area */}
@@ -430,12 +461,16 @@ export default function App() {
         >
           <div className="max-w-7xl mx-auto space-y-6">
             {(currentView === "overview" || currentView === "dashboard") && (
-              <ExecutiveAuditDashboardView onNavigateToWorks={() => navigateTo("works")} />
+              <ExecutiveAuditDashboardView
+                selectedState={currentState}
+                onSelectState={handleSelectStateDrilldown}
+                onNavigateToWorks={() => navigateTo("works")}
+              />
             )}
 
             {currentView === "stateIntel" && (
               <StateIntelligenceView
-                districts={[]}
+                districts={REAL_DISTRICTS}
                 selectedState={currentState}
                 onChangeState={handleSelectStateDrilldown}
                 onSelectDistrict={handleSelectDistrictDrilldown}
@@ -446,7 +481,7 @@ export default function App() {
             {currentView === "districtIntel" && (
               <DistrictDashboardView
                 districtName={currentDistrict}
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 onBackToState={() => setCurrentView("stateIntel")}
                 language={language}
@@ -473,7 +508,7 @@ export default function App() {
             {currentView === "alerts" && (
               <AlertCenterView
                 alerts={alerts}
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -481,8 +516,8 @@ export default function App() {
 
             {currentView === "map" && (
               <MapIntelligenceView
-                states={[]}
-                works={[]}
+                states={REAL_STATE_ANALYTICS}
+                works={REAL_WORKS}
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}
@@ -494,7 +529,7 @@ export default function App() {
 
             {currentView === "costAnomaly" && (
               <CostAnomalyView
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -502,7 +537,7 @@ export default function App() {
 
             {currentView === "duplicate" && (
               <DuplicateDetectionView
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -510,7 +545,7 @@ export default function App() {
 
             {currentView === "expenditure" && (
               <ExpenditureProgressView
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -518,7 +553,7 @@ export default function App() {
 
             {currentView === "delay" && (
               <DelayPredictionView
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -526,14 +561,14 @@ export default function App() {
 
             {currentView === "compliance" && (
               <ComplianceCenterView
-                rules={[]}
+                rules={REAL_RULES}
                 onOpenPolicy={() => setCurrentView("policy")}
                 language={language}
               />
             )}
 
             {currentView === "policy" && (
-              <PolicyKnowledgeView rules={[]} language={language} />
+              <PolicyKnowledgeView rules={REAL_RULES} language={language} />
             )}
 
             {currentView === "aiAssistant" && (
@@ -546,7 +581,7 @@ export default function App() {
 
             {currentView === "mpDashboard" && (
               <MPDashboardView
-                works={[]}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -554,7 +589,7 @@ export default function App() {
 
             {currentView === "stateNodal" && (
               <StateNodalDashboardView
-                districts={[]}
+                districts={REAL_DISTRICTS}
                 onSelectDistrict={handleSelectDistrictDrilldown}
                 language={language}
               />
@@ -562,15 +597,15 @@ export default function App() {
 
             {currentView === "agencies" && (
               <AgencyRiskView
-                agencies={[]}
-                works={[]}
+                agencies={REAL_AGENCIES}
+                works={REAL_WORKS}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
             )}
 
             {currentView === "auditLogs" && (
-              <AuditLogView logs={auditLogs} language={language} />
+              <AuditLogView logs={auditLogs.length > 0 ? auditLogs : []} language={language} />
             )}
           </div>
 

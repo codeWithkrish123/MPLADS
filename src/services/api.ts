@@ -1,5 +1,6 @@
 /**
  * MPLADS API Service Layer
+ * Connects to the Node.js + PostgreSQL API Gateway (Port 5000)
  */
 
 import {
@@ -26,9 +27,15 @@ import {
   RiskFactor,
 } from "../types";
 
+export const DIRECT_ML_URL = "https://sih-2026-23oy.onrender.com/api";
+
 export const API_BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ||
-  "http://localhost:8000/api";
+  (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && window.location.hostname !== "20.20.6.200"
+    ? DIRECT_ML_URL
+    : typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:5000/api`
+    : "http://localhost:5000/api");
 
 export class ApiError extends Error {
   constructor(
@@ -113,15 +120,23 @@ async function parseError(response: Response): Promise<ApiError> {
 }
 
 async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-  try {
-    const response = await fetch(url, {
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  let url = `${API_BASE_URL}${cleanEndpoint}`;
+
+  const executeFetch = async (targetUrl: string) => {
+    const token = localStorage.getItem("mplads_auth_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(options.headers as Record<string, string>),
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(targetUrl, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...options.headers,
-      },
+      headers,
     });
     if (!response.ok) {
       throw await parseError(response);
@@ -130,8 +145,20 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
       return undefined as T;
     }
     return (await response.json()) as T;
+  };
+
+  try {
+    return await executeFetch(url);
   } catch (error) {
     if (error instanceof ApiError) throw error;
+    // Fallback: If gateway is unreachable, try direct live Render ML API
+    if (API_BASE_URL !== DIRECT_ML_URL) {
+      try {
+        return await executeFetch(`${DIRECT_ML_URL}${cleanEndpoint}`);
+      } catch (fallbackError) {
+        if (fallbackError instanceof ApiError) throw fallbackError;
+      }
+    }
     throw new ApiError(0, `Network error: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
@@ -230,7 +257,7 @@ function normalizeProjectItem(item: unknown): ProjectListItem {
     })(),
     risk_level: str(pick(rec, ["risk_level", "risk_category"])) || null,
     project_status: str(pick(rec, ["project_status", "work_status", "status"])),
-    work_description: str(pick(rec, ["work_description", "description", "title"])),
+    work_description: str(pick(rec, ["work_description", "project_name", "description", "title"])),
   };
 }
 
@@ -288,7 +315,7 @@ function normalizeProjectDetail(payload: unknown, fallbackId: string): ProjectDe
     district: str(pick(rec, ["district", "district_name"])) || "—",
     house: str(pick(rec, ["house", "house_type"])),
     work_category: str(pick(rec, ["work_category", "category"])) || "—",
-    work_description: str(pick(rec, ["work_description", "description", "title"])),
+    work_description: str(pick(rec, ["work_description", "project_name", "description", "title"])),
     sanctioned_amount: num(pick(rec, ["sanctioned_amount", "sanctioned_cost"])),
     total_expenditure: num(pick(rec, ["total_expenditure", "actual_expenditure"])),
     risk_score: (() => {
@@ -313,7 +340,7 @@ function normalizeProjectDetail(payload: unknown, fallbackId: string): ProjectDe
 
 function normalizeInvestigation(payload: unknown, projectId: string): InvestigationDossier {
   const rec = asRecord(unwrapData(payload)) || asRecord(payload) || {};
-  const recs = pick(rec, ["recommendations", "checks", "checklist"]);
+  const recs = pick(rec, ["recommendations", "recommended_checks", "checks", "checklist"]);
   const limits = pick(rec, ["data_limitations", "limitations", "warnings"]);
   const recommendations: InvestigationCheck[] = Array.isArray(recs)
     ? recs.map((item) => {
@@ -359,7 +386,7 @@ export const sentinelApi = {
 
   getProjects: async (query: ProjectListQuery = {}): Promise<ProjectListResponse> => {
     const page = query.page ?? 1;
-    const page_size = query.page_size ?? 10;
+    const page_size = query.page_size ?? 100;
     const qs = buildQuery({
       q: query.q,
       state: query.state,
@@ -387,7 +414,7 @@ export const sentinelApi = {
       return {
         project_id: id,
         label:
-          str(pick(rec, ["label", "work_description", "description", "title"])) || id,
+          str(pick(rec, ["label", "work_description", "project_name", "description", "title"])) || id,
         state: str(pick(rec, ["state"])),
         district: str(pick(rec, ["district"])),
       };
@@ -415,50 +442,211 @@ export const sentinelApi = {
   },
 };
 
-export const stateApi = {
-  getAll: async (): Promise<StateSummary[]> => [],
-  getById: async (_stateCode: string): Promise<StateSummary | null> => null,
-};
-
-export const districtApi = {
-  getAll: async (): Promise<DistrictSummary[]> => [],
-  getByState: async (_stateName: string): Promise<DistrictSummary[]> => [],
-  getById: async (_districtId: string): Promise<DistrictSummary | null> => null,
-};
-
-export const workApi = {
-  getAll: async (_filters?: { state?: string; district?: string; category?: string }): Promise<WorkRecord[]> => [],
-  getById: async (_workId: string): Promise<WorkRecord | null> => null,
-  search: async (_query: string): Promise<WorkRecord[]> => [],
-};
-
 export const alertApi = {
-  getAll: async (): Promise<RiskAlert[]> => [],
-  getByStatus: async (_status: string): Promise<RiskAlert[]> => [],
-  create: async (_alert: Partial<RiskAlert>): Promise<RiskAlert> => {
-    throw new Error("Create alert not yet implemented");
+  getAll: async (filters?: { status?: string; severity?: string; state?: string }): Promise<RiskAlert[]> => {
+    const qs = buildQuery(filters || {});
+    const data = await apiCall<unknown>(`/alerts${qs}`);
+    return (asList(data) as any[]).map((a) => ({
+      id: a.id,
+      severity: a.severity,
+      work_id: a.workId || a.work_id,
+      work_name: a.workName || a.work_name,
+      state: a.state,
+      district: a.district,
+      category: a.category,
+      reason: a.reason,
+      detected_at: a.detectedAt || a.detected_at,
+      confidence: 0.95,
+      status: a.status,
+      assigned_to: a.assignedTo?.fullName || a.assignedTo?.email,
+      risk_score: Number(a.riskScore || a.risk_score || 0),
+      anomaly_type: a.anomalyType || a.anomaly_type,
+    }));
   },
-  update: async (_alertId: string, _data: Partial<RiskAlert>): Promise<RiskAlert> => {
-    throw new Error("Update alert not yet implemented");
+  getByStatus: async (status: string): Promise<RiskAlert[]> => {
+    return alertApi.getAll({ status });
+  },
+  create: async (alert: Partial<RiskAlert>): Promise<RiskAlert> => {
+    return apiCall<RiskAlert>("/alerts", {
+      method: "POST",
+      body: JSON.stringify({
+        workId: alert.work_id,
+        workName: alert.work_name,
+        state: alert.state,
+        district: alert.district,
+        category: alert.category,
+        severity: alert.severity,
+        riskScore: alert.risk_score,
+        anomalyType: alert.anomaly_type,
+        reason: alert.reason,
+      }),
+    });
+  },
+  update: async (alertId: string, data: Partial<RiskAlert>): Promise<RiskAlert> => {
+    return apiCall<RiskAlert>(`/alerts/${alertId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: data.status,
+      }),
+    });
+  },
+};
+
+export const duplicateApi = {
+  getAll: async (): Promise<NearDuplicatePair[]> => {
+    const data = await apiCall<unknown>("/duplicates");
+    return (asList(data) as any[]).map((d) => ({
+      id: d.id,
+      work_a: {
+        id: d.workAId || d.work_a_id,
+        name: d.workAName || d.work_a_name,
+        location: `${d.district || ""}, ${d.state || ""}`,
+        cost: 0,
+        agency: "PWD",
+        sanction_date: "2024-09-11",
+        category: "Infrastructure",
+      },
+      work_b: {
+        id: d.workBId || d.work_b_id,
+        name: d.workBName || d.work_b_name,
+        location: `${d.district || ""}, ${d.state || ""}`,
+        cost: 0,
+        agency: "PWD",
+        sanction_date: "2024-09-11",
+        category: "Infrastructure",
+      },
+      overall_similarity: Number(d.similarityScore || d.similarity_score || 0),
+      breakdown: {
+        text_similarity: Number(d.similarityScore || 0),
+        location_similarity: 90,
+        cost_similarity: 85,
+        category_similarity: 100,
+      },
+      status: d.status,
+      geo_distance_meters: Number(d.geoDistanceMeters || 100),
+      ai_notes: d.reviewNotes || "Similar work detected in the same administrative area.",
+    }));
+  },
+  resolve: async (id: string, status: string, notes?: string) => {
+    return apiCall(`/duplicates/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status, reviewNotes: notes }),
+    });
+  },
+};
+
+export const complianceApi = {
+  getAll: async (): Promise<ComplianceRule[]> => {
+    const data = await apiCall<unknown>("/compliance/rules");
+    return (asList(data) as any[]).map((r) => ({
+      rule_id: r.ruleId || r.rule_id,
+      title: r.title,
+      category: r.category,
+      affected_works: r.affectedWorksCount || r.affected_works_count || 0,
+      severity: r.severity,
+      status: r.status,
+      policy_version: r.policyVersion || r.policy_version,
+      effective_date: r.effectiveDate || r.effective_date,
+      source_document: r.sourceDocument || r.source_document,
+      policy_statement: r.policyStatement || r.policy_statement,
+      threshold_description: r.thresholdDescription || r.threshold_description,
+      detection_logic: r.detectionLogic || r.detection_logic,
+    }));
   },
 };
 
 export const agencyApi = {
-  getAll: async (): Promise<ImplementingAgency[]> => [],
-  getById: async (_agencyId: string): Promise<ImplementingAgency | null> => null,
-};
-
-export const complianceApi = {
-  getAll: async (): Promise<ComplianceRule[]> => [],
-  getByCategory: async (_category: string): Promise<ComplianceRule[]> => [],
+  getAll: async (): Promise<ImplementingAgency[]> => {
+    const data = await apiCall<unknown>("/agencies");
+    return (asList(data) as any[]).map((a) => ({
+      id: a.id,
+      name: a.name,
+      short_name: a.shortName || a.short_name,
+      type: a.type,
+      total_works: a.totalWorks || a.total_works,
+      completed_works: a.completedWorks || a.completed_works,
+      delayed_works: a.delayedWorks || a.delayed_works,
+      high_risk_works: a.highRiskWorks || a.high_risk_works,
+      avg_completion_rate: 65,
+      avg_risk_score: Number(a.avgRiskScore || a.avg_risk_score || 0),
+      avg_cost_overrun_pct: 12.5,
+      risk_category: a.riskCategory || a.risk_category,
+      active_expenditure_cr: Number(a.activeExpenditureCr || a.active_expenditure_cr || 0),
+      monthly_trend: [],
+    }));
+  },
 };
 
 export const auditApi = {
-  getAll: async (_filters?: { user?: string; action?: string }): Promise<AuditLogEntry[]> => [],
-  getById: async (_logId: string): Promise<AuditLogEntry | null> => null,
+  getAll: async (filters?: { user?: string; action?: string }): Promise<AuditLogEntry[]> => {
+    const qs = buildQuery(filters || {});
+    const data = await apiCall<unknown>(`/audit-logs${qs}`);
+    return (asList(data) as any[]).map((l) => ({
+      id: l.id,
+      timestamp: l.timestamp,
+      user: l.userName || l.user_name,
+      role: l.role,
+      action: l.action,
+      entity: l.entity,
+      entity_id: l.entityId || l.entity_id,
+      old_value: JSON.stringify(l.oldValue || l.old_value || {}),
+      new_value: JSON.stringify(l.newValue || l.new_value || {}),
+      ip_device: l.ipAddress || l.ip_address || "127.0.0.1",
+      status: l.status,
+      hash_signature: l.hashSignature || l.hash_signature,
+    }));
+  },
+  verifyChain: async () => {
+    return apiCall<{ valid: boolean; verifiedCount: number; brokenAtId?: string }>("/audit-logs/verify");
+  },
 };
 
-export const duplicateApi = {
-  getAll: async (): Promise<NearDuplicatePair[]> => [],
-  getSuspicious: async (): Promise<NearDuplicatePair[]> => [],
+export const datasetApi = {
+  getMps: async (params?: { page?: number; limit?: number; state?: string; search?: string }) => {
+    const qs = buildQuery(params || {});
+    return apiCall<{ items: any[]; total: number; page: number; pageSize: number }>(`/datasets/mps${qs}`);
+  },
+  getCalamities: async () => {
+    return apiCall<any[]>("/datasets/calamities");
+  },
+};
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  fullName: string;
+  role: string;
+  state?: string | null;
+  district?: string | null;
+  constituency?: string | null;
+}
+
+export const authApi = {
+  login: async (email: string, password?: string, role?: string): Promise<{ token: string; user: AuthUser }> => {
+    const res = await apiCall<{ status: string; data: { token: string; user: AuthUser } }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password, role }),
+    });
+    const { token, user } = res.data;
+    localStorage.setItem("mplads_auth_token", token);
+    localStorage.setItem("mplads_user", JSON.stringify(user));
+    return { token, user };
+  },
+  getCurrentUser: (): AuthUser | null => {
+    try {
+      const stored = localStorage.getItem("mplads_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  },
+  logout: () => {
+    localStorage.removeItem("mplads_auth_token");
+    localStorage.removeItem("mplads_user");
+    localStorage.removeItem("mplads_role");
+  },
+  getMe: async (): Promise<AuthUser> => {
+    const res = await apiCall<{ status: string; data: { user: AuthUser } }>("/auth/me");
+    return res.data.user;
+  },
 };
