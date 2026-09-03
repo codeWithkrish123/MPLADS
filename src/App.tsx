@@ -137,22 +137,41 @@ export default function App() {
     navigate(path, { replace: false });
   };
 
+  // Map URL paths to view names
+  const urlToViewName = (pathname: string): string => {
+    // Mapping of URL paths to view names
+    const pathMap: Record<string, string> = {
+      "/": "landing",
+      "/login": "login",
+      "/contact": "contact",
+      "/role-selector": "roleSelector",
+      "/overview": "overview",
+      "/works": "works",
+      "/custom-dataset": "customDataset",
+      "/ai-assistant": "aiAssistant",
+      "/alerts": "alerts",
+      "/map": "map",
+      "/cost-anomaly": "costAnomaly",
+      "/duplicate": "duplicate",
+      "/expenditure": "expenditure",
+      "/delay": "delay",
+      "/state-intelligence": "stateIntel",
+      "/district-intelligence": "districtIntel",
+      "/mp-dashboard": "mpDashboard",
+      "/state-nodal": "stateNodal",
+      "/agencies": "agencies",
+      "/compliance": "compliance",
+      "/policy": "policy",
+      "/audit-logs": "auditLogs",
+    };
+
+    return pathMap[pathname] || "landing";
+  };
+
   // Sync URL changes to state
   useEffect(() => {
     const pathname = location.pathname;
-    
-    // Map pathname to view name
-    let viewName = "landing";
-    if (pathname === "/") {
-      viewName = "landing";
-    } else {
-      // Convert path to view name
-      const segments = pathname.split("/").filter(Boolean);
-      if (segments.length > 0) {
-        // Convert kebab-case to camelCase
-        viewName = segments[0].replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-      }
-    }
+    const viewName = urlToViewName(pathname);
 
     // Only update if different to avoid infinite loops
     if (viewName !== currentView) {
