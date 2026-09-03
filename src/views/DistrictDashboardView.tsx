@@ -41,46 +41,101 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
   const mockWorks: WorkRecord[] = [
     {
       work_id: "WK-2026-00142",
+      mp_id: "MP001",
+      mp_name: "Test MP",
       description: "Road Construction & Bituminous Surfacing - Sector 5 to 8",
       district: "Ghaziabad",
       state: "Uttar Pradesh",
+      constituency: "Ghaziabad",
+      category: "Rural Road Improvement",
+      agency: "PWD",
+      recommended_cost: 1.5,
       sanctioned_cost: 1.5,
-      expenditure: 1.2,
-      completion_percentage: 72,
+      actual_expenditure: 1.2,
+      physical_progress: 72,
+      financial_progress: 80,
+      start_date: "2025-01-15",
+      expected_completion: "2026-03-15",
+      predicted_completion: "2026-04-15",
+      status: "In Progress",
       risk_score: 62,
       risk_category: "HIGH",
-      status: "In Progress",
+      cost_anomaly_score: 75,
+      delay_score: 55,
+      duplicate_score: 20,
+      compliance_score: 40,
+      latitude: 28.6692,
+      longitude: 77.4538,
+      anomaly_types: ["Cost Overrun", "Delay Risk"],
     },
     {
       work_id: "WK-2026-00143",
+      mp_id: "MP001",
+      mp_name: "Test MP",
       description: "Primary School Building Renovation with WiFi Connectivity",
       district: "Ghaziabad",
       state: "Uttar Pradesh",
+      constituency: "Ghaziabad",
+      category: "School Building Renovation",
+      agency: "Education Dept",
+      recommended_cost: 0.8,
       sanctioned_cost: 0.8,
-      expenditure: 0.45,
-      completion_percentage: 58,
+      actual_expenditure: 0.45,
+      physical_progress: 58,
+      financial_progress: 56,
+      start_date: "2025-02-01",
+      expected_completion: "2026-02-01",
+      predicted_completion: "2026-05-01",
+      status: "In Progress",
       risk_score: 68,
       risk_category: "HIGH",
-      status: "In Progress",
+      cost_anomaly_score: 70,
+      delay_score: 65,
+      duplicate_score: 15,
+      compliance_score: 35,
+      latitude: 28.6750,
+      longitude: 77.4600,
+      anomaly_types: ["Progress Delay", "Cost Anomaly"],
     },
     {
       work_id: "WK-2026-00144",
+      mp_id: "MP001",
+      mp_name: "Test MP",
       description: "Water Supply Pipeline Extension to Rural Habitations",
       district: "Ghaziabad",
       state: "Uttar Pradesh",
+      constituency: "Ghaziabad",
+      category: "Drinking Water Facility",
+      agency: "Water Board",
+      recommended_cost: 1.2,
       sanctioned_cost: 1.2,
-      expenditure: 0.92,
-      completion_percentage: 85,
+      actual_expenditure: 0.92,
+      physical_progress: 85,
+      financial_progress: 77,
+      start_date: "2024-12-01",
+      expected_completion: "2026-01-01",
+      predicted_completion: "2026-01-15",
+      status: "In Progress",
       risk_score: 35,
       risk_category: "MEDIUM",
-      status: "Nearing Completion",
+      cost_anomaly_score: 30,
+      delay_score: 25,
+      duplicate_score: 10,
+      compliance_score: 70,
+      latitude: 28.6680,
+      longitude: 77.4520,
+      anomaly_types: [],
     },
   ];
 
   const dataToUse = works && works.length > 0 ? works : mockWorks;
+  // Always show mock data for the selected district if no real data
   const districtWorks = dataToUse.filter(
     (w) => w.district.toLowerCase() === districtName.toLowerCase()
   );
+  
+  // If no works after filtering, use all mock works (show something instead of blank)
+  const worksTodisplay = districtWorks.length > 0 ? districtWorks : mockWorks;
 
   const riskDrivers = [
     {
@@ -278,7 +333,7 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
             <p className="text-xs text-slate-500">Click any row to open the complete explainable evidence drawer</p>
           </div>
           <span className="text-xs font-mono font-bold text-slate-700">
-            {districtWorks.length} flagged records
+            {worksTodisplay.length} flagged records
           </span>
         </div>
 
@@ -297,7 +352,7 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {districtWorks.map((work) => (
+              {worksTodisplay.map((work) => (
                 <tr
                   key={work.work_id}
                   onClick={() => onSelectWork(work)}

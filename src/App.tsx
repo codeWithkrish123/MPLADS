@@ -67,7 +67,41 @@ export default function App() {
   const [currentTheme, setCurrentTheme] = useState<GovTheme>("nic-blue");
 
   // Dynamic States for Interactive Workflows
-  const [alerts, setAlerts] = useState<RiskAlert[]>([]);
+  const [alerts, setAlerts] = useState<RiskAlert[]>([
+    {
+      id: "ALERT-001",
+      work_id: "WK-2026-00142",
+      severity: "CRITICAL",
+      title: "Cost Anomaly Detected",
+      description: "Work WK-2026-00142 shows 220% cost overrun vs district median",
+      status: "Open",
+      created_at: new Date().toISOString(),
+      assigned_to: "DM, Ghaziabad",
+      action_taken: false,
+    },
+    {
+      id: "ALERT-002",
+      work_id: "WK-2026-00143",
+      severity: "HIGH",
+      title: "Timeline Delay Risk",
+      description: "Work WK-2026-00143 predicted delay of 78 days",
+      status: "Open",
+      created_at: new Date().toISOString(),
+      assigned_to: "Project Manager",
+      action_taken: false,
+    },
+    {
+      id: "ALERT-003",
+      work_id: "WK-2026-00144",
+      severity: "MEDIUM",
+      title: "Financial-Physical Gap",
+      description: "Financial spending ahead of physical progress",
+      status: "Open",
+      created_at: new Date().toISOString(),
+      assigned_to: "Nodal Officer",
+      action_taken: false,
+    },
+  ]);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   
   // Data Loading States

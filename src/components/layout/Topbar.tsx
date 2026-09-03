@@ -87,7 +87,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             <img 
               src={new URL("../../assets/images/Emblem_of_India.svg", import.meta.url).href}
               alt="Emblem of India"
-              className="h-8 w-8 object-contain opacity-90 hover:opacity-100 transition-all"
+              className="h-8 w-8 object-contain opacity-100 hover:opacity-100 transition-all drop-shadow-md"
             />
             <div className="flex flex-col text-[11px] leading-tight">
               <span className="font-bold text-white text-[11px]">
