@@ -39,7 +39,10 @@ export const SatyamevJayateLogo: React.FC<SatyamevJayateLogoProps> = ({
       <img
         src={logoPath}
         alt="MPLADS Sentinel Emblem"
-        className={`${dims} object-contain rounded-full shadow-sm transition-all hover:shadow-md duration-200 opacity-90 hover:opacity-100`}
+        className={`${dims} object-contain rounded-full shadow-md transition-all hover:shadow-lg duration-200 opacity-100 hover:opacity-100 brightness-100 contrast-110`}
+        style={{
+          filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.2))",
+        }}
       />
       {showText && (
         <span className="text-[8px] font-black tracking-widest mt-1 text-center font-heading text-slate-700">

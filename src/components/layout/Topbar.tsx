@@ -175,10 +175,12 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           <div
             onClick={onOpenLanding}
-            className="flex items-center gap-3 cursor-pointer group select-none"
+            className="flex items-center gap-3 cursor-pointer group select-none hover:opacity-80 transition-opacity"
           >
             {/* GIGW National Emblem Visual Motif */}
-            <SatyamevJayateLogo size="sm" className="shrink-0 transition-transform group-hover:scale-105 duration-200" />
+            <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#FFF8DC] to-[#FFE8B6] shadow-sm">
+              <SatyamevJayateLogo size="sm" className="shrink-0 transition-transform group-hover:scale-105 duration-200" />
+            </div>
             
             <div className="flex flex-col border-l border-slate-200 pl-2.5">
               <div className="flex items-center gap-1.5">
