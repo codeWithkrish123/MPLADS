@@ -1,0 +1,79 @@
+================================================================================
+                    QUICK PUSH - COPY & PASTE ONLY
+================================================================================
+
+👉 JUST COPY EACH LINE BELOW AND PASTE INTO COMMAND LINE
+
+================================================================================
+                        COPY ONE BY ONE
+================================================================================
+
+LINE 1 - Go to project folder:
+cd E:\MPLADS\MPLADS-UI
+
+
+LINE 2 - Check what changed:
+git status
+
+
+LINE 3 - Add source code files:
+git add src/
+
+
+LINE 4 - Check what's ready:
+git status
+
+
+LINE 5 - Create commit with message:
+git commit -m "feat: MPLADS-UI frontend updates"
+
+
+LINE 6 - Push to GitHub:
+git push origin feature/mplad-frontend
+
+
+LINE 7 - Verify success:
+git status
+
+================================================================================
+                    WHAT YOU'LL SEE
+================================================================================
+
+✅ After LINE 6 (git push):
+   To https://github.com/codeWithkrish123/MPLADS.git
+      033ac92..a1b2c3d  feature/mplad-frontend -> feature/mplad-frontend
+
+✅ After LINE 7 (git status):
+   Your branch is up to date with 'origin/feature/mplad-frontend'.
+   nothing to commit, working tree clean
+
+================================================================================
+                    YOUR CODE IS NOW ON GITHUB!
+================================================================================
+
+Team can see it at:
+https://github.com/codeWithkrish123/MPLADS/tree/feature/mplad-frontend
+
+================================================================================
+                    TROUBLESHOOTING
+================================================================================
+
+If "fatal: Not a git repository":
+  git config --global credential.helper manager-core
+
+If "authentication failed":
+  Make sure you're in: E:\MPLADS\MPLADS-UI
+
+If "Your branch has diverged":
+  git pull origin feature/mplad-frontend
+  git push origin feature/mplad-frontend
+
+================================================================================
+                    THAT'S IT! 🎉
+================================================================================
+
+Your code is now on GitHub!
+Your team can see it!
+Done! 👥
+
+================================================================================

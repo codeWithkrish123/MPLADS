@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: mplads-frontend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true
+    healthCheckPath: /
+

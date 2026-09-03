@@ -1,0 +1,194 @@
+═══════════════════════════════════════════════════════════════════
+🎯 ML API URL - WHERE IT'S USED - QUICK REFERENCE
+═══════════════════════════════════════════════════════════════════
+
+ML API URL: https://sih-2026-23oy.onrender.com/api
+
+═══════════════════════════════════════════════════════════════════
+PLACE #1: Frontend Service (src/services/ml.ts - Line 3)
+═══════════════════════════════════════════════════════════════════
+
+const ML_API_BASE_URL = 'https://sih-2026-23oy.onrender.com/api';
+
+Used in 7 functions:
+  ✓ getAllProjectsWithAnalysis()     → GET /projects
+  ✓ getProjectAnalysis(id)            → GET /projects/{id}
+  ✓ analyzeProject(data)              → POST /v1/analyze
+  ✓ getDashboardSummary()             → GET /dashboard/summary
+  ✓ getPriorityInvestigations()       → GET /investigations/priority
+  ✓ searchProjects(query)             → GET /search
+  ✓ checkHealth()                     → GET /health
+
+═══════════════════════════════════════════════════════════════════
+PLACE #2: Backend Gateway (server.ts - Line 374)
+═══════════════════════════════════════════════════════════════════
+
+const ML_API_BASE_URL = "https://sih-2026-23oy.onrender.com/api";
+
+Helper function: callMLAPI(path, method, body)
+  └─ Uses ML_API_BASE_URL to build full URL
+
+Used by 6 backend endpoints:
+  ✓ GET  /api/ml/health              (Line 408)
+  ✓ GET  /api/ml/projects            (Line 430)
+  ✓ GET  /api/ml/projects/:id        (Line 452)
+  ✓ GET  /api/ml/investigations/:id  (Line 472)
+  ✓ POST /api/ml/analyze             (Line 492)
+  ✓ GET  /api/ml/search              (Line 512)
+
+═══════════════════════════════════════════════════════════════════
+HOW IT FLOWS
+═══════════════════════════════════════════════════════════════════
+
+1. USER ACTION
+   Click "ML Sentinel & Risk Analysis" button
+
+2. FRONTEND CALL
+   ProjectQueueView.tsx
+   └─ Calls: mlApi.getAllProjectsWithAnalysis()
+     └─ URL: https://sih-2026-23oy.onrender.com/api/projects
+     └─ But wait - actually calls backend first!
+
+3. ACTUAL CALL FLOW
+   Browser → Backend Gateway (/api/ml/projects)
+           → Backend calls real ML API (https://...)
+           → Real ML API returns 100+ projects
+           → Backend sends to frontend
+           → Frontend renders projects
+
+4. BACKEND PROXY ARCHITECTURE
+   Frontend
+      ↓
+   Backend (/api/ml/*)
+      ↓ callMLAPI() uses ML_API_BASE_URL
+   Real ML API (https://sih-2026-23oy.onrender.com/api)
+      ↓
+   Real Project Data (100+ projects with risk scores)
+      ↓
+   Backend Response
+      ↓
+   Frontend renders
+
+═══════════════════════════════════════════════════════════════════
+CODE SNIPPETS
+═══════════════════════════════════════════════════════════════════
+
+FRONTEND SERVICE (src/services/ml.ts):
+─────────────────────────────────────
+const ML_API_BASE_URL = 'https://sih-2026-23oy.onrender.com/api';
+
+getAllProjectsWithAnalysis: async () => {
+  const response = await axios.get(`${ML_API_BASE_URL}/projects`);
+  return response.data;
+}
+
+BACKEND GATEWAY (server.ts):
+─────────────────────────────
+const ML_API_BASE_URL = "https://sih-2026-23oy.onrender.com/api";
+
+async function callMLAPI(path: string, method = "GET", body = null) {
+  const response = await fetch(`${ML_API_BASE_URL}${path}`, options);
+  return response.json();
+}
+
+app.get("/api/ml/projects", async (req, res) => {
+  const data = await callMLAPI("/projects");
+  res.json(data);
+});
+
+═══════════════════════════════════════════════════════════════════
+DATA FLOW DIAGRAM
+═══════════════════════════════════════════════════════════════════
+
+User Browser (localhost:3000)
+    │
+    └─ GET /api/ml/projects
+       │
+       ▼
+Backend (Node.js server.ts)
+    │
+    ├─ Receives: GET /api/ml/projects
+    │
+    ├─ Calls: callMLAPI("/projects")
+    │
+    ├─ Uses: ML_API_BASE_URL = "https://sih-2026-23oy.onrender.com/api"
+    │
+    └─ fetch("https://sih-2026-23oy.onrender.com/api/projects")
+       │
+       ▼
+Real ML API (Remote Server - Internet)
+    │
+    ├─ Endpoint: https://sih-2026-23oy.onrender.com/api/projects
+    │
+    └─ Response: {count: 100, data: [100+ projects with risk scores]}
+       │
+       ▼
+Backend receives response
+    │
+    └─ res.json(data)  → Send to frontend
+       │
+       ▼
+Frontend receives data
+    │
+    ├─ setProjects(data)
+    │
+    └─ Renders project cards with real risk scores
+
+═══════════════════════════════════════════════════════════════════
+REAL EXAMPLE: Getting All Projects
+═══════════════════════════════════════════════════════════════════
+
+Step 1: Frontend
+  mlApi.getAllProjectsWithAnalysis()
+
+Step 2: This actually calls backend
+  GET http://localhost:3000/api/ml/projects
+
+Step 3: Backend receives request (server.ts line 430)
+  app.get("/api/ml/projects", async (req, res) => {
+    const data = await callMLAPI("/projects");
+
+Step 4: callMLAPI constructs URL
+  ML_API_BASE_URL = "https://sih-2026-23oy.onrender.com/api"
+  path = "/projects"
+  Full URL = "https://sih-2026-23oy.onrender.com/api/projects"
+
+Step 5: Fetch from real API
+  fetch("https://sih-2026-23oy.onrender.com/api/projects")
+
+Step 6: Real ML API returns data
+  {
+    count: 100,
+    data: [
+      {work_id: "WS/MP203/...", composite_risk_score: 96.48, ...},
+      {work_id: "WS/MP204/...", composite_risk_score: 92.15, ...},
+      ... 98 more ...
+    ]
+  }
+
+Step 7: Backend returns to frontend
+  res.json(data)
+
+Step 8: Frontend receives real project data
+  ProjectQueueView renders 100 projects with actual risk scores
+
+═══════════════════════════════════════════════════════════════════
+SUMMARY
+═══════════════════════════════════════════════════════════════════
+
+ML API URL is defined in TWO places:
+  1. src/services/ml.ts (Line 3) - Frontend service
+  2. server.ts (Line 374) - Backend gateway
+
+Frontend doesn't call ML API directly anymore (as of latest update)
+Backend acts as proxy/gateway between frontend and real ML API
+
+Complete data flow:
+  Frontend → Backend Gateway → Real ML API → 100+ Projects → Frontend
+
+Total endpoints using ML API:
+  • 6 backend gateway endpoints
+  • 7 frontend service functions
+  • All route through the same ML_API_BASE_URL
+
+═══════════════════════════════════════════════════════════════════

@@ -1,0 +1,260 @@
+================================================================================
+                     VISUAL PUSH GUIDE - STEP BY STEP
+================================================================================
+
+GOAL: Push MPLADS-UI code to feature/mplad-frontend branch
+
+================================================================================
+                         WHAT YOU'LL DO
+================================================================================
+
+        Your Computer                      GitHub Server
+            ↓                                  ↓
+     (Your Changes)                   (Remote Repository)
+            ↓                                  ↓
+     1. git status         ←→ See what changed
+     2. git add src/       ←→ Prepare files
+     3. git commit -m "..." ←→ Create snapshot
+     4. git push ...       ←→ SEND TO GITHUB
+            ↓                                  ↓
+        Everything Saved                Code Saved
+        
+        Your Team Can See It! 👥
+
+================================================================================
+                      DETAILED STEP-BY-STEP
+================================================================================
+
+STEP 1: OPEN COMMAND LINE
+┌─────────────────────────────────────────┐
+│ Windows: Press Windows Key + R          │
+│ Type: cmd                               │
+│ Press: Enter                            │
+└─────────────────────────────────────────┘
+
+STEP 2: GO TO YOUR PROJECT
+┌─────────────────────────────────────────┐
+│ Paste this:                             │
+│ cd E:\MPLADS\MPLADS-UI                  │
+│ Press: Enter                            │
+│                                         │
+│ You'll see: E:\MPLADS\MPLADS-UI>       │
+└─────────────────────────────────────────┘
+
+STEP 3: CHECK WHAT CHANGED
+┌─────────────────────────────────────────┐
+│ Type: git status                        │
+│ Press: Enter                            │
+│                                         │
+│ You'll see:                             │
+│ - Modified files                        │
+│ - New files (untracked)                 │
+└─────────────────────────────────────────┘
+
+STEP 4: PREPARE SOURCE CODE FILES
+┌─────────────────────────────────────────┐
+│ Type: git add src/                      │
+│ Press: Enter                            │
+│                                         │
+│ This adds all changes in src/ folder    │
+└─────────────────────────────────────────┘
+
+STEP 5: VERIFY FILES READY
+┌─────────────────────────────────────────┐
+│ Type: git status                        │
+│ Press: Enter                            │
+│                                         │
+│ You'll see: "Changes to be committed"   │
+│ ✅ This means files are ready!          │
+└─────────────────────────────────────────┘
+
+STEP 6: CREATE COMMIT (SAVE)
+┌─────────────────────────────────────────┐
+│ Type this:                              │
+│ git commit -m "feat: update mplads-ui"  │
+│ Press: Enter                            │
+│                                         │
+│ You'll see: [feature/mplad-frontend ... │
+│ ✅ Commit created!                      │
+└─────────────────────────────────────────┘
+
+STEP 7: PUSH TO GITHUB
+┌─────────────────────────────────────────┐
+│ Type: git push origin feature/mplad-frontend
+│ Press: Enter                            │
+│                                         │
+│ You'll see: ... -> feature/mplad-frontend
+│ ✅ PUSHED SUCCESSFULLY!                 │
+└─────────────────────────────────────────┘
+
+STEP 8: VERIFY SUCCESS
+┌─────────────────────────────────────────┐
+│ Type: git status                        │
+│ Press: Enter                            │
+│                                         │
+│ You'll see: "up to date with origin"    │
+│ ✅ SUCCESS!                             │
+└─────────────────────────────────────────┘
+
+================================================================================
+                    WHAT EACH COMMAND DOES
+================================================================================
+
+git status
+  └─ Shows what files changed
+  └─ Shows what's ready to push
+  └─ Shows what's not ready yet
+
+git add src/
+  └─ Prepares src/ folder for push
+  └─ Doesn't push yet, just prepares
+  └─ "I'm ready to save these files"
+
+git commit -m "message"
+  └─ Creates a snapshot with your message
+  └─ Saves locally on your computer
+  └─ Still not on GitHub yet!
+
+git push origin feature/mplad-frontend
+  └─ Sends all commits to GitHub
+  └─ FINALLY puts your code on GitHub!
+  └─ Your team can see it now!
+
+================================================================================
+                         ALL COMMANDS IN ORDER
+================================================================================
+
+Just copy and paste each one (one line at a time):
+
+1. cd E:\MPLADS\MPLADS-UI
+   [Press Enter]
+
+2. git status
+   [Press Enter]
+
+3. git add src/
+   [Press Enter]
+
+4. git status
+   [Press Enter]
+
+5. git commit -m "feat: update mplads-ui frontend"
+   [Press Enter]
+
+6. git push origin feature/mplad-frontend
+   [Press Enter]
+
+7. git status
+   [Press Enter]
+
+================================================================================
+                      EXPECTED OUTPUT
+================================================================================
+
+After git add src/:
+  Changes to be committed:
+    modified:   src/App.tsx
+    modified:   src/views/...
+    new file:   src/components/...
+
+After git commit:
+  [feature/mplad-frontend a1b2c3d] feat: update mplads-ui frontend
+   X files changed, Y insertions(+), Z deletions(-)
+
+After git push:
+  To https://github.com/codeWithkrish123/MPLADS.git
+     033ac92..a1b2c3d  feature/mplad-frontend -> feature/mplad-frontend
+
+After final git status:
+  On branch feature/mplad-frontend
+  Your branch is up to date with 'origin/feature/mplad-frontend'.
+  nothing to commit, working tree clean
+
+✅ All of this = SUCCESS!
+
+================================================================================
+                    WHERE YOUR CODE GOES
+================================================================================
+
+GITHUB WEB:
+  https://github.com/codeWithkrish123/MPLADS
+         ↓
+  Click: Branches tab
+         ↓
+  Find: feature/mplad-frontend
+         ↓
+  YOUR CODE IS HERE!
+
+YOUR TEAM SEES:
+  https://github.com/codeWithkrish123/MPLADS/tree/feature/mplad-frontend
+  
+  They can:
+  - View all your code
+  - See what changed
+  - Download it locally
+  - Test it
+
+================================================================================
+                       COMMON MISTAKES
+================================================================================
+
+❌ Mistake 1: Forget to go to folder
+   ✅ Fix: cd E:\MPLADS\MPLADS-UI
+
+❌ Mistake 2: Forget git add
+   ✅ Fix: git add src/ (before commit)
+
+❌ Mistake 3: Forget git commit message
+   ✅ Fix: git commit -m "your message"
+
+❌ Mistake 4: Typo in branch name
+   ✅ Fix: git push origin feature/mplad-frontend (exactly this)
+
+❌ Mistake 5: Wrong folder structure
+   ✅ Fix: You're pushing MPLADS-UI not backend
+
+================================================================================
+                    ✅ YOU'RE DONE WHEN YOU SEE
+================================================================================
+
+After final git status:
+
+On branch feature/mplad-frontend
+Your branch is up to date with 'origin/feature/mplad-frontend'.
+
+nothing to commit, working tree clean
+
+     ↑↑↑ THIS MEANS SUCCESS ✅
+
+================================================================================
+                    YOUR TEAM CAN NOW SEE
+================================================================================
+
+1. Go to GitHub: https://github.com/codeWithkrish123/MPLADS
+
+2. Click Branches dropdown
+
+3. Select: feature/mplad-frontend
+
+4. See: All your MPLADS-UI code!
+
+5. Click on files to see what changed
+
+6. Download to test locally:
+   git clone https://github.com/codeWithkrish123/MPLADS.git
+   cd MPLADS/MPLADS-UI
+   git checkout feature/mplad-frontend
+   npm install
+   npm run dev
+
+================================================================================
+
+                        🎉 YOU'RE DONE!
+
+                  Your code is on GitHub and your
+                   team can see it! 👥
+
+              Your branch: feature/mplad-frontend
+              Repository: https://github.com/codeWithkrish123/MPLADS
+
+================================================================================
