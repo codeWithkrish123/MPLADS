@@ -34,10 +34,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Load token from localStorage on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('auth_token');
+    const savedUser = localStorage.getItem('auth_user');
     if (savedToken) {
       setToken(savedToken);
-      // Try to fetch user profile
-      fetchUserProfile(savedToken);
+      // Use saved user data if available, don't make API call
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (err) {
+          console.error('Failed to parse saved user:', err);
+        }
+      }
     }
   }, []);
 
@@ -99,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(mockToken);
 
       // Store user data
+      localStorage.setItem('auth_user', JSON.stringify(mockUser));
       setUser(mockUser);
 
       return true;
@@ -114,6 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
     setToken(null);
     setUser(null);
     setError(null);

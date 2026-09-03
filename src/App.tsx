@@ -123,6 +123,13 @@ export default function App() {
     }
   }, []);
 
+  // Set initial view based on authentication status
+  useEffect(() => {
+    if (isAuthenticated && currentView === "landing") {
+      setCurrentView("overview");
+    }
+  }, [isAuthenticated]);
+
   // Wrapper function to navigate both URL and state
   const navigateTo = (view: string) => {
     const path = getRoutePath(view) || ("/" + (view === "landing" ? "" : view));
