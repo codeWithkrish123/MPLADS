@@ -39,9 +39,15 @@ export const SatyamevJayateLogo: React.FC<SatyamevJayateLogoProps> = ({
       <img
         src={logoPath}
         alt="MPLADS Sentinel Emblem"
-        className={`${dims} object-contain rounded-full shadow-md transition-all hover:shadow-lg duration-200 opacity-100 hover:opacity-100 brightness-100 contrast-110`}
+        className={`${dims} object-contain rounded-full shadow-md transition-all hover:shadow-lg duration-200 opacity-100 hover:opacity-100`}
         style={{
-          filter: "drop-shadow(1px 1px 2px rgba(0,0,0,0.2))",
+          filter: "drop-shadow(2px 2px 3px rgba(0,0,0,0.3)) brightness(1.1) contrast(1.15)",
+          maxWidth: "100%",
+          height: "auto",
+        }}
+        onError={(e) => {
+          console.error("Logo image failed to load:", logoPath);
+          e.currentTarget.style.display = "none";
         }}
       />
       {showText && (
