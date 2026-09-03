@@ -1,0 +1,51 @@
+═══════════════════════════════════════════════════════════════════
+ML SENTINEL vs PROJECT IRREGULARITY ALERTS - QUICK ANSWER
+═══════════════════════════════════════════════════════════════════
+
+ML SENTINEL & RISK ANALYSIS
+───────────────────────────
+What: Browse ALL projects from ML API
+Data: 100+ projects with risk scores (real ML data)
+Shows: Everything about each project
+Action: View details, analyze, investigate
+
+Example:
+  Project 1: risk_score 96 → Shows full analysis ✓
+  Project 2: risk_score 85 → Shows full analysis ✓
+  Project 3: risk_score 45 → Shows full analysis ✓
+  
+Purpose: "Let me explore and understand projects"
+
+
+PROJECT IRREGULARITY ALERTS
+──────────────────────────
+What: Manage HIGH-RISK FLAGGED projects
+Data: Your dataset (auto-generated alerts)
+Shows: Only projects with risk_score >= 60
+Action: Acknowledge, Resolve, Export audit trail
+
+Example:
+  Project 1: risk_score 96 → Creates Alert ✓
+  Project 2: risk_score 85 → Creates Alert ✓
+  Project 3: risk_score 45 → NO Alert ✗
+  
+Purpose: "What high-risk projects need my action?"
+
+
+SIMPLE DIFFERENCE
+─────────────────
+ML Sentinel    = EXPLORE & UNDERSTAND all projects
+Alerts         = MANAGE & ACT on flagged projects
+
+
+DATA FLOW
+─────────
+Your Dataset
+    ↓
+Auto-generate Alerts (only risk >= 60)
+    ↓
+Go to Alerts page → See flagged items
+    ↓
+Want more details? → Go to ML Sentinel
+
+═══════════════════════════════════════════════════════════════════
