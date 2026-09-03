@@ -1,0 +1,13 @@
+.git
+node_modules
+.env
+.env.local
+docs
+.vscode
+dist
+server.ts
+server_old.ts
+server-simple.js
+server-simple.cjs
+prisma
+dy

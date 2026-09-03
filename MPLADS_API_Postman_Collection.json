@@ -1,0 +1,623 @@
+{
+  "info": {
+    "_postman_id": "mplads-auth-api-collection",
+    "name": "MPLADS Authentication API",
+    "description": "Complete API collection for MPLADS authentication system\nIncludes: GovID, OTP, Parichay SSO endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GovID Authentication",
+      "item": [
+        {
+          "name": "GovID Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.mospi@nic.in\",\n  \"password\": \"demo_password\",\n  \"role\": \"ministry\",\n  \"department\": \"Ministry of Statistics\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/login-with-role",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "login-with-role"
+              ]
+            },
+            "description": "Authenticate user with GovID (email + password + role)\n\nValid Roles:\n- ministry\n- mp\n- district\n- state_nodal\n- agency\n\nValid Emails:\n- Must end with @nic.in or @gov.in"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin.mospi@nic.in\",\n  \"password\": \"demo_password\",\n  \"role\": \"ministry\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/login-with-role",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "login-with-role"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"user_1\",\n    \"email\": \"admin.mospi@nic.in\",\n    \"role\": \"ministry\",\n    \"name\": \"admin\",\n    \"department\": \"Ministry of Statistics\"\n  },\n  \"expiresIn\": 86400\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OTP Authentication",
+      "item": [
+        {
+          "name": "Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@nic.in\",\n  \"channel\": \"email\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/otp/request",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "otp",
+                "request"
+              ]
+            },
+            "description": "Request OTP to be sent to email\n\nChannel options:\n- email (default)\n- sms"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@nic.in\",\n  \"channel\": \"email\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/otp/request",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "otp",
+                    "request"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"OTP sent to your email\",\n  \"otpId\": \"otp_1234567890\",\n  \"expiresIn\": 300\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otpId\": \"otp_1234567890\",\n  \"otp\": \"123456\",\n  \"email\": \"user@nic.in\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/otp/verify",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "otp",
+                "verify"
+              ]
+            },
+            "description": "Verify OTP code sent to email\n\nOTP must be exactly 6 digits\nOtpId from previous request\nEmail must match the one used in request"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"otpId\": \"otp_1234567890\",\n  \"otp\": \"123456\",\n  \"email\": \"user@nic.in\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/otp/verify",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "otp",
+                    "verify"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"OTP verified successfully\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"user_2\",\n    \"email\": \"user@nic.in\",\n    \"role\": \"district\",\n    \"name\": \"user\"\n  },\n  \"expiresIn\": 86400\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"otpId\": \"otp_1234567890\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/otp/resend",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "otp",
+                "resend"
+              ]
+            },
+            "description": "Resend OTP to email\n\nGenerates new OTP code\nSends to same email\nResets expiration to 5 minutes"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"otpId\": \"otp_1234567890\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/otp/resend",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "otp",
+                    "resend"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"OTP resent to your email\",\n  \"expiresIn\": 300\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parichay SSO",
+      "item": [
+        {
+          "name": "Initiate Parichay SSO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"redirectUrl\": \"http://localhost:5173/auth/parichay/callback\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/parichay/initiate",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "parichay",
+                "initiate"
+              ]
+            },
+            "description": "Get Parichay OAuth authorization URL\n\nRedirectUrl should be your callback endpoint\nReturns authUrl to redirect user to Parichay portal"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"redirectUrl\": \"http://localhost:5173/auth/parichay/callback\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/parichay/initiate",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "parichay",
+                    "initiate"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"authUrl\": \"https://parichay.gov.in/oauth/authorize?client_id=xxx&redirect_uri=http%3A%2F%2Flocalhost%3A5173%2Fauth%2Fparichay%2Fcallback&response_type=code&state=xxx&scope=openid+profile+email\",\n  \"state\": \"base64_encoded_state\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Parichay Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"authorization_code_from_parichay\",\n  \"state\": \"state_from_callback\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/parichay/callback",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "parichay",
+                "callback"
+              ]
+            },
+            "description": "Handle Parichay OAuth callback\n\nCode and state received from Parichay after user login\nBackend exchanges code for token with Parichay\nReturns JWT token for MPLADS"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"authorization_code_from_parichay\",\n  \"state\": \"state_from_callback\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/parichay/callback",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "parichay",
+                    "callback"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"parichay_user_456\",\n    \"email\": \"user@gov.in\",\n    \"role\": \"mp\",\n    \"name\": \"Government Officer\",\n    \"parichayId\": \"parichay_unique_id\"\n  },\n  \"expiresIn\": 86400\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token Management",
+      "item": [
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer your_jwt_token_here",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/validate",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "validate"
+              ]
+            },
+            "description": "Validate JWT token\n\nCheck if token is valid and not expired\nReturns user info and remaining time to expiry"
+          },
+          "response": [
+            {
+              "name": "Valid Token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/validate",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "validate"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"valid\": true,\n  \"user\": {\n    \"id\": \"user_1\",\n    \"email\": \"admin.mospi@nic.in\",\n    \"role\": \"ministry\",\n    \"name\": \"admin\"\n  },\n  \"expiresIn\": 85000\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Available Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/auth/roles",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "roles"
+              ]
+            },
+            "description": "Get list of available roles in system"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:3000/auth/roles",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "roles"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"roles\": [\n    \"ministry\",\n    \"mp\",\n    \"district\",\n    \"state_nodal\",\n    \"agency\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer your_jwt_token_here",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/auth/logout",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout user\n\nInvalidates token\nLogs the logout event"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer your_jwt_token_here"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/auth/logout",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "3000",
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Logged out successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

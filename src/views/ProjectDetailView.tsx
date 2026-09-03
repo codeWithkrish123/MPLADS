@@ -1,204 +1,387 @@
-import React, { useEffect, useState } from "react";
-import { AlertTriangle } from "lucide-react";
-import { LegalDisclaimer } from "../components/common/LegalDisclaimer";
-import { ExplanationCard } from "../components/common/ExplanationCard";
-import { ProjectLocationMap } from "../components/common/ProjectLocationMap";
-import { RiskBadge } from "../components/common/RiskBadge";
+import React, { useState, useEffect } from "react";
 import {
-  ApiErrorState,
-  InsufficientAnalyticalDataState,
-  LoadingSkeleton,
-  ProjectNotFoundState,
-} from "../components/common/AnalyticalStatus";
-import { sentinelApi, ApiError } from "../services/api";
-import { InvestigationDossier, ProjectDetail } from "../types";
-import { formatAmount, hasNumericScore, toRiskSeverity } from "../lib/format";
-import { getFactorExplanation, neutralizeText } from "../lib/terminology";
+  ArrowLeft,
+  AlertTriangle,
+  MapPin,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  Loader,
+  AlertCircle,
+  CheckCircle2,
+  Square
+} from "lucide-react";
+import { Language } from "../types";
+import { apiCall } from "../services/api";
+import { LegalDisclaimer } from "../components/common/LegalDisclaimer";
+import { ReasonCodeCard } from "../components/common/ReasonCodeCard";
+import { getRiskLevelDetails, investigationChecklistMap } from "../data/mlCopyMap";
 
 interface ProjectDetailViewProps {
   projectId: string;
-  onBack: () => void;
+  language?: Language;
+  onBack?: () => void;
 }
 
-export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onBack }) => {
-  const [project, setProject] = useState<ProjectDetail | null>(null);
-  const [investigation, setInvestigation] = useState<InvestigationDossier | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ApiError | null>(null);
-  const [checked, setChecked] = useState<Record<number, boolean>>({});
-
-  const load = () => {
-    setLoading(true);
-    setError(null);
-    setProject(null);
-    sentinelApi
-      .getProject(projectId)
-      .then((detail) => {
-        setProject(detail);
-        return sentinelApi.getInvestigation(projectId).catch(() => null);
-      })
-      .then((inv) => {
-        if (inv) setInvestigation(inv);
-      })
-      .catch((err) => {
-        setError(err instanceof ApiError ? err : new ApiError(0, "Unable to load project."));
-      })
-      .finally(() => setLoading(false));
+interface ProjectDetail {
+  work_id: string;
+  state: string;
+  district: string;
+  work_category: string;
+  sanction_amount: number;
+  total_expenditure: number;
+  composite_risk_score: number;
+  risk_level: string;
+  work_status: string;
+  physical_progress: number;
+  mock_visualization?: {
+    lat: number;
+    lng: number;
   };
+  reason_codes?: string[];
+}
 
+interface Investigation {
+  project_id: string;
+  composite_risk_score: number;
+  risk_level: string;
+  evidence_confidence_score: number;
+  evidence_completeness_state: string;
+  active_signals?: Record<string, boolean>;
+  recommendations?: Array<{
+    check_type: string;
+    action: string;
+  }>;
+  data_limitations?: string[];
+}
+
+export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
+  projectId,
+  language = "en",
+  onBack
+}) => {
+  const isHindi = language === "hi";
+  const [project, setProject] = useState<ProjectDetail | null>(null);
+  const [investigation, setInvestigation] = useState<Investigation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+
+  // Fetch project detail and investigation
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetch = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Encode project ID
+        const encodedId = encodeURIComponent(projectId);
+
+        // Fetch both project detail and investigation
+        const [projectRes, investigationRes] = await Promise.all([
+          apiCall<any>(`/api/ml/projects/${encodedId}`, { 
+            method: 'GET',
+            headers: { 'skipAuth': 'false' }
+          }).catch(err => {
+            if ((err as any).statusCode === 422) {
+              setError('This project has insufficient historical data for full analysis.');
+              return null;
+            }
+            throw err;
+          }),
+          apiCall<any>(`/api/ml/investigations/${encodedId}`, { 
+            method: 'GET',
+            headers: { 'skipAuth': 'false' }
+          }).catch(() => null)
+        ]);
+
+        setProject(projectRes);
+        setInvestigation(investigationRes);
+      } catch (err: any) {
+        console.error('Error fetching project detail:', err);
+        if (err.statusCode === 404) {
+          setError('Project not found.');
+        } else {
+          setError(err.message || 'Failed to load project details');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch();
   }, [projectId]);
 
-  const lat = project?.mock_visualization?.lat ?? project?.lat;
-  const lng = project?.mock_visualization?.lng ?? project?.lng;
+  const handleChecklistToggle = (itemId: string) => {
+    const newChecked = new Set(checkedItems);
+    if (newChecked.has(itemId)) {
+      newChecked.delete(itemId);
+    } else {
+      newChecked.add(itemId);
+    }
+    setCheckedItems(newChecked);
+  };
 
-  const metaEntries = project
-    ? Object.entries(project.metadata).filter(([, v]) => v !== undefined && v !== null && v !== "")
-    : [];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">{isHindi ? "लोड हो रहा है..." : "Loading project details..."}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !project) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          {isHindi ? "वापस जाएं" : "Go Back"}
+        </button>
+
+        <div className="p-6 bg-red-50 border border-red-200 rounded-lg flex gap-4">
+          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-red-900 mb-1">{isHindi ? "त्रुटि" : "Error"}</p>
+            <p className="text-red-800">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return null;
+  }
+
+  const risk = getRiskLevelDetails(project.risk_level);
+  const utilization = project.sanction_amount > 0 
+    ? (project.total_expenditure / project.sanction_amount) * 100
+    : 0;
 
   return (
-    <div className="space-y-5">
-      <header className="border-b border-[#E2E8F0] pb-4">
-        <nav className="text-xs text-[#64748B]" aria-label="Breadcrumb">
-          <button type="button" className="hover:underline focus-visible:outline-2 focus-visible:outline-[#003399]" onClick={onBack}>
-            Project Review Queue
-          </button>
-          {" / "}Investigation Dossier
-        </nav>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#0F172A]">Project detail</h1>
-        <p className="mt-1 font-mono text-sm text-[#334155]">{projectId}</p>
-      </header>
+    <div className="space-y-6">
+      {/* Header */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        {isHindi ? "वापस जाएं" : "Go Back"}
+      </button>
 
-      <LegalDisclaimer />
+      {/* Project Title & Risk */}
+      <div className="border-b border-slate-200 pb-4">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">{project.work_id}</h1>
+            <p className="text-slate-600">{project.work_category}</p>
+          </div>
+          <span className={`px-4 py-2 rounded-lg font-semibold text-lg ${risk.bgColor} ${risk.textColor}`}>
+            {risk.label}
+          </span>
+        </div>
+      </div>
 
-      {loading && <LoadingSkeleton rows={6} />}
+      {/* Metadata Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* State & District */}
+        <div className="p-4 border border-slate-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2 text-slate-600">
+            <MapPin className="w-5 h-5" />
+            <span className="text-sm font-medium">{isHindi ? "स्थान" : "Location"}</span>
+          </div>
+          <p className="font-semibold text-slate-900">{project.state}</p>
+          <p className="text-sm text-slate-600">{project.district}</p>
+        </div>
 
-      {error?.isInsufficientData && <InsufficientAnalyticalDataState error={error} />}
-      {error?.isNotFound && <ProjectNotFoundState error={error} />}
-      {error && !error.isInsufficientData && !error.isNotFound && (
-        <ApiErrorState message={error.message} onRetry={load} />
-      )}
+        {/* Sanctioned Amount */}
+        <div className="p-4 border border-slate-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2 text-slate-600">
+            <DollarSign className="w-5 h-5" />
+            <span className="text-sm font-medium">{isHindi ? "स्वीकृत राशि" : "Sanctioned Amount"}</span>
+          </div>
+          <p className="font-semibold text-slate-900">₹{(project.sanction_amount / 100000).toFixed(2)}L</p>
+        </div>
 
-      {!loading && project && !error && (
-        <>
-          <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <InfoTile label="Project ID" value={project.project_id} mono />
-            <InfoTile label="State" value={project.state} />
-            <InfoTile label="District" value={project.district} />
-            <InfoTile label="Work category" value={project.work_category} />
-            <InfoTile label="Sanctioned amount" value={formatAmount(project.sanctioned_amount)} />
-            <InfoTile label="Total expenditure" value={formatAmount(project.total_expenditure)} />
-            <div className="rounded-md border border-[#E2E8F0] bg-white p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">Priority score</p>
-              {hasNumericScore(project.risk_score) ? (
-                <div className="mt-2">
-                  <RiskBadge severity={toRiskSeverity(project.risk_level)} score={Number(project.risk_score)} />
-                </div>
-              ) : (
-                <p className="mt-2 text-sm text-[#64748B]">Not available</p>
-              )}
-            </div>
-            <InfoTile label="Project status" value={project.project_status || project.work_status || "—"} />
-          </section>
+        {/* Expenditure */}
+        <div className="p-4 border border-slate-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2 text-slate-600">
+            <TrendingUp className="w-5 h-5" />
+            <span className="text-sm font-medium">{isHindi ? "व्यय" : "Expenditure"}</span>
+          </div>
+          <p className="font-semibold text-slate-900">₹{(project.total_expenditure / 100000).toFixed(2)}L</p>
+          <p className="text-xs text-slate-600">{utilization.toFixed(1)}% utilization</p>
+        </div>
 
-          {project.work_description && (
-            <section className="rounded-md border border-[#E2E8F0] bg-white p-4">
-              <h2 className="text-sm font-semibold text-[#0F172A]">Description</h2>
-              <p className="mt-1 text-sm leading-relaxed text-[#334155]">{project.work_description}</p>
-            </section>
+        {/* Risk Score */}
+        <div className="p-4 border border-slate-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-2 text-slate-600">
+            <AlertTriangle className="w-5 h-5" />
+            <span className="text-sm font-medium">{isHindi ? "जोखिम स्कोर" : "Risk Score"}</span>
+          </div>
+          <p className="font-semibold text-slate-900">{project.composite_risk_score.toFixed(2)}%</p>
+          {investigation?.evidence_confidence_score && (
+            <p className="text-xs text-slate-600">
+              {isHindi ? "आत्मविश्वास" : "Confidence"}: {investigation.evidence_confidence_score.toFixed(1)}%
+            </p>
           )}
+        </div>
+      </div>
 
-          {metaEntries.length > 0 && (
-            <section className="rounded-md border border-[#E2E8F0] bg-white p-4">
-              <h2 className="text-sm font-semibold text-[#0F172A]">Additional metadata</h2>
-              <dl className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {metaEntries.slice(0, 12).map(([k, v]) => (
-                  <div key={k} className="text-sm">
-                    <dt className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">{k.replace(/_/g, " ")}</dt>
-                    <dd className="text-[#0F172A]">{String(v)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-          )}
+      {/* Physical Progress */}
+      <div className="p-4 border border-slate-200 rounded-lg">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-semibold text-slate-900">
+            {isHindi ? "भौतिक प्रगति" : "Physical Progress"}
+          </span>
+          <span className="text-lg font-bold text-slate-900">{project.physical_progress}%</span>
+        </div>
+        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+          <div
+            className="bg-blue-600 h-full transition-all"
+            style={{ width: `${Math.min(project.physical_progress, 100)}%` }}
+          />
+        </div>
+        <p className="text-xs text-slate-600 mt-2">
+          {isHindi ? "स्थिति" : "Status"}: {project.work_status}
+        </p>
+      </div>
 
-          <section>
-            <h2 className="mb-3 text-base font-semibold text-[#0F172A]">Why this work is prioritised</h2>
-            {project.factors.length === 0 ? (
-              <p className="rounded-md border border-[#E2E8F0] bg-white p-4 text-sm text-[#64748B]">
-                No indicator cards were returned for this record.
+      {/* Map (if available) */}
+      {project.mock_visualization && (
+        <div className="p-4 border border-slate-200 rounded-lg">
+          <h3 className="font-semibold text-slate-900 mb-3">
+            {isHindi ? "परियोजना स्थान" : "Project Location"}
+          </h3>
+          <div className="bg-slate-100 rounded-lg h-64 flex items-center justify-center">
+            <div className="text-center">
+              <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm text-slate-600">
+                {project.mock_visualization.lat.toFixed(4)}, {project.mock_visualization.lng.toFixed(4)}
               </p>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {project.factors.map((f, i) => (
-                  <ExplanationCard key={`${f.type}-${i}`} type={f.type} score={f.score} reason={f.reason} />
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-md border border-[#E2E8F0] bg-white p-4">
-            <h2 className="mb-3 text-base font-semibold text-[#0F172A]">Map location</h2>
-            {typeof lat === "number" && typeof lng === "number" ? (
-              <ProjectLocationMap lat={lat} lng={lng} label={project.project_id} />
-            ) : (
-              <p className="text-sm text-[#64748B]">Location coordinates were not provided for this project.</p>
-            )}
-          </section>
-
-          <section className="rounded-md border border-[#E2E8F0] bg-white p-4">
-            <h2 className="text-base font-semibold text-[#0F172A]">Investigation checklist</h2>
-            <p className="mb-3 text-xs text-[#64748B]">Recommended validation steps. Check-off is local to this session and is not saved.</p>
-            {investigation?.data_limitations && investigation.data_limitations.length > 0 && (
-              <div className="mb-4 flex items-start gap-2 rounded-md border border-[#FDE68A] bg-[#FFFBEB] p-3 text-sm text-[#92400E]">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <div>
-                  <p className="font-semibold">Data limitations</p>
-                  <ul className="mt-1 list-disc pl-4">
-                    {investigation.data_limitations.map((line, i) => (
-                      <li key={i}>{neutralizeText(line)}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-            {!investigation || investigation.recommendations.length === 0 ? (
-              <p className="text-sm text-[#64748B]">No checklist items were returned for this project.</p>
-            ) : (
-              <ul className="space-y-2">
-                {investigation.recommendations.map((item, i) => (
-                  <li key={`${item.check_type}-${i}`} className="flex items-start gap-3 rounded-md border border-[#E2E8F0] p-3">
-                    <input
-                      id={`check-${i}`}
-                      type="checkbox"
-                      className="mt-1 h-4 w-4 accent-[#003399]"
-                      checked={!!checked[i]}
-                      onChange={(e) => setChecked((prev) => ({ ...prev, [i]: e.target.checked }))}
-                    />
-                    <label htmlFor={`check-${i}`} className="cursor-pointer">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                        {getFactorExplanation(item.check_type).title === item.check_type
-                          ? item.check_type.replace(/_/g, " ")
-                          : item.check_type}
-                      </p>
-                      <p className="text-sm text-[#0F172A]">{neutralizeText(item.action)}</p>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </>
+              <p className="text-xs text-slate-500 mt-1">{isHindi ? "नक्शा उपलब्ध नहीं" : "Map not available"}</p>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Data Limitations Warning */}
+      {investigation?.data_limitations && investigation.data_limitations.length > 0 && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold text-amber-900 mb-2">
+              {isHindi ? "डेटा सीमाएं" : "Data Limitations"}
+            </p>
+            <ul className="text-sm text-amber-800 space-y-1">
+              {investigation.data_limitations.map((limitation, idx) => (
+                <li key={idx}>• {limitation}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Reason Codes */}
+      {project.reason_codes && project.reason_codes.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            {isHindi ? "पहचाने गए कारण" : "Identified Reasons"}
+          </h2>
+          <div className="space-y-4">
+            {project.reason_codes.map((reasonCode) => (
+              <ReasonCodeCard
+                key={reasonCode}
+                reasonCode={reasonCode}
+                expandable={true}
+                defaultExpanded={false}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Investigation Recommendations Checklist */}
+      {investigation?.recommendations && investigation.recommendations.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            {isHindi ? "अनुशंसित जांच चेकलिस्ट" : "Recommended Investigation Checklist"}
+          </h2>
+          <div className="p-4 border border-slate-200 rounded-lg space-y-3">
+            {investigation.recommendations.map((rec, idx) => {
+              const itemId = `rec-${idx}`;
+              const isChecked = checkedItems.has(itemId);
+              return (
+                <div key={itemId} className="flex items-start gap-3">
+                  <button
+                    onClick={() => handleChecklistToggle(itemId)}
+                    className="flex-shrink-0 mt-1"
+                  >
+                    {isChecked ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <Square className="w-5 h-5 text-slate-400" />
+                    )}
+                  </button>
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-900">
+                      {rec.check_type}
+                    </p>
+                    <p className="text-sm text-slate-600">
+                      {rec.action}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Active Signals */}
+      {investigation?.active_signals && Object.keys(investigation.active_signals).length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            {isHindi ? "सक्रिय संकेत" : "Active Signals"}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {Object.entries(investigation.active_signals).map(([signal, isActive]) => (
+              <div
+                key={signal}
+                className={`p-3 rounded-lg border ${
+                  isActive
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-green-50 border-green-200'
+                }`}
+              >
+                <p className={`text-sm font-medium ${
+                  isActive ? 'text-red-900' : 'text-green-900'
+                }`}>
+                  {signal.replace(/_/g, ' ')}
+                </p>
+                <p className={`text-xs ${
+                  isActive ? 'text-red-800' : 'text-green-800'
+                }`}>
+                  {isActive ? (isHindi ? "सक्रिय" : "Active") : (isHindi ? "निष्क्रिय" : "Inactive")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Legal Disclaimer */}
+      <div className="mt-8">
+        <LegalDisclaimer size="md" variant="light" />
+      </div>
     </div>
   );
 };
 
-const InfoTile: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (
-  <div className="rounded-md border border-[#E2E8F0] bg-white p-3">
-    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#64748B]">{label}</p>
-    <p className={`mt-1 text-sm font-medium text-[#0F172A] ${mono ? "font-mono text-xs" : ""}`}>{value}</p>
-  </div>
-);
+export default ProjectDetailView;

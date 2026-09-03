@@ -26,11 +26,10 @@ export const PolicyKnowledgeView: React.FC<PolicyKnowledgeViewProps> = ({ rules,
   const [selectedCategory, setSelectedCategory] = useState("ALL");
 
   const filteredRules = rules.filter((r) => {
-    const policyText = r.policy_statement ?? "";
     const matchSearch =
       r.rule_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      policyText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.policy_statement.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCat = selectedCategory === "ALL" || r.category === selectedCategory;
     return matchSearch && matchCat;
@@ -121,7 +120,7 @@ export const PolicyKnowledgeView: React.FC<PolicyKnowledgeViewProps> = ({ rules,
               </h3>
 
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-700 italic leading-relaxed">
-                &ldquo;{rule.policy_statement ?? "Policy statement not available."}&rdquo;
+                &ldquo;{rule.policy_statement}&rdquo;
               </div>
 
               <div className="space-y-1.5 pt-1 text-xs">

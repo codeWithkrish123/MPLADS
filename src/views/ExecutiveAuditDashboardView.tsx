@@ -59,7 +59,7 @@ export const ExecutiveAuditDashboardView: React.FC<ExecutiveAuditDashboardViewPr
     load();
   }, []);
 
-  const dist = summary?.risk_distribution || {};
+  const dist: Record<string, number> = summary?.risk_distribution || {};
   const distTotal = Object.values(dist).reduce((a, b) => a + b, 0) || 1;
   const distKeys = [
     ...LEVEL_ORDER.filter((k) => dist[k] !== undefined),

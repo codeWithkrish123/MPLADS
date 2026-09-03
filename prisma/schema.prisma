@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  name      String
+  passwordHash String
+  role      String  // ministry, state, district, mp
+  state     String?
+  district  String?
+  isActive  Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auditLogs AuditLog[]
+  datasets  CustomDataset[]
+
+  @@map("users")
+}
+
+model Project {
+  id                  Int     @id @default(autoincrement())
+  workId              String  @unique
+  name                String
+  description         String?
+  state               String
+  district            String
+  category            String?
+  sanctionedCost      Decimal
+  actualExpenditure   Decimal @default(0)
+  physicalProgress    Decimal @default(0)
+  riskScore           Decimal @default(50)
+  riskCategory        String?
+  status              String?
+  mpId                String?
+  mpName              String?
+  agency              String?
+  latitude            Decimal?
+  longitude           Decimal?
+  startDate           DateTime?
+  expectedCompletion  DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  alerts   Alert[]
+  analysis AnalysisResult[]
+
+  @@index([workId])
+  @@index([state])
+  @@index([riskScore])
+  @@map("projects")
+}
+
+model Alert {
+  id          Int     @id @default(autoincrement())
+  alertId     String  @unique
+  projectId   Int
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  severity    String
+  reason      String
+  confidence  Decimal?
+  status      String  @default("Open")
+  detectedAt  DateTime @default(now())
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([severity])
+  @@index([status])
+  @@map("alerts")
+}
+
+model AnalysisResult {
+  id               Int     @id @default(autoincrement())
+  analysisId       String  @unique
+  projectId        Int
+  project          Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  riskScore        Decimal?
+  costEfficiency   Decimal?
+  scheduleEfficiency Decimal?
+  anomaliesDetected String? // JSON as string
+  recommendations  String? // JSON as string
+  mlModelVersion   String?
+  createdAt        DateTime @default(now())
+
+  @@map("analysis_results")
+}
+
+model AuditLog {
+  id            Int     @id @default(autoincrement())
+  userId        Int
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action        String
+  entityType    String?
+  entityId      String?
+  oldValue      String?
+  newValue      String?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model CustomDataset {
+  id        Int     @id @default(autoincrement())
+  name      String
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects  String  // JSON array as string
+  uploadDate DateTime @default(now())
+  isActive  Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("custom_datasets")
+}

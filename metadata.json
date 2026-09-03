@@ -1,0 +1,6 @@
+{
+  "name": "MPLADS Sentinel",
+  "description": "AI-Powered MPLADS Risk & Compliance Intelligence Platform for early-warning anomaly detection, fund utilization tracking, and explainable decision support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

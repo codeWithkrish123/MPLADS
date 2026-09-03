@@ -23,6 +23,7 @@ import { UserRole, Language, GovTheme, RiskAlert } from "../../types";
 import { cn } from "../../lib/utils";
 import { getTranslation } from "../../data/translations";
 import { StateEmblem } from "../gov/StateEmblem";
+import { SatyamevJayateLogo } from "../gov/SatyamevJayateLogo";
 
 interface TopbarProps {
   currentRole: UserRole;
@@ -45,9 +46,6 @@ interface TopbarProps {
   onChangeFontSize: (size: "small" | "medium" | "large") => void;
   isHighContrast: boolean;
   onToggleHighContrast: () => void;
-  isLoggedIn?: boolean;
-  onLogout?: () => void;
-  onOpenLogin?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -71,11 +69,7 @@ export const Topbar: React.FC<TopbarProps> = ({
   onChangeFontSize,
   isHighContrast,
   onToggleHighContrast,
-  isLoggedIn = true,
-  onLogout,
-  onOpenLogin,
 }) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const t = getTranslation(language);
   const criticalCount = alerts.filter((a) => a.severity === "CRITICAL" && a.status === "Open").length;
   const isHindi = language === "hi";
@@ -86,28 +80,26 @@ export const Topbar: React.FC<TopbarProps> = ({
       <div className="india-gov-tricolor-stripe" />
 
       {/* 1. Official Government Top Utility Bar */}
-      <div className="bg-[#0B192C] text-slate-100 text-[11px] py-1.5 px-3 sm:px-6 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 font-sans select-none border-b border-slate-800">
+      <div className="bg-[#0B192C] text-slate-100 text-[11px] py-2 px-4 sm:px-8 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-3 font-sans select-none border-b border-slate-700">
         {/* Left: Official Emblem & Ministry Title */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-700">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 pr-3 border-r border-slate-600">
             <img 
               src={new URL("../../assets/images/Emblem_of_India.svg", import.meta.url).href}
               alt="Emblem of India"
-              className="h-6 w-6 object-contain"
+              className="h-8 w-8 object-contain opacity-100 hover:opacity-100 transition-all drop-shadow-md"
             />
-            <div className="flex flex-col text-[10px] leading-none">
-              <span className="font-semibold text-white">
-                {isHindi ? "भारत सरकार | NATIONAL PORTAL OF INDIA" : "GOVERNMENT OF INDIA | INDIA.GOV.IN"}
+            <div className="flex flex-col text-[11px] leading-tight">
+              <span className="font-bold text-white text-[11px]">
+                {isHindi ? "भारत सरकार | NATIONAL PORTAL" : "GOVERNMENT OF INDIA | INDIA.GOV.IN"}
               </span>
-              <span className="text-[9px] text-slate-300">
-                {isHindi ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय (MoSPI)" : "Ministry of Statistics & Programme Implementation"}
+              <span className="text-[10px] text-slate-300 font-medium">
+                {isHindi ? "सांख्यिकी मंत्रालय" : "Ministry of Statistics & PI"}
               </span>
             </div>
           </div>
 
-          <span className="hidden md:inline-block px-1.5 py-0.5 bg-[#E31E24] text-white rounded text-[9px] font-bold uppercase tracking-wider">
-            BETA PORTAL
-          </span>
+
         </div>
 
         {/* Right: Citizen Helpline, Font Resizer A- A A+, Quick Links */}
@@ -162,28 +154,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             </button>
           </div>
 
-          {/* Quick Government Portal Links */}
-          <div className="hidden xl:flex items-center gap-2 text-[10px] text-slate-300">
-            <a href="https://uidai.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
-              UIDAI (Aadhaar)
-            </a>
-            <span>•</span>
-            <a href="https://digilocker.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
-              DigiLocker
-            </a>
-            <span>•</span>
-            <a href="https://passportindia.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
-              Passport Seva
-            </a>
-            <span>•</span>
-            <a href="https://parivahan.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
-              Parivahan
-            </a>
-            <span>•</span>
-            <a href="https://cpgrams.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
-              CPGRAMS
-            </a>
-          </div>
+
         </div>
       </div>
 
@@ -204,10 +175,12 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           <div
             onClick={onOpenLanding}
-            className="flex items-center gap-3 cursor-pointer group select-none"
+            className="flex items-center gap-3 cursor-pointer group select-none hover:opacity-90 transition-opacity"
           >
             {/* GIGW National Emblem Visual Motif */}
-            <StateEmblem size="sm" theme="gold" className="shrink-0 transition-transform group-hover:scale-105 duration-200" />
+            <div className="p-2 rounded-lg bg-gradient-to-br from-[#FFFACD] via-[#FFE8B6] to-[#FFD700] shadow-md border border-[#F0E68C] hover:shadow-lg transition-all">
+              <SatyamevJayateLogo size="sm" className="shrink-0 transition-transform group-hover:scale-110 duration-200" />
+            </div>
             
             <div className="flex flex-col border-l border-slate-200 pl-2.5">
               <div className="flex items-center gap-1.5">
@@ -302,7 +275,6 @@ export const Topbar: React.FC<TopbarProps> = ({
               <option value="State Nodal Authority">{t.roles.stateNodal}</option>
               <option value="District Authority">{t.roles.districtAuth}</option>
               <option value="Member of Parliament">{t.roles.mp}</option>
-              <option value="Citizen">{isHindi ? "आम नागरिक (Citizen)" : "Citizen / Social Auditor"}</option>
             </select>
           </div>
 
@@ -360,87 +332,19 @@ export const Topbar: React.FC<TopbarProps> = ({
             )}
           </button>
 
-          {/* User Profile Avatar & Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsProfileOpen((p) => !p)}
-              className="flex items-center gap-2 pl-2 border-l border-[#E2E8F0] hover:opacity-80 transition-opacity cursor-pointer"
-            >
-              <div className="w-8 h-8 rounded-full border border-primary/30 flex items-center justify-center bg-primary-light text-primary font-bold text-xs">
-                <User className="w-4 h-4" />
-              </div>
-              <div className="hidden 2xl:flex flex-col text-left text-[11px]">
-                <span className="font-semibold leading-tight text-[#0F172A] truncate max-w-[120px]">
-                  {currentRole}
-                </span>
-                <span className="text-[9px] font-mono text-[#64748B]">
-                  GOV-SECURE-ID
-                </span>
-              </div>
-            </button>
-
-            {/* Profile Dropdown Popover */}
-            {isProfileOpen && (
-              <div className="absolute right-0 top-11 w-64 bg-white border border-slate-200 rounded-xl shadow-2xl p-3.5 z-50 animate-in fade-in zoom-in-95 duration-100 font-sans text-xs space-y-3">
-                <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-100">
-                  <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-sm">
-                    {currentRole.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <span className="block font-bold text-slate-900 truncate">{currentRole}</span>
-                    <span className="block text-[10px] text-slate-500 font-mono">NIC-SSO: Active Session</span>
-                  </div>
-                </div>
-
-                {/* Quick Role Switcher */}
-                <div>
-                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    {isHindi ? "भूमिका बदलें" : "Quick Switch Role"}
-                  </span>
-                  <div className="space-y-1">
-                    {(
-                      [
-                        { id: "Ministry", label: "Ministry (MoSPI)" },
-                        { id: "State Nodal Authority", label: "State Nodal Authority" },
-                        { id: "District Authority", label: "District Authority / DM" },
-                        { id: "Member of Parliament", label: "Hon'ble MP" },
-                        { id: "Citizen", label: "Citizen / Social Auditor" },
-                      ] as const
-                    ).map((r) => (
-                      <button
-                        key={r.id}
-                        onClick={() => {
-                          onChangeRole(r.id);
-                          setIsProfileOpen(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center justify-between ${
-                          currentRole === r.id
-                            ? "bg-blue-50 text-blue-800 font-bold"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                        }`}
-                      >
-                        <span>{r.label}</span>
-                        {currentRole === r.id && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Logout / Switch User */}
-                <div className="pt-2 border-t border-slate-100">
-                  <button
-                    onClick={() => {
-                      setIsProfileOpen(false);
-                      if (onLogout) onLogout();
-                    }}
-                    className="w-full py-1.5 px-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-semibold rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span>{isHindi ? "सत्र समाप्त करें (Sign Out)" : "Sign Out / Change Account"}</span>
-                  </button>
-                </div>
-              </div>
-            )}
+          {/* Citizen / Official User Avatar */}
+          <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
+            <div className="w-8 h-8 rounded-full border border-primary-border flex items-center justify-center bg-primary-light text-primary">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="hidden 2xl:flex flex-col text-[11px]">
+              <span className="font-semibold leading-tight text-[#0F172A]">
+                {isHindi ? "आम नागरिक / अधिकारी" : "Citizen / Official"}
+              </span>
+              <span className="text-[9px] font-mono text-[#64748B]">
+                GOV-SECURE-ID
+              </span>
+            </div>
           </div>
         </div>
       </header>

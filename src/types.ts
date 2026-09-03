@@ -13,8 +13,7 @@ export type UserRole =
   | "Ministry" 
   | "State Nodal Authority" 
   | "District Authority" 
-  | "Member of Parliament"
-  | "Citizen";
+  | "Member of Parliament";
 
 export type Language = "en" | "hi";
 
@@ -123,7 +122,7 @@ export interface RiskAlert {
   reason: string;
   detected_at: string;
   confidence: number;
-  status: "Open" | "Under Investigation" | "Acknowledge" | "Acknowledged" | "Resolved";
+  status: "Open" | "Under Investigation" | "Acknowledge" | "Resolved";
   assigned_to?: string;
   risk_score: number;
   anomaly_type: "Cost" | "Delay" | "Duplicate" | "Financial" | "Compliance" | "Agency" | "Progress";
@@ -149,17 +148,14 @@ export interface DistrictSummary {
 }
 
 export interface StateSummary {
-  name?: string;
   state: string;
   code: string;
   total_works: number;
   completed_works?: number;
   sanctioned_works?: number;
   recommended_works?: number;
-  allocated_cr?: number;
-  sanctioned_cr?: number;
-  expenditure_cr?: number;
   total_expenditure_cr: number;
+  allocated_cr?: number;
   risk_signals: number;
   high_risk_works: number;
   avg_risk_score: number;
@@ -184,8 +180,6 @@ export interface ImplementingAgency {
   risk_category: RiskSeverity;
   active_expenditure_cr: number;
   monthly_trend: { month: string; risk: number; completion: number }[];
-  state?: string;
-  district?: string;
 }
 
 export interface ComplianceRule {
@@ -238,15 +232,13 @@ export interface GlobalFilterState {
   language: Language;
 }
 
-export type HouseType = "LOK_SABHA" | "RAJYA_SABHA";
-
 export interface DashboardSummary {
   total_analyzed: number;
+  risk_distribution: Record<string, number>;
   critical_count: number;
   high_count: number;
   average_risk_score: number;
   average_confidence_score: number;
-  risk_distribution: Record<string, number>;
 }
 
 export interface StateAnalyticsRow {
@@ -265,100 +257,16 @@ export interface CategoryAnalyticsRow {
 
 export interface ProjectListItem {
   project_id: string;
-  state: string;
   district: string;
-  house?: string;
+  state: string;
   work_category: string;
-  sanctioned_amount?: number;
-  total_expenditure?: number;
+  sanctioned_amount: number;
+  total_expenditure: number;
   risk_score?: number | null;
-  risk_level?: string | null;
-  project_status?: string;
-  work_description?: string;
-}
-
-export interface ProjectListResponse {
-  items: ProjectListItem[];
-  total_matches: number;
-  page: number;
-  page_size: number;
-}
-
-export interface ProjectListQuery {
-  q?: string;
-  state?: string;
-  district?: string;
-  house?: string;
-  risk_level?: string;
-  work_category?: string;
-  min_risk?: number | string;
-  max_risk?: number | string;
-  sort_by?: string;
-  sort_order?: "asc" | "desc";
-  page?: number;
-  page_size?: number;
+  risk_level: string;
 }
 
 export interface SearchSuggestion {
   project_id: string;
   label: string;
-  state?: string;
-  district?: string;
-}
-
-export interface ProjectDetail {
-  project_id: string;
-  state: string;
-  district: string;
-  house?: string;
-  work_category: string;
-  work_description?: string;
-  sanctioned_amount?: number;
-  total_expenditure?: number;
-  risk_score?: number | null;
-  risk_level?: string | null;
-  project_status?: string;
-  work_status?: string;
-  mp_name?: string;
-  sanction_date?: string;
-  metadata: Record<string, unknown>;
-  factors: RiskFactor[];
-  mock_visualization?: { lat?: number; lng?: number };
-  lat?: number;
-  lng?: number;
-  data_sufficient: boolean;
-}
-
-export interface RiskFactor {
-  type: string;
-  score?: number;
-  reason?: string;
-}
-
-export interface InvestigationCheck {
-  check_type: string;
-  action: string;
-}
-
-export interface InvestigationDossier {
-  project_id: string;
-  recommendations: InvestigationCheck[];
-  data_limitations: string[];
-}
-
-export interface AnalyzePayload {
-  work_id: string;
-  district_name: string;
-  work_category: string;
-  work_description: string;
-  sanctioned_amount: number;
-  total_expenditure: number;
-  sanction_date: string;
-  work_status: string;
-}
-
-export interface AnalyzeResult {
-  composite_risk_score: number | null;
-  risk_level: string | null;
-  factors: RiskFactor[];
 }
