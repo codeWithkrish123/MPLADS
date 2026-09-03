@@ -1,0 +1,48 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    ✅ AUTHENTICATION PERSISTENCE FIX COMPLETE                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+🎯 ISSUE FIXED:
+   When refreshing page on state-intelligence or any dashboard page,
+   the app was showing the login page instead of staying on the dashboard.
+
+✅ SOLUTION:
+   • Save auth_token + auth_user to localStorage on login
+   • Load from localStorage on app mount (no API call)
+   • Auto-navigate to dashboard when authenticated
+   • Clear on logout
+
+📊 TEST RESULTS:
+   ✓ Login → Refresh → Stays logged in ✓
+   ✓ Navigate to page → Refresh → Stays on page ✓
+   ✓ Logout → Refresh → Shows login page ✓
+
+🔧 FILES MODIFIED:
+   • src/context/AuthContext.tsx (18 changes)
+   • src/App.tsx (11 changes)
+
+📝 COMMITS:
+   • 83a1ec1 - fix: persist authentication state across page refreshes
+   • f17ae7f - docs: add authentication persistence fix documentation
+
+🚀 DEPLOYMENT STATUS:
+   ✓ Build: PASSED (no errors)
+   ✓ GitHub: PUSHED to feature/mplad-frontend
+   ✓ Ready for: Vercel auto-deployment
+
+💡 QUICK TEST:
+   1. npm run dev
+   2. Login and go to any dashboard page
+   3. Press F5 or Ctrl+R
+   4. Should stay on dashboard (not show login)
+   ✓ FIXED!
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+BEFORE FIX:
+  User at page → Refresh → ❌ Login page appears
+
+AFTER FIX:
+  User at page → Refresh → ✅ Same page loads, still logged in
+
+═══════════════════════════════════════════════════════════════════════════════════
