@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { UserRole, Language, GovTheme, WorkRecord, RiskAlert, AuditLogEntry } from "./types";
 
-// Authentication Hook
-import { useAuth } from "./context/AuthContext";
+// Custom hook for URL syncing
+import { useURLSync } from "./hooks/useURLSync";
 
-// Route configuration
-import { getRoutePath } from "./routes/routeConfig";
-
-// API Service Layer
+// API Service Layer (replaces mockData)
 import { 
   workApi, 
   stateApi, 
@@ -52,10 +49,8 @@ import { CustomDatasetView } from "./views/CustomDatasetView";
 import { MapIntelligenceView } from "./views/MapIntelligenceView";
 
 export default function App() {
-  // Get authentication state
-  const { isAuthenticated, user, role, logout, login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  // Authentication State
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   
   // Navigation State
   const [currentView, setCurrentView] = useState<string>("landing");
@@ -67,41 +62,7 @@ export default function App() {
   const [currentTheme, setCurrentTheme] = useState<GovTheme>("nic-blue");
 
   // Dynamic States for Interactive Workflows
-  const [alerts, setAlerts] = useState<RiskAlert[]>([
-    {
-      id: "ALERT-001",
-      work_id: "WK-2026-00142",
-      severity: "CRITICAL",
-      title: "Cost Anomaly Detected",
-      description: "Work WK-2026-00142 shows 220% cost overrun vs district median",
-      status: "Open",
-      created_at: new Date().toISOString(),
-      assigned_to: "DM, Ghaziabad",
-      action_taken: false,
-    },
-    {
-      id: "ALERT-002",
-      work_id: "WK-2026-00143",
-      severity: "HIGH",
-      title: "Timeline Delay Risk",
-      description: "Work WK-2026-00143 predicted delay of 78 days",
-      status: "Open",
-      created_at: new Date().toISOString(),
-      assigned_to: "Project Manager",
-      action_taken: false,
-    },
-    {
-      id: "ALERT-003",
-      work_id: "WK-2026-00144",
-      severity: "MEDIUM",
-      title: "Financial-Physical Gap",
-      description: "Financial spending ahead of physical progress",
-      status: "Open",
-      created_at: new Date().toISOString(),
-      assigned_to: "Nodal Officer",
-      action_taken: false,
-    },
-  ]);
+  const [alerts, setAlerts] = useState<RiskAlert[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   
   // Data Loading States
@@ -123,59 +84,20 @@ export default function App() {
     }
   }, []);
 
-  // Set initial view based on authentication status
-  useEffect(() => {
-    if (isAuthenticated && currentView === "landing") {
-      setCurrentView("overview");
-    }
-  }, [isAuthenticated]);
-
+  // Sync URL with currentView state
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   // Wrapper function to navigate both URL and state
   const navigateTo = (view: string) => {
-    const path = getRoutePath(view) || ("/" + (view === "landing" ? "" : view));
     setCurrentView(view);
-    navigate(path, { replace: false });
+    navigate("/" + (view === "landing" ? "" : view), { replace: false });
   };
-
-  // Map URL paths to view names
-  const urlToViewName = (pathname: string): string => {
-    // Mapping of URL paths to view names
-    const pathMap: Record<string, string> = {
-      "/": "landing",
-      "/login": "login",
-      "/contact": "contact",
-      "/role-selector": "roleSelector",
-      "/overview": "overview",
-      "/works": "works",
-      "/custom-dataset": "customDataset",
-      "/ai-assistant": "aiAssistant",
-      "/alerts": "alerts",
-      "/map": "map",
-      "/cost-anomaly": "costAnomaly",
-      "/duplicate": "duplicate",
-      "/expenditure": "expenditure",
-      "/delay": "delay",
-      "/state-intelligence": "stateIntel",
-      "/district-intelligence": "districtIntel",
-      "/mp-dashboard": "mpDashboard",
-      "/state-nodal": "stateNodal",
-      "/agencies": "agencies",
-      "/compliance": "compliance",
-      "/policy": "policy",
-      "/audit-logs": "auditLogs",
-    };
-
-    return pathMap[pathname] || "landing";
-  };
-
-  // Sync URL changes to state
+  
   useEffect(() => {
-    const pathname = location.pathname;
-    const viewName = urlToViewName(pathname);
-
-    // Only update if different to avoid infinite loops
-    if (viewName !== currentView) {
-      setCurrentView(viewName);
+    const path = location.pathname.replace(/^\//, "") || "landing";
+    if (path !== currentView) {
+      setCurrentView(path);
     }
   }, [location.pathname]);
 
@@ -368,51 +290,29 @@ export default function App() {
 
   const handleRoleSelection = (role: UserRole) => {
     setCurrentRole(role);
-    
-    // Simulate authentication with credentials from login modal
-    // In production, this would use actual credentials passed from the modal
-    const mockEmail = role === "Member of Parliament" 
-      ? "mp.constituency@sansad.nic.in"
-      : role === "District Authority"
-      ? "dm.ghaziabad@nic.in"
-      : role === "State Nodal Authority"
-      ? "nodal.planning@state.gov.in"
-      : "admin.mospi@nic.in";
-    
-    const mockPassword = "password123";
-    
-    // Call login to set authentication state
-    login(mockEmail, mockPassword, role).then((success) => {
-      if (success) {
-        // Navigate to appropriate dashboard after successful authentication
-        if (role === "Member of Parliament") {
-          navigateTo("mpDashboard");
-        } else if (role === "District Authority") {
-          navigateTo("districtIntel");
-        } else if (role === "State Nodal Authority") {
-          navigateTo("stateNodal");
-        } else {
-          navigateTo("overview");
-        }
-      } else {
-        console.error("Authentication failed");
-        // Stay on landing page if auth fails
-      }
-    });
+    if (role === "Member of Parliament") {
+      setCurrentView("mpDashboard");
+    } else if (role === "District Authority") {
+      setCurrentView("districtIntel");
+    } else if (role === "State Nodal Authority") {
+      setCurrentView("stateNodal");
+    } else {
+      setCurrentView("overview");
+    }
   };
 
   const handleSelectStateDrilldown = (stateName: string) => {
     setCurrentState(stateName);
     if (stateName !== "All States") {
-      navigateTo("stateIntel");
+      setCurrentView("stateIntel");
     } else {
-      navigateTo("overview");
+      setCurrentView("overview");
     }
   };
 
   const handleSelectDistrictDrilldown = (districtName: string) => {
     setCurrentDistrict(districtName);
-    navigateTo("districtIntel");
+    setCurrentView("districtIntel");
   };
 
   // If on public Landing Page or Role Selector
@@ -422,14 +322,29 @@ export default function App() {
         <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
         <LandingPage
           onExplore={() => {
-            // Open the login modal on the landing page
-            // LandingPage handles the modal state internally
+            // Navigate directly to overview dashboard
+            setIsLoggedIn(true);
+            navigateTo("overview");
           }}
           onSelectRole={handleRoleSelection}
           language={language}
           onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
         />
       </div>
+    );
+  }
+
+  if (currentView === "login") {
+    return (
+      <LoginPage
+        onLoginSuccess={(role) => {
+          setIsLoggedIn(true);
+          setCurrentRole(role as UserRole);
+          setCurrentView("overview");
+        }}
+        language={language}
+        onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
+      />
     );
   }
 
@@ -442,22 +357,6 @@ export default function App() {
       <div className="flex flex-col min-h-screen">
         <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
         <RoleSelectorPage onSelectRole={handleRoleSelection} />
-      </div>
-    );
-  }
-
-  // Protected Route: Check authentication before showing dashboard
-  if (!isAuthenticated) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
-        <LoginPage
-          onLoginSuccess={() => {
-            navigateTo("overview");
-          }}
-          language={language}
-          onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
-        />
       </div>
     );
   }
@@ -487,7 +386,7 @@ export default function App() {
         onToggleNotifications={() => setIsNotificationsDrawerOpen(true)}
         onToggleSidebarMobile={() => setIsSidebarMobileOpen((o) => !o)}
         alerts={alerts}
-        onOpenLanding={() => navigateTo("landing")}
+        onOpenLanding={() => setCurrentView("landing")}
         onStartTour={() => {
           setTourStep(0);
           setIsOnboardingTourOpen(true);
@@ -496,11 +395,6 @@ export default function App() {
         onChangeFontSize={setFontSize}
         isHighContrast={isHighContrast}
         onToggleHighContrast={handleToggleHighContrast}
-        onLogout={() => {
-          logout();
-          navigateTo("landing");
-        }}
-        user={user}
       />
 
       {/* Main Layout Area */}
@@ -508,7 +402,7 @@ export default function App() {
         {/* Navigation Sidebar */}
         <Sidebar
           currentView={currentView}
-          onSelectView={navigateTo}
+          onSelectView={setCurrentView}
           currentRole={currentRole}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((c) => !c)}
@@ -535,8 +429,8 @@ export default function App() {
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}
-                onNavigateToWorks={() => navigateTo("works")}
-                onNavigateToAlerts={() => navigateTo("alerts")}
+                onNavigateToWorks={() => setCurrentView("works")}
+                onNavigateToAlerts={() => setCurrentView("alerts")}
                 language={language}
                 selectedDistrict={currentDistrict}
                 onAddGrievanceAlert={handleAddGrievanceAlert}
@@ -558,7 +452,7 @@ export default function App() {
                 districtName={currentDistrict}
                 works={[]}
                 onSelectWork={handleOpenWorkDetail}
-                onBackToState={() => navigateTo("stateIntel")}
+                onBackToState={() => setCurrentView("stateIntel")}
                 language={language}
               />
             )}
@@ -595,7 +489,7 @@ export default function App() {
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}
                 onNavigateToDistrict={handleSelectDistrictDrilldown}
-                onNavigateToMP={() => navigateTo("mpDashboard")}
+                onNavigateToMP={() => setCurrentView("mpDashboard")}
                 language={language}
               />
             )}
@@ -635,7 +529,7 @@ export default function App() {
             {currentView === "compliance" && (
               <ComplianceCenterView
                 rules={[]}
-                onOpenPolicy={() => navigateTo("policy")}
+                onOpenPolicy={() => setCurrentView("policy")}
                 language={language}
               />
             )}
@@ -646,7 +540,7 @@ export default function App() {
 
             {currentView === "aiAssistant" && (
               <AIAssistantView
-                onNavigateToWorks={() => navigateTo("works")}
+                onNavigateToWorks={() => setCurrentView("works")}
                 onNavigateToDistrict={handleSelectDistrictDrilldown}
                 language={language}
               />
@@ -681,6 +575,78 @@ export default function App() {
               <AuditLogView logs={auditLogs} language={language} />
             )}
           </div>
+
+          {/* Formal Government of India Main View Footer */}
+          <footer id="gov-main-view-footer" className="mt-12 pt-8 border-t border-slate-200 bg-slate-50/80 rounded-xl p-6 text-xs text-slate-500 w-full max-w-7xl mx-auto space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* GOI Contact & Identity */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#FF9933]" />
+                  <span className="font-heading font-semibold text-slate-800 text-sm tracking-tight">
+                    {language === "hi" ? "भारत सरकार" : "Government of India"}
+                  </span>
+                </div>
+                <p className="text-slate-500 leading-relaxed text-[11px] font-sans">
+                  {language === "hi" 
+                    ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय, नई दिल्ली।"
+                    : "Ministry of Statistics & Programme Implementation, New Delhi."}
+                </p>
+                <div className="text-[11px] text-slate-400 font-sans">
+                  <span>{language === "hi" ? "हेल्पलाइन:" : "Helpline:"} 1800-11-1992</span>
+                </div>
+              </div>
+
+              {/* Useful Links */}
+              <div className="space-y-2">
+                <h5 className="font-heading font-semibold text-slate-800 text-[12px] uppercase tracking-wider">
+                  {language === "hi" ? "त्वरित संपर्क" : "Quick Contacts"}
+                </h5>
+                <ul className="space-y-1 text-[11px] font-sans">
+                  <li>
+                    <a href="https://india.gov.in" target="_blank" rel="noreferrer" className="hover:text-[#003399] transition-colors">
+                      National Portal of India
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://mospi.gov.in" target="_blank" rel="noreferrer" className="hover:text-[#003399] transition-colors">
+                      MoSPI Official Site
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://mplads.gov.in" target="_blank" rel="noreferrer" className="hover:text-[#003399] transition-colors">
+                      MPLADS Portal
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Statutory Disclaimers */}
+              <div className="space-y-2">
+                <h5 className="font-heading font-semibold text-slate-800 text-[12px] uppercase tracking-wider">
+                  {language === "hi" ? "सांविधिक अस्वीकरण" : "Statutory Disclaimer"}
+                </h5>
+                <p className="text-slate-400 text-[11px] leading-relaxed font-sans">
+                  {language === "hi"
+                    ? "यह पोर्टल वास्तविक समय के डेटा एकीकरण और नीति निर्माण के उद्देश्य से डिजाइन किया गया है। सभी आंकड़े सत्यापन योग्य सरकारी स्रोतों और एनआईसी डेटा फीड पर आधारित हैं।"
+                    : "This portal is designed for real-time data integration and policymaking. All statistics shown are powered by verified government databases and NIC data feeds to ensure complete transparency."}
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Section with Verifiable Data Source Pill */}
+            <div className="pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-sans">
+              <div>
+                © 2026 {language === "hi" ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय (MoSPI)" : "MoSPI, Government of India"}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Verifiable Data Source
+                </span>
+              </div>
+            </div>
+          </footer>
         </main>
       </div>
 
@@ -691,11 +657,11 @@ export default function App() {
         onClose={() => setIsFlaggedDrawerOpen(false)}
         onCompareDuplicates={() => {
           setIsFlaggedDrawerOpen(false);
-          navigateTo("duplicate");
+          setCurrentView("duplicate");
         }}
         onViewGuidelines={() => {
           setIsFlaggedDrawerOpen(false);
-          navigateTo("compliance");
+          setCurrentView("compliance");
         }}
         onAssignInvestigation={(w) => {
           alert(`Investigation assignment memo generated for ${w.work_id}. Logged to immutable audit trail.`);
@@ -715,7 +681,7 @@ export default function App() {
         onSelectWork={handleOpenWorkDetail}
         onViewAllAlerts={() => {
           setIsNotificationsDrawerOpen(false);
-          navigateTo("alerts");
+          setCurrentView("alerts");
         }}
       />
 
@@ -728,7 +694,7 @@ export default function App() {
         districts={[]}
         rules={[]}
         onSelectWork={handleOpenWorkDetail}
-        onNavigate={navigateTo}
+        onNavigate={setCurrentView}
       />
 
       {/* State-Based Guided Onboarding Tour */}

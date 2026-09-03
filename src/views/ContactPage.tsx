@@ -13,9 +13,6 @@ import {
   Globe,
   MessageSquare,
   Headphones,
-  ChevronRight,
-  MapPinIcon,
-  PhoneIcon,
 } from "lucide-react";
 import { Language } from "../types";
 import { getTranslation } from "../data/translations";
@@ -116,28 +113,26 @@ export const ContactPage: React.FC<ContactPageProps> = ({ language = "en" }) => 
       desc: isHindi
         ? "सोमवार-शुक्रवार 9 AM - 6 PM (IST)"
         : "Monday-Friday 9 AM - 6 PM (IST)",
-      color: "from-[#1B3A7A] to-[#0F2A6B]",
     },
     {
       icon: Mail,
       title: isHindi ? "ईमेल सहायता" : "Email Support",
       details: "support-mplads@nic.in",
       desc: isHindi ? "24 घंटे के भीतर प्रतिक्रिया" : "Response within 24 hours",
-      color: "from-[#E31E24] to-[#C41612]",
-    },
-    {
-      icon: MapPin,
-      title: isHindi ? "मुख्य कार्यालय" : "Head Office",
-      details: isHindi ? "खुरशीद लाल भवन, जनपथ" : "Khurshid Lal Bhawan, Janpath",
-      desc: isHindi ? "नई दिल्ली - 110001" : "New Delhi - 110001",
-      color: "from-[#FF9933] to-[#E67E22]",
     },
     {
       icon: Globe,
-      title: isHindi ? "वेब पोर्टल" : "National Portal",
-      details: "india.gov.in",
-      desc: isHindi ? "राष्ट्रीय पोर्टल" : "Official Portal",
-      color: "from-[#16A34A] to-[#059669]",
+      title: isHindi ? "वेब पोर्टल" : "Web Portal",
+      details: isHindi ? "राष्ट्रीय पोर्टल" : "National Portal",
+      desc: isHindi ? "india.gov.in पर MPLADS खोजें" : "Search MPLADS on india.gov.in",
+    },
+    {
+      icon: Users,
+      title: isHindi ? "भौतिक पता" : "Office Address",
+      details: isHindi ? "खुरशीद लाल भवन, जनपथ" : "Khurshid Lal Bhawan, Janpath",
+      desc: isHindi
+        ? "नई दिल्ली - 110001"
+        : "New Delhi - 110001",
     },
   ];
 
@@ -153,332 +148,296 @@ export const ContactPage: React.FC<ContactPageProps> = ({ language = "en" }) => 
     {
       q: isHindi
         ? "मैं अपनी शिकायत दर्ज कैसे कर सकता हूं?"
-        : "How do I file a grievance?",
+        : "How do I file a complaint?",
       a: isHindi
-        ? "पोर्टल में 'नागरिक कोने' अनुभाग में जाएं और अपनी शिकायत विस्तार से दर्ज करें। आपको ट्रैकिंग ID मिलेगा।"
-        : "Go to 'Citizen Corner' in the portal and file your grievance in detail. You'll receive a tracking ID.",
+        ? "पोर्टल में 'नागरिक कोने' अनुभाग में जाएं और अपनी शिकायत विस्तार से दर्ज करें।"
+        : "Go to 'Citizen Corner' section in the portal and file your complaint in detail.",
     },
     {
       q: isHindi
         ? "क्या मैं अपने जिले के लिए डेटा डाउनलोड कर सकता हूं?"
-        : "Can I download district data?",
+        : "Can I download data for my district?",
       a: isHindi
         ? "हां, 'कस्टम डेटासेट' स्टूडियो से आप फ़िल्टर और डाउनलोड कर सकते हैं।"
         : "Yes, use 'Custom Dataset Studio' to filter and download your district data.",
     },
-    {
-      q: isHindi
-        ? "क्या मुझे तकनीकी सहायता मिल सकती है?"
-        : "Where can I get technical support?",
-      a: isHindi
-        ? "तकनीकी समस्याओं के लिए हमें support-mplads@nic.in पर ईमेल करें या 1800-11-1992 पर कॉल करें।"
-        : "Email us at support-mplads@nic.in or call 1800-11-1992 for technical issues.",
-    },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Tricolor Top Stripe */}
-      <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] sticky top-0 z-50" />
-
-      {/* Hero Section with Government Theme */}
-      <div className="bg-gradient-to-r from-[#1B3A7A] to-[#0F2A6B] text-white py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center space-y-4">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="p-3 bg-white/10 rounded-lg backdrop-blur-sm">
-              <Headphones className="w-8 h-8 text-[#FF9933]" />
-            </div>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold font-heading tracking-tight">
-            {isHindi ? "हमसे संपर्क करें" : "Contact Us"}
-          </h1>
-          <p className="text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
-            {isHindi
-              ? "आपके प्रश्नों, सुझावों और शिकायतों के लिए हम 24/7 यहां हैं। आपकी प्रतिक्रिया हमें बेहतर सेवा प्रदान करने में मदद करती है।"
-              : "We're here for your questions, suggestions, and grievances 24/7. Your feedback helps us serve better."}
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col">
+      {/* Tricolor Stripe */}
+      <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808]" />
 
       {/* Main Content */}
       <main className="flex-1 py-12 px-4">
-        <div className="max-w-6xl mx-auto space-y-12">
-          
-          {/* Contact Channels Grid - Premium Cards */}
+        <div className="max-w-6xl mx-auto space-y-16">
+          {/* Header */}
+          <div className="text-center space-y-4 mb-12">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Headphones className="w-8 h-8 text-blue-600" />
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 font-heading">
+              {isHindi ? "हमसे संपर्क करें" : "Contact Us"}
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              {isHindi
+                ? "आपके प्रश्नों, सुझावों और शिकायतों के लिए हम यहां हैं। आपकी प्रतिक्रिया हमें बेहतर सेवा प्रदान करने में मदद करती है।"
+                : "We're here for your questions, suggestions, and grievances. Your feedback helps us serve better."}
+            </p>
+          </div>
+
+          {/* Contact Channels Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactChannels.map((channel, idx) => {
               const Icon = channel.icon;
               return (
                 <div
                   key={idx}
-                  className={`bg-gradient-to-br ${channel.color} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-6 text-white group cursor-pointer`}
+                  className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 text-center"
                 >
-                  <div className="bg-white/10 p-3 rounded-lg w-fit mb-4 group-hover:bg-white/20 transition-colors">
-                    <Icon className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-                  </div>
-                  <h3 className="font-bold text-base mb-2 font-heading">{channel.title}</h3>
-                  <p className="font-mono font-bold text-sm mb-2 text-white/90">{channel.details}</p>
-                  <p className="text-xs text-white/75 leading-relaxed">{channel.desc}</p>
+                  <Icon className="w-10 h-10 text-blue-600 mx-auto mb-4" />
+                  <h3 className="font-semibold text-slate-900 mb-2">{channel.title}</h3>
+                  <p className="font-mono font-bold text-blue-600 mb-2">{channel.details}</p>
+                  <p className="text-sm text-slate-600">{channel.desc}</p>
                 </div>
               );
             })}
           </div>
 
-          {/* Main Form Section */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Contact Form */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-[#1B3A7A] to-[#0F2A6B] px-8 py-6">
-                <h2 className="text-2xl font-bold text-white font-heading">
-                  {isHindi ? "अपना संदेश भेजें" : "Send Your Message"}
-                </h2>
-                <p className="text-blue-100 text-sm mt-1">
-                  {isHindi ? "हम 24 घंटे में जवाब देंगे" : "We'll respond within 24 hours"}
-                </p>
-              </div>
+          {/* Main Contact Form */}
+          <div className="grid md:grid-cols-3 gap-12">
+            {/* Form */}
+            <div className="md:col-span-2 bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2 font-heading">
+                {isHindi ? "हमें संदेश भेजें" : "Send us a Message"}
+              </h2>
+              <p className="text-slate-600 text-sm mb-8">
+                {isHindi
+                  ? "आपकी शिकायत या सुझाव साझा करें। हम 24 घंटे में प्रतिक्रिया देंगे।"
+                  : "Share your grievance or suggestion. We'll respond within 24 hours."}
+              </p>
 
-              <div className="p-8">
-                {submitted && (
-                  <div className="mb-6 bg-emerald-50 border-l-4 border-emerald-500 rounded-lg p-4 flex items-start gap-3">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-600 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-bold text-emerald-900">
-                        {isHindi ? "संदेश सफलतापूर्वक भेजा गया!" : "Message sent successfully!"}
-                      </p>
-                      <p className="text-sm text-emerald-800 mt-1">
-                        {isHindi
-                          ? "धन्यवाद। हम जल्द ही आपसे संपर्क करेंगे।"
-                          : "Thank you. We'll get back to you soon."}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        {isHindi ? "पूरा नाम *" : "Full Name *"}
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder={isHindi ? "आपका नाम दर्ज करें" : "Enter your name"}
-                        className={`w-full px-4 py-2.5 border-2 rounded-lg outline-none transition-all font-sans ${
-                          errors.name
-                            ? "border-red-500 bg-red-50"
-                            : "border-slate-200 focus:border-[#1B3A7A] focus:bg-blue-50"
-                        }`}
-                      />
-                      {errors.name && (
-                        <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" /> {errors.name}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        {isHindi ? "ईमेल *" : "Email *"}
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder={isHindi ? "आपका ईमेल दर्ज करें" : "Enter your email"}
-                        className={`w-full px-4 py-2.5 border-2 rounded-lg outline-none transition-all font-sans ${
-                          errors.email
-                            ? "border-red-500 bg-red-50"
-                            : "border-slate-200 focus:border-[#1B3A7A] focus:bg-blue-50"
-                        }`}
-                      />
-                      {errors.email && (
-                        <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" /> {errors.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        {isHindi ? "फोन नंबर *" : "Phone Number *"}
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder={isHindi ? "10 अंकों का फोन नंबर" : "10-digit phone number"}
-                        className={`w-full px-4 py-2.5 border-2 rounded-lg outline-none transition-all font-sans ${
-                          errors.phone
-                            ? "border-red-500 bg-red-50"
-                            : "border-slate-200 focus:border-[#1B3A7A] focus:bg-blue-50"
-                        }`}
-                      />
-                      {errors.phone && (
-                        <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" /> {errors.phone}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-slate-900 mb-2">
-                        {isHindi ? "श्रेणी *" : "Category *"}
-                      </label>
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border-2 border-slate-200 rounded-lg outline-none focus:border-[#1B3A7A] focus:bg-blue-50 transition-all font-sans"
-                      >
-                        {[
-                          { value: "General", label: isHindi ? "सामान्य" : "General" },
-                          { value: "Grievance", label: isHindi ? "शिकायत" : "Grievance" },
-                          { value: "Suggestion", label: isHindi ? "सुझाव" : "Suggestion" },
-                          { value: "Technical", label: isHindi ? "तकनीकी" : "Technical" },
-                        ].map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
+              {submitted && (
+                <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-start gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600 mt-0.5 shrink-0" />
                   <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">
-                      {isHindi ? "विषय *" : "Subject *"}
+                    <p className="font-semibold text-emerald-900">
+                      {isHindi ? "संदेश सफलतापूर्वक भेजा गया!" : "Message sent successfully!"}
+                    </p>
+                    <p className="text-sm text-emerald-800 mt-1">
+                      {isHindi
+                        ? "धन्यवाद। हम जल्द ही आपसे संपर्क करेंगे।"
+                        : "Thank you. We'll get back to you soon."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">
+                      {isHindi ? "पूरा नाम" : "Full Name"}
                     </label>
                     <input
                       type="text"
-                      name="subject"
-                      value={formData.subject}
+                      name="name"
+                      value={formData.name}
                       onChange={handleInputChange}
-                      placeholder={isHindi ? "विषय दर्ज करें" : "Enter subject"}
-                      className={`w-full px-4 py-2.5 border-2 rounded-lg outline-none transition-all font-sans ${
-                        errors.subject
+                      placeholder={isHindi ? "आपका नाम दर्ज करें" : "Enter your name"}
+                      className={`w-full px-4 py-2.5 border rounded-lg outline-none transition-colors ${
+                        errors.name
                           ? "border-red-500 bg-red-50"
-                          : "border-slate-200 focus:border-[#1B3A7A] focus:bg-blue-50"
+                          : "border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       }`}
                     />
-                    {errors.subject && (
+                    {errors.name && (
                       <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.subject}
+                        <AlertCircle className="w-3 h-3" /> {errors.name}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-slate-900 mb-2">
-                      {isHindi ? "संदेश *" : "Message *"}
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">
+                      {isHindi ? "ईमेल" : "Email"}
                     </label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
                       onChange={handleInputChange}
-                      placeholder={isHindi ? "विस्तार से अपना संदेश दर्ज करें..." : "Enter your message in detail..."}
-                      rows={5}
-                      className={`w-full px-4 py-2.5 border-2 rounded-lg outline-none transition-all resize-none font-sans ${
-                        errors.message
+                      placeholder={isHindi ? "आपका ईमेल दर्ज करें" : "Enter your email"}
+                      className={`w-full px-4 py-2.5 border rounded-lg outline-none transition-colors ${
+                        errors.email
                           ? "border-red-500 bg-red-50"
-                          : "border-slate-200 focus:border-[#1B3A7A] focus:bg-blue-50"
+                          : "border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       }`}
                     />
-                    {errors.message && (
+                    {errors.email && (
                       <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.message}
+                        <AlertCircle className="w-3 h-3" /> {errors.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">
+                      {isHindi ? "फोन नंबर" : "Phone Number"}
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder={isHindi ? "10 अंकों का फोन नंबर" : "10-digit phone number"}
+                      className={`w-full px-4 py-2.5 border rounded-lg outline-none transition-colors ${
+                        errors.phone
+                          ? "border-red-500 bg-red-50"
+                          : "border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      }`}
+                    />
+                    {errors.phone && (
+                      <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> {errors.phone}
                       </p>
                     )}
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-[#1B3A7A] to-[#0F2A6B] hover:from-[#0F2A6B] hover:to-[#061A45] disabled:from-slate-300 disabled:to-slate-300 text-white font-bold py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-                  >
-                    <Send className="w-5 h-5" />
-                    {isLoading
-                      ? isHindi
-                        ? "भेजा जा रहा है..."
-                        : "Sending..."
-                      : isHindi
-                      ? "संदेश भेजें"
-                      : "Send Message"}
-                  </button>
-                </form>
-              </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">
+                      {isHindi ? "श्रेणी" : "Category"}
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    >
+                      {[
+                        { value: "General", label: isHindi ? "सामान्य" : "General" },
+                        { value: "Grievance", label: isHindi ? "शिकायत" : "Grievance" },
+                        { value: "Suggestion", label: isHindi ? "सुझाव" : "Suggestion" },
+                        { value: "Technical", label: isHindi ? "तकनीकी" : "Technical" },
+                      ].map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">
+                    {isHindi ? "विषय" : "Subject"}
+                  </label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    placeholder={isHindi ? "विषय दर्ज करें" : "Enter subject"}
+                    className={`w-full px-4 py-2.5 border rounded-lg outline-none transition-colors ${
+                      errors.subject
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    }`}
+                  />
+                  {errors.subject && (
+                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {errors.subject}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">
+                    {isHindi ? "संदेश" : "Message"}
+                  </label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    placeholder={isHindi ? "विस्तार से अपना संदेश दर्ज करें" : "Enter your message in detail"}
+                    rows={5}
+                    className={`w-full px-4 py-2.5 border rounded-lg outline-none transition-colors resize-none ${
+                      errors.message
+                        ? "border-red-500 bg-red-50"
+                        : "border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    }`}
+                  />
+                  {errors.message && (
+                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {errors.message}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" />
+                  {isLoading
+                    ? isHindi
+                      ? "भेजा जा रहा है..."
+                      : "Sending..."
+                    : isHindi
+                    ? "संदेश भेजें"
+                    : "Send Message"}
+                </button>
+              </form>
             </div>
 
-            {/* Sidebar - Info & FAQs */}
-            <div className="space-y-6">
-              {/* Quick Info Card */}
-              <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold mb-4 font-heading flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-[#FF9933]" />
-                  {isHindi ? "कार्य समय" : "Office Hours"}
+            {/* Sidebar - FAQ & Info */}
+            <div className="space-y-8">
+              {/* FAQ */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-blue-600" />
+                  {isHindi ? "सामान्य प्रश्न" : "FAQs"}
                 </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">{isHindi ? "सोमवार-शुक्रवार" : "Mon-Fri"}</span>
-                    <span className="font-bold">9:00 AM - 6:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">{isHindi ? "शनिवार" : "Saturday"}</span>
-                    <span className="font-bold">10:00 AM - 4:00 PM</span>
-                  </div>
-                  <div className="flex justify-between pt-3 border-t border-slate-700">
-                    <span className="text-slate-300">{isHindi ? "रविवार" : "Sunday"}</span>
-                    <span className="font-bold text-red-400">{isHindi ? "बंद" : "Closed"}</span>
-                  </div>
-                  <p className="text-xs text-slate-400 pt-3 border-t border-slate-700">
-                    {isHindi
-                      ? "राष्ट्रीय छुट्टियों पर बंद"
-                      : "Closed on national holidays"}
-                  </p>
-                </div>
-              </div>
-
-              {/* FAQs */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-bold text-slate-900 mb-4 font-heading flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5 text-[#1B3A7A]" />
-                  {isHindi ? "अक्सर पूछे जाने वाले प्रश्न" : "FAQs"}
-                </h3>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {faqs.map((faq, idx) => (
                     <details key={idx} className="group">
-                      <summary className="cursor-pointer font-semibold text-slate-900 text-xs hover:text-[#1B3A7A] transition-colors py-2 px-2 rounded hover:bg-slate-50">
+                      <summary className="cursor-pointer font-medium text-slate-900 text-sm hover:text-blue-600 transition-colors">
                         {faq.q}
                       </summary>
-                      <p className="text-xs text-slate-600 leading-relaxed px-2 pb-2">
-                        {faq.a}
-                      </p>
+                      <p className="mt-2 text-xs text-slate-600 leading-relaxed">{faq.a}</p>
                     </details>
                   ))}
                 </div>
               </div>
 
-              {/* Emergency Contact */}
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 border-l-4 border-red-500 rounded-lg p-6">
-                <h4 className="font-bold text-red-900 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5" />
-                  {isHindi ? "आपातकालीन संपर्क" : "Emergency Contact"}
-                </h4>
-                <p className="text-sm text-red-800 mb-3">
-                  {isHindi
-                    ? "तत्काल सहायता के लिए:"
-                    : "For immediate assistance:"}
-                </p>
-                <a href="tel:18001119992" className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                  <PhoneIcon className="w-4 h-4" />
-                  1800-11-1992
-                </a>
+              {/* Office Hours */}
+              <div className="bg-white rounded-xl shadow-md p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                  {isHindi ? "कार्य समय" : "Office Hours"}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-slate-700">
+                    <span className="font-semibold">{isHindi ? "सोमवार-शुक्रवार:" : "Mon-Fri:"}</span>
+                    <span className="text-slate-600"> 9:00 AM - 6:00 PM</span>
+                  </p>
+                  <p className="text-slate-700">
+                    <span className="font-semibold">{isHindi ? "शनिवार:" : "Saturday:"}</span>
+                    <span className="text-slate-600"> 10:00 AM - 4:00 PM</span>
+                  </p>
+                  <p className="text-slate-700">
+                    <span className="font-semibold">{isHindi ? "रविवार:" : "Sunday:"}</span>
+                    <span className="text-slate-600 text-red-600"> {isHindi ? "बंद" : "Closed"}</span>
+                  </p>
+                  <p className="text-xs text-slate-600 mt-3 pt-3 border-t">
+                    {isHindi
+                      ? "राष्ट्रीय छुट्टियों पर कार्यालय बंद रहेगा।"
+                      : "Office closed on national holidays."}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

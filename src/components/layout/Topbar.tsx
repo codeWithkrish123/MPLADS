@@ -23,7 +23,6 @@ import { UserRole, Language, GovTheme, RiskAlert } from "../../types";
 import { cn } from "../../lib/utils";
 import { getTranslation } from "../../data/translations";
 import { StateEmblem } from "../gov/StateEmblem";
-import { SatyamevJayateLogo } from "../gov/SatyamevJayateLogo";
 
 interface TopbarProps {
   currentRole: UserRole;
@@ -80,26 +79,28 @@ export const Topbar: React.FC<TopbarProps> = ({
       <div className="india-gov-tricolor-stripe" />
 
       {/* 1. Official Government Top Utility Bar */}
-      <div className="bg-[#0B192C] text-slate-100 text-[11px] py-2 px-4 sm:px-8 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-3 font-sans select-none border-b border-slate-700">
+      <div className="bg-[#0B192C] text-slate-100 text-[11px] py-1.5 px-3 sm:px-6 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 font-sans select-none border-b border-slate-800">
         {/* Left: Official Emblem & Ministry Title */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 pr-3 border-r border-slate-600">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 pr-2.5 border-r border-slate-700">
             <img 
               src={new URL("../../assets/images/Emblem_of_India.svg", import.meta.url).href}
               alt="Emblem of India"
-              className="h-8 w-8 object-contain opacity-100 hover:opacity-100 transition-all drop-shadow-md"
+              className="h-6 w-6 object-contain"
             />
-            <div className="flex flex-col text-[11px] leading-tight">
-              <span className="font-bold text-white text-[11px]">
-                {isHindi ? "भारत सरकार | NATIONAL PORTAL" : "GOVERNMENT OF INDIA | INDIA.GOV.IN"}
+            <div className="flex flex-col text-[10px] leading-none">
+              <span className="font-semibold text-white">
+                {isHindi ? "भारत सरकार | NATIONAL PORTAL OF INDIA" : "GOVERNMENT OF INDIA | INDIA.GOV.IN"}
               </span>
-              <span className="text-[10px] text-slate-300 font-medium">
-                {isHindi ? "सांख्यिकी मंत्रालय" : "Ministry of Statistics & PI"}
+              <span className="text-[9px] text-slate-300">
+                {isHindi ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय (MoSPI)" : "Ministry of Statistics & Programme Implementation"}
               </span>
             </div>
           </div>
 
-
+          <span className="hidden md:inline-block px-1.5 py-0.5 bg-[#E31E24] text-white rounded text-[9px] font-bold uppercase tracking-wider">
+            BETA PORTAL
+          </span>
         </div>
 
         {/* Right: Citizen Helpline, Font Resizer A- A A+, Quick Links */}
@@ -154,7 +155,28 @@ export const Topbar: React.FC<TopbarProps> = ({
             </button>
           </div>
 
-
+          {/* Quick Government Portal Links */}
+          <div className="hidden xl:flex items-center gap-2 text-[10px] text-slate-300">
+            <a href="https://uidai.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
+              UIDAI (Aadhaar)
+            </a>
+            <span>•</span>
+            <a href="https://digilocker.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
+              DigiLocker
+            </a>
+            <span>•</span>
+            <a href="https://passportindia.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
+              Passport Seva
+            </a>
+            <span>•</span>
+            <a href="https://parivahan.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
+              Parivahan
+            </a>
+            <span>•</span>
+            <a href="https://cpgrams.gov.in" target="_blank" rel="noreferrer" className="hover:text-white hover:underline">
+              CPGRAMS
+            </a>
+          </div>
         </div>
       </div>
 
@@ -175,12 +197,10 @@ export const Topbar: React.FC<TopbarProps> = ({
 
           <div
             onClick={onOpenLanding}
-            className="flex items-center gap-3 cursor-pointer group select-none hover:opacity-90 transition-opacity"
+            className="flex items-center gap-3 cursor-pointer group select-none"
           >
             {/* GIGW National Emblem Visual Motif */}
-            <div className="p-2 rounded-lg bg-gradient-to-br from-[#FFFACD] via-[#FFE8B6] to-[#FFD700] shadow-md border border-[#F0E68C] hover:shadow-lg transition-all">
-              <SatyamevJayateLogo size="sm" className="shrink-0 transition-transform group-hover:scale-110 duration-200" />
-            </div>
+            <StateEmblem size="sm" theme="gold" className="shrink-0 transition-transform group-hover:scale-105 duration-200" />
             
             <div className="flex flex-col border-l border-slate-200 pl-2.5">
               <div className="flex items-center gap-1.5">

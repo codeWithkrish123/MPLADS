@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
-
 @import "tailwindcss";
 
 @theme {
@@ -215,7 +213,7 @@ html.font-size-lg {
 }
 
 html, body, #root {
-  font-family: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   background-color: #FFFFFF;
   color: #1a1a1a;
   line-height: 1.6;
@@ -224,27 +222,10 @@ html, body, #root {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Landing page uses Playfair Display for hero titles */
-.landing-page,
-.landing-page h1,
-.landing-page h2,
-.landing-page .hero-title {
-  font-family: 'Playfair Display', 'Noto Sans', serif;
-}
-
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-heading);
   color: #1a1a1a;
   letter-spacing: -0.025em; /* Subtle tracking-tight for authoritative, institutional feel */
-}
-
-/* Landing page heading overrides for Playfair Display */
-.landing-page h1,
-.landing-page h2,
-.landing-page h3 {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  font-style: italic;
 }
 
 /* Proper typography hierarchy */
@@ -684,51 +665,4 @@ textarea:hover {
   .card-elevated-padding {
     @apply p-6;
   }
-}
-
-
-/* ========== REMOVE BLUE OUTLINE FOCUS STATES ========== */
-* {
-  outline: none !important;
-}
-
-/* Remove focus outline completely */
-button:focus,
-input:focus,
-select:focus,
-textarea:focus,
-a:focus,
-div:focus {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: inherit !important;
-}
-
-/* Remove focus-visible outline */
-:focus-visible {
-  outline: none !important;
-}
-
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-button:focus-visible,
-a:focus-visible,
-div:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: inherit !important;
-}
-
-/* Remove Tailwind focus ring */
-.focus:ring-4,
-.focus\:ring-4:focus {
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-/* Override any focus styles */
-*:focus {
-  outline: none !important;
-  box-shadow: none !important;
 }

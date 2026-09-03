@@ -37,63 +37,7 @@ export const StateIntelligenceView: React.FC<StateIntelligenceViewProps> = ({
   const isHindi = language === "hi";
   const t = getTranslation(language as Language);
 
-  // Mock data for fallback when districts prop is empty
-  const mockDistricts: DistrictSummary[] = [
-    {
-      district: "Ghaziabad",
-      state: "Uttar Pradesh",
-      works_count: 342,
-      expenditure_cr: 2.4,
-      risk_score: 62,
-      risk_category: "HIGH",
-      high_risk_works: 8,
-      completion_rate: 72,
-    },
-    {
-      district: "Lucknow",
-      state: "Uttar Pradesh",
-      works_count: 298,
-      expenditure_cr: 2.1,
-      risk_score: 45,
-      risk_category: "MEDIUM",
-      high_risk_works: 3,
-      completion_rate: 85,
-    },
-    {
-      district: "Nagpur",
-      state: "Maharashtra",
-      works_count: 215,
-      expenditure_cr: 1.8,
-      risk_score: 52,
-      risk_category: "HIGH",
-      high_risk_works: 5,
-      completion_rate: 68,
-    },
-    {
-      district: "Pune",
-      state: "Maharashtra",
-      works_count: 289,
-      expenditure_cr: 2.2,
-      risk_score: 38,
-      risk_category: "MEDIUM",
-      high_risk_works: 2,
-      completion_rate: 82,
-    },
-    {
-      district: "Patna",
-      state: "Bihar",
-      works_count: 267,
-      expenditure_cr: 1.9,
-      risk_score: 71,
-      risk_category: "CRITICAL",
-      high_risk_works: 12,
-      completion_rate: 55,
-    },
-  ];
-
-  const dataToUse = districts && districts.length > 0 ? districts : mockDistricts;
-
-  const filteredDistricts = dataToUse.filter((d) => {
+  const filteredDistricts = districts.filter((d) => {
     const matchSearch =
       d.district.toLowerCase().includes(searchTerm.toLowerCase()) ||
       d.state.toLowerCase().includes(searchTerm.toLowerCase());
