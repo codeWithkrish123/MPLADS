@@ -37,7 +37,41 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, language = "en
     category: string;
   } | null>(null);
 
-  const filteredLogs = logs.filter((l) => {
+  // Mock data for fallback when logs prop is empty
+  const mockLogs: AuditLogEntry[] = [
+    {
+      id: "AUD-2026-00001",
+      timestamp: "03 Sep 2026, 10:30:45",
+      user: "Dr. K. S. Murthy (Director, Monitoring)",
+      role: "Ministry",
+      action: "Certified & Attested",
+      entity: "Work Attestation (WK-2026-00142)",
+      entity_id: "WK-2026-00142",
+      old_value: "Status: Unattested Anomaly",
+      new_value: "Status: Certified Anomaly Clear",
+      ip_device: "164.100.12.99 (Secure NIC Node)",
+      status: "Verified",
+      hash_signature: "SHA256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z",
+    },
+    {
+      id: "AUD-2026-00002",
+      timestamp: "02 Sep 2026, 14:15:22",
+      user: "District Magistrate, Ghaziabad",
+      role: "District Authority",
+      action: "Authorized Payment Release",
+      entity: "Fund Disbursement (₹1.5 Cr)",
+      entity_id: "DISBURSEMENT-00245",
+      old_value: "Fund Status: Pending Approval",
+      new_value: "Fund Status: Released to Contractor",
+      ip_device: "192.168.1.105 (DM Office Secure Gateway)",
+      status: "Verified",
+      hash_signature: "SHA256:f1g2h3i4j5k6l7m8n9o0p1q2r3s4t5u6v7w8x9y0z1a2b3c4d",
+    },
+  ];
+
+  const dataToUse = logs && logs.length > 0 ? logs : mockLogs;
+
+  const filteredLogs = dataToUse.filter((l) => {
     const matchSearch =
       l.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.user.toLowerCase().includes(searchTerm.toLowerCase()) ||

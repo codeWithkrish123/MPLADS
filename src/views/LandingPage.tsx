@@ -26,10 +26,16 @@ import {
   MapPin,
   Building2,
   Globe2,
+  Mail,
+  Phone,
+  ExternalLink,
+  HelpCircle,
+  Headphones,
 } from "lucide-react";
 import { UserRole, Language } from "../types";
 import { StateEmblem } from "../components/gov/StateEmblem";
-import { GovFooter } from "../components/layout/GovFooter";
+import { SatyamevJayateLogo } from "../components/gov/SatyamevJayateLogo";
+import mpladsLogo from "../../../assets/MPLADS_logo.jpg";
 
 const portalHeroImg = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
 
@@ -120,6 +126,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       regenerateCaptcha();
       return;
     }
+    // Close modal and navigate
+    setIsSignInModalOpen(false);
     onSelectRole(selectedRole);
   };
 
@@ -132,8 +140,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <header className="sticky top-0 z-50 bg-white border-b-2 border-[#1B3A7A]">
         <div className="max-w-[1320px] mx-auto px-6 py-3 flex items-center justify-between gap-6">
 
-          {/* Left: Emblem + Title */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Left: Emblem + Logo + Title */}
+          <div className="flex items-center gap-4 shrink-0">
             <div className="flex flex-col items-center">
               <img 
                 src={new URL("../assets/images/Emblem_of_India.svg", import.meta.url).href}
@@ -144,6 +152,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 {isHindi ? "सत्यमेव जयते" : ""}
               </div>
             </div>
+            
+            {/* MPLADS Logo */}
+            <img 
+              src={mpladsLogo}
+              alt="MPLADS Logo"
+              className="h-16 w-16 object-contain"
+            />
+            
             <div className="border-l-2 border-slate-300 pl-3">
               <div className="text-[13px] font-bold text-slate-900 leading-tight">
                 {isHindi ? "भारत सरकार" : "Government of India"}
@@ -163,49 +179,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <nav className="hidden lg:flex items-center gap-6 flex-1 ml-8">
             <a
               href="#top"
-              className="text-[13px] font-semibold text-[#1B3A7A] pb-2 border-b-[3px] border-[#1B3A7A] hover:text-[#0F2A6B] transition-colors"
+              className="text-[13px] font-semibold text-[#1B3A7A] hover:text-[#0F2A6B] transition-colors outline-none focus:outline-none"
             >
               {isHindi ? "मुख्य पृष्ठ" : "Home"}
             </a>
             <a
-              href="#features"
+              href="#about"
               onClick={(e) => {
                 e.preventDefault();
-                document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="text-[13px] font-semibold text-slate-700 pb-2 border-b-[3px] border-transparent hover:text-[#1B3A7A] hover:border-[#1B3A7A] transition-all"
+              className="text-[13px] font-semibold text-slate-700 hover:text-[#1B3A7A] transition-colors outline-none focus:outline-none"
             >
-              {isHindi ? "सांसद निधि के बारे में" : "About MPLADS"}
+              {isHindi ? "MPLADS के बारे में" : "About MPLADS"}
             </a>
-            <button
-              onClick={onExplore}
-              className="text-[13px] font-semibold text-slate-700 pb-2 border-b-[3px] border-transparent hover:text-[#1B3A7A] hover:border-[#1B3A7A] transition-all cursor-pointer"
-            >
-              {isHindi ? "डैशबोर्ड" : "Dashboard"}
-            </button>
             <a
               href="#features"
               onClick={(e) => {
                 e.preventDefault();
                 document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="text-[13px] font-semibold text-slate-700 pb-2 border-b-[3px] border-transparent hover:text-[#1B3A7A] hover:border-[#1B3A7A] transition-all"
+              className="text-[13px] font-semibold text-slate-700 hover:text-[#1B3A7A] transition-colors outline-none focus:outline-none"
             >
               {isHindi ? "विशेषताएं" : "Features"}
             </a>
-            <button
-              onClick={onExplore}
-              className="text-[13px] font-semibold text-slate-700 pb-2 border-b-[3px] border-transparent hover:text-[#1B3A7A] hover:border-[#1B3A7A] transition-all cursor-pointer"
-            >
-              {isHindi ? "रिपोर्ट्स" : "Reports"}
-            </button>
             <a
-              href="#features"
+              href="#reports"
               onClick={(e) => {
                 e.preventDefault();
-                document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                document.getElementById("reports")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="text-[13px] font-semibold text-slate-700 pb-2 border-b-[3px] border-transparent hover:text-[#1B3A7A] hover:border-[#1B3A7A] transition-all"
+              className="text-[13px] font-semibold text-slate-700 hover:text-[#1B3A7A] transition-colors outline-none focus:outline-none"
+            >
+              {isHindi ? "रिपोर्ट्स" : "Reports"}
+            </a>
+            <a
+              href="#guidelines"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("guidelines")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="text-[13px] font-semibold text-slate-700 hover:text-[#1B3A7A] transition-colors outline-none focus:outline-none"
             >
               {isHindi ? "दिशा-निर्देश" : "Guidelines"}
             </a>
@@ -215,7 +229,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 e.preventDefault();
                 document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="text-[13px] font-semibold text-slate-700 pb-2 border-b-[3px] border-transparent hover:text-[#1B3A7A] hover:border-[#1B3A7A] transition-all"
+              className="text-[13px] font-semibold text-slate-700 hover:text-[#1B3A7A] transition-colors outline-none focus:outline-none"
             >
               {isHindi ? "संपर्क करें" : "Contact Us"}
             </a>
@@ -322,6 +336,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <h1 
                   className="text-[36px] sm:text-[44px] lg:text-[52px] font-black text-[#0F2A6B] leading-[1.08] tracking-tight"
                   style={{
+                    fontFamily: "'Playfair Display', serif",
+                    fontStyle: "italic",
+                    fontWeight: 700,
                     textShadow: `
                       0 2px 4px rgba(255,255,255,0.9),
                       0 4px 12px rgba(15, 42, 107, 0.2),
@@ -367,7 +384,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Premium CTA buttons */}
               <div className="flex flex-wrap items-center gap-5 pt-4">
                 <button
-                  onClick={onExplore}
+                  onClick={() => setIsSignInModalOpen(true)}
                   className="flex items-center gap-2.5 px-8 py-4 text-white font-bold text-[15px] rounded-xl transition-all duration-300 cursor-pointer"
                   style={{
                     background: "linear-gradient(135deg, #1B3A7A 0%, #0F2A6B 100%)",
@@ -757,9 +774,613 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* ─────────────────────────────────────────────
-          GOVERNMENT FOOTER
+          ABOUT MPLADS SECTION
       ───────────────────────────────────────────── */}
-      <GovFooter language={language} />
+      <section id="about" className="scroll-mt-24 bg-gradient-to-b from-[#F0F7FF] to-white py-16 px-4">
+        <div className="max-w-[1320px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="inline-block text-[32px] font-bold text-[#0F2A6B] relative pb-3">
+              {isHindi ? "MPLADS के बारे में" : "About MPLADS"}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80px] h-[3px] bg-[#FF6B00] rounded-full" />
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            {/* Left: Overview */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 className="text-[18px] font-bold text-[#1B3A7A] mb-3">
+                  {isHindi ? "क्या है MPLADS?" : "What is MPLADS?"}
+                </h3>
+                <p className="text-[14px] text-slate-700 leading-relaxed mb-3">
+                  {isHindi
+                    ? "सांसद स्थानीय क्षेत्र विकास योजना (MPLADS) भारत में एक महत्वपूर्ण कार्यक्रम है जो प्रत्येक सदस्य को अपने संसदीय क्षेत्र में विकास परियोजनाओं के लिए निधि आवंटित करने की अनुमति देता है।"
+                    : "MPLADS (Member of Parliament Local Area Development Scheme) is a key program in India that allocates funds to each Member of Parliament for development projects in their constituencies."}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 className="text-[18px] font-bold text-[#047A1E] mb-3">
+                  {isHindi ? "मुख्य उद्देश्य" : "Key Objectives"}
+                </h3>
+                <ul className="space-y-2 text-[14px] text-slate-700">
+                  <li className="flex gap-2">
+                    <span className="text-[#FF6B00] font-bold">•</span>
+                    <span>{isHindi ? "स्थानीय विकास परियोजनाओं को वित्त पोषण करना" : "Finance local development projects"}</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-[#FF6B00] font-bold">•</span>
+                    <span>{isHindi ? "पारदर्शी कार्यान्वयन सुनिश्चित करना" : "Ensure transparent implementation"}</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-[#FF6B00] font-bold">•</span>
+                    <span>{isHindi ? "समुदाय की भागीदारी को प्रोत्साहित करना" : "Encourage community participation"}</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-[#FF6B00] font-bold">•</span>
+                    <span>{isHindi ? "जवाबदेहिता और निगरानी में सुधार" : "Improve accountability and monitoring"}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Right: Statistics & Impact */}
+            <div className="space-y-6">
+              <div className="bg-gradient-to-br from-[#1B3A7A] to-[#0F2A6B] rounded-xl p-6 shadow-md text-white">
+                <h3 className="text-[18px] font-bold mb-4">
+                  {isHindi ? "प्रभाव और आंकड़े" : "Impact & Statistics"}
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/10 p-4 rounded-lg">
+                    <div className="text-[24px] font-bold">₹ 4,851 Cr</div>
+                    <div className="text-[12px] text-blue-200">{isHindi ? "कुल जारी" : "Total Released"}</div>
+                  </div>
+                  <div className="bg-white/10 p-4 rounded-lg">
+                    <div className="text-[24px] font-bold">1,24,578</div>
+                    <div className="text-[12px] text-blue-200">{isHindi ? "कार्य स्वीकृत" : "Works Approved"}</div>
+                  </div>
+                  <div className="bg-white/10 p-4 rounded-lg">
+                    <div className="text-[24px] font-bold">92,345</div>
+                    <div className="text-[12px] text-blue-200">{isHindi ? "पूर्ण कार्य" : "Completed"}</div>
+                  </div>
+                  <div className="bg-white/10 p-4 rounded-lg">
+                    <div className="text-[24px] font-bold">76 %</div>
+                    <div className="text-[12px] text-blue-200">{isHindi ? "उपयोग दर" : "Utilization"}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <h3 className="text-[18px] font-bold text-[#FF6B00] mb-3">
+                  {isHindi ? "लाभार्थी" : "Beneficiaries"}
+                </h3>
+                <p className="text-[14px] text-slate-700 mb-3">
+                  {isHindi
+                    ? "राष्ट्रीय, राज्य और जिला स्तर पर सभी हितधारक जो MPLADS कार्यान्वयन में शामिल हैं।"
+                    : "All stakeholders at national, state, and district levels involved in MPLADS implementation."}
+                </p>
+                <div className="space-y-1 text-[13px] text-slate-700">
+                  <p><strong>{isHindi ? "संसद सदस्य" : "Members of Parliament"}:</strong> {isHindi ? "निधि आवंटन और परियोजना चयन" : "Fund allocation & project selection"}</p>
+                  <p><strong>{isHindi ? "जिला प्राधिकरण" : "District Authorities"}:</strong> {isHindi ? "कार्यान्वयन और निगरानी" : "Implementation & monitoring"}</p>
+                  <p><strong>{isHindi ? "समुदाय" : "Community"}:</strong> {isHindi ? "परियोजना लाभ प्राप्त करना" : "Receiving project benefits"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────
+          REPORTS SECTION
+      ───────────────────────────────────────────── */}
+      <section id="reports" className="scroll-mt-24 bg-white py-16 px-4">
+        <div className="max-w-[1320px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="inline-block text-[32px] font-bold text-[#0F2A6B] relative pb-3">
+              {isHindi ? "MPLADS रिपोर्ट्स" : "MPLADS Reports"}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80px] h-[3px] bg-[#047A1E] rounded-full" />
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-[#EBF2FD] to-white rounded-xl p-6 shadow-sm border border-slate-200">
+              <div className="w-12 h-12 bg-[#1B3A7A] rounded-lg flex items-center justify-center mb-4">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                {isHindi ? "राज्य-वार विश्लेषण" : "State-wise Analysis"}
+              </h3>
+              <p className="text-[13px] text-slate-600 mb-4">
+                {isHindi
+                  ? "प्रत्येक राज्य में MPLADS कार्यान्वयन का विस्तृत विश्लेषण, परियोजनाओं की संख्या और निधि वितरण।"
+                  : "Detailed analysis of MPLADS implementation in each state with project counts and fund distribution."}
+              </p>
+              <a href="#" className="text-[13px] font-bold text-[#1B3A7A] hover:underline">
+                {isHindi ? "रिपोर्ट देखें →" : "View Report →"}
+              </a>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#F0F9F5] to-white rounded-xl p-6 shadow-sm border border-slate-200">
+              <div className="w-12 h-12 bg-[#047A1E] rounded-lg flex items-center justify-center mb-4">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                {isHindi ? "जिला प्रदर्शन" : "District Performance"}
+              </h3>
+              <p className="text-[13px] text-slate-600 mb-4">
+                {isHindi
+                  ? "जिले स्तर पर परियोजना पूर्ण होने की दर, विलंब विश्लेषण और प्रदर्शन मेट्रिक्स।"
+                  : "District-level project completion rates, delay analysis and performance metrics."}
+              </p>
+              <a href="#" className="text-[13px] font-bold text-[#047A1E] hover:underline">
+                {isHindi ? "रिपोर्ट देखें →" : "View Report →"}
+              </a>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#FFF9F0] to-white rounded-xl p-6 shadow-sm border border-slate-200">
+              <div className="w-12 h-12 bg-[#FF6B00] rounded-lg flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                {isHindi ? "कार्यान्वयन रुझान" : "Implementation Trends"}
+              </h3>
+              <p className="text-[13px] text-slate-600 mb-4">
+                {isHindi
+                  ? "समय के साथ परियोजना प्रवृत्तियों, बजट उपयोग और विसंगति पैटर्न का विश्लेषण।"
+                  : "Analysis of project trends over time, budget utilization and anomaly patterns."}
+              </p>
+              <a href="#" className="text-[13px] font-bold text-[#FF6B00] hover:underline">
+                {isHindi ? "रिपोर्ट देखें →" : "View Report →"}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────
+          GUIDELINES SECTION
+      ───────────────────────────────────────────── */}
+      <section id="guidelines" className="scroll-mt-24 bg-gradient-to-b from-[#F8F9FF] to-white py-16 px-4">
+        <div className="max-w-[1320px] mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="inline-block text-[32px] font-bold text-[#0F2A6B] relative pb-3">
+              {isHindi ? "MPLADS दिशा-निर्देश" : "MPLADS Guidelines"}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80px] h-[3px] bg-[#1B3A7A] rounded-full" />
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+              <h3 className="text-[16px] font-bold text-[#1B3A7A] mb-4 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-[#047A1E]" />
+                {isHindi ? "अनुमोदन प्रक्रिया" : "Approval Process"}
+              </h3>
+              <ol className="space-y-3 text-[13px] text-slate-700 list-decimal list-inside">
+                <li>{isHindi ? "संसद सदस्य द्वारा परियोजना प्रस्ताव जमा करना" : "Project proposal submission by MP"}</li>
+                <li>{isHindi ? "जिला प्राधिकरण द्वारा तकनीकी मूल्यांकन" : "Technical evaluation by district authority"}</li>
+                <li>{isHindi ? "बजट और योजना समीक्षा" : "Budget and planning review"}</li>
+                <li>{isHindi ? "अनुमोदन और संवितरण" : "Approval and disbursement"}</li>
+                <li>{isHindi ? "कार्यान्वयन और निगरानी" : "Implementation and monitoring"}</li>
+              </ol>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+              <h3 className="text-[16px] font-bold text-[#1B3A7A] mb-4 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[#FF6B00]" />
+                {isHindi ? "अनुपालन आवश्यकताएं" : "Compliance Requirements"}
+              </h3>
+              <ul className="space-y-3 text-[13px] text-slate-700">
+                <li className="flex gap-2">
+                  <span className="text-[#FF6B00] font-bold">✓</span>
+                  <span>{isHindi ? "पारदर्शी निविदा प्रक्रिया का पालन करना" : "Follow transparent tender process"}</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-[#FF6B00] font-bold">✓</span>
+                  <span>{isHindi ? "मासिक प्रगति रिपोर्ट प्रस्तुत करना" : "Submit monthly progress reports"}</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-[#FF6B00] font-bold">✓</span>
+                  <span>{isHindi ? "तीसरे पक्ष द्वारा ऑडिट सुनिश्चित करना" : "Ensure third-party audit"}</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-[#FF6B00] font-bold">✓</span>
+                  <span>{isHindi ? "सार्वजनिक सूचना प्रकटीकरण बनाए रखना" : "Maintain public information disclosure"}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-8 bg-[#EEF3FB] border border-[#CCDAF5] rounded-xl p-6">
+            <h3 className="text-[16px] font-bold text-[#1B3A7A] mb-3">
+              {isHindi ? "अतिरिक्त संसाधन" : "Additional Resources"}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[13px]">
+              <a href="#" className="text-[#1B3A7A] hover:underline font-medium">{isHindi ? "आधिकारिक दिशा-निर्देश दस्तावेज़" : "Official Guidelines Document"}</a>
+              <a href="#" className="text-[#1B3A7A] hover:underline font-medium">{isHindi ? "सर्वश्रेष्ठ प्रथाएं हैंडबुक" : "Best Practices Handbook"}</a>
+              <a href="#" className="text-[#1B3A7A] hover:underline font-medium">{isHindi ? "अनुपालन चेकलिस्ट" : "Compliance Checklist"}</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          CONTACT US SECTION - Professional Government Theme
+      ══════════════════════════════════════════════════════════════════════════ */}
+      <section id="contact" className="scroll-mt-24 bg-gradient-to-b from-slate-50 to-slate-100 py-20 px-4 relative overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-50 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-30" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-50 rounded-full translate-x-1/4 translate-y-1/4 opacity-30" />
+        
+        <div className="max-w-[1320px] mx-auto relative z-10">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-block mb-4">
+              <span className="px-4 py-1.5 bg-gradient-to-r from-[#FF6B00]/10 to-[#FF6B00]/5 border border-[#FF6B00]/30 rounded-full text-[#FF6B00] text-[11px] font-bold uppercase tracking-wider">
+                {isHindi ? "हमें संपर्क करें" : "CONTACT US"}
+              </span>
+            </div>
+            <h2 className="text-[42px] md:text-[48px] font-black text-slate-900 mb-4 leading-tight">
+              {isHindi ? "24/7 सहायता और सेवाएं" : "24/7 Support & Services"}
+            </h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              {isHindi
+                ? "आपके प्रश्नों, सुझावों और शिकायतों के लिए हम सदैव उपलब्ध हैं। आपकी प्रतिक्रिया हमें बेहतर सेवा प्रदान करने में सहायता करती है।"
+                : "We're here 24/7 for your questions, suggestions, and grievances. Your feedback helps us serve better."}
+            </p>
+          </div>
+
+          {/* Main Contact Grid - 4 Columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            
+            {/* Card 1: Toll-Free Helpline */}
+            <div className="group h-full">
+              <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-8 border border-slate-100 h-full flex flex-col">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#1B3A7A] to-[#0F2A6B] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Phone className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                  {isHindi ? "टोल-फ्री हेल्पलाइन" : "Toll-Free Helpline"}
+                </h3>
+                <p className="text-[14px] text-slate-500 mb-4 flex-grow">
+                  {isHindi ? "सोमवार - शुक्रवार" : "Monday - Friday"}
+                </p>
+                <div className="space-y-2">
+                  <p className="text-[18px] font-bold text-[#1B3A7A] font-mono">1800-11-1992</p>
+                  <p className="text-[12px] text-slate-400">9:00 AM - 6:00 PM IST</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-[11px] text-slate-500">
+                    {isHindi ? "तत्काल सहायता के लिए कॉल करें" : "Call for instant assistance"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Email Support */}
+            <div className="group h-full">
+              <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-8 border border-slate-100 h-full flex flex-col">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#FF6B00] to-[#E55A00] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Mail className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                  {isHindi ? "ईमेल सहायता" : "Email Support"}
+                </h3>
+                <p className="text-[14px] text-slate-500 mb-4 flex-grow">
+                  {isHindi ? "24 घंटे के भीतर प्रतिक्रिया" : "Response within 24 hours"}
+                </p>
+                <div className="space-y-2">
+                  <a href="mailto:support-mplads@nic.in" className="text-[14px] font-bold text-[#FF6B00] hover:text-[#E55A00] font-mono break-all">
+                    support-mplads@nic.in
+                  </a>
+                  <p className="text-[12px] text-slate-400">
+                    {isHindi ? "तकनीकी सहायता" : "Technical Support"}
+                  </p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-[11px] text-slate-500">
+                    {isHindi ? "ईमेल भेजें और प्रतीक्षा करें" : "Send email and get response"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Head Office */}
+            <div className="group h-full">
+              <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-8 border border-slate-100 h-full flex flex-col">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#047A1E] to-[#035A14] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Building2 className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                  {isHindi ? "मुख्य कार्यालय" : "Head Office"}
+                </h3>
+                <p className="text-[14px] text-slate-500 mb-4 flex-grow">
+                  {isHindi ? "MoSPI, नई दिल्ली" : "MoSPI, New Delhi"}
+                </p>
+                <div className="space-y-2 text-[13px] text-slate-700">
+                  <p className="font-semibold">
+                    {isHindi ? "खुरशीद लाल भवन" : "Khurshid Lal Bhawan,"}
+                  </p>
+                  <p>{isHindi ? "जनपथ, नई दिल्ली - 110001" : "Janpath, New Delhi - 110001"}</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-[11px] text-slate-500">
+                    {isHindi ? "व्यक्तिगत भेंट के लिए" : "For in-person visits"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Visit Portal */}
+            <div className="group h-full">
+              <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-8 border border-slate-100 h-full flex flex-col">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Globe className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-[16px] font-bold text-slate-900 mb-2">
+                  {isHindi ? "वेब पोर्टल" : "Web Portal"}
+                </h3>
+                <p className="text-[14px] text-slate-500 mb-4 flex-grow">
+                  {isHindi ? "डिजिटल सहायता" : "Digital Assistance"}
+                </p>
+                <div className="space-y-2">
+                  <a href="https://india.gov.in" target="_blank" rel="noreferrer" className="text-[14px] font-bold text-[#2563EB] hover:text-[#1D4ED8] flex items-center gap-1">
+                    india.gov.in <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <p className="text-[12px] text-slate-400">
+                    {isHindi ? "राष्ट्रीय पोर्टल" : "National Portal"}
+                  </p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-[11px] text-slate-500">
+                    {isHindi ? "ऑनलाइन सहायता" : "24/7 online access"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Support Ticket CTA Section */}
+          <div className="bg-gradient-to-r from-[#1B3A7A] to-[#0F2A6B] rounded-2xl p-12 text-white text-center border border-slate-200 shadow-xl">
+            <div className="inline-block mb-4 px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
+              <span className="text-[12px] font-bold uppercase tracking-wider text-blue-100">
+                {isHindi ? "तत्काल कार्रवाई" : "IMMEDIATE ACTION"}
+              </span>
+            </div>
+            <h3 className="text-[28px] md:text-[32px] font-black mb-3 leading-tight">
+              {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Grievance"}
+            </h3>
+            <p className="text-blue-100 text-[15px] mb-8 max-w-2xl mx-auto">
+              {isHindi
+                ? "अपने सभी समस्याओं, सुझावों और शिकायतों के लिए सहायता टिकट खोलें। आप ट्रैकिंग नंबर प्राप्त करेंगे।"
+                : "Open a support ticket for all your issues, suggestions, and grievances. Get a tracking number for follow-up."}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => {
+                  const contactPageLink = "/contact";
+                  window.location.href = contactPageLink;
+                }}
+                className="px-10 py-4 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                <AlertTriangle className="w-5 h-5" />
+                {isHindi ? "सहायता टिकट खोलें" : "Open Support Ticket"}
+              </button>
+              <button 
+                onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
+                className="px-10 py-4 bg-white/20 hover:bg-white/30 border border-white text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm flex items-center justify-center gap-2"
+              >
+                <HelpCircle className="w-5 h-5" />
+                {isHindi ? "FAQ देखें" : "View FAQs"}
+              </button>
+            </div>
+          </div>
+
+          {/* FAQ Section */}
+          <div id="faq" className="mt-16 bg-white rounded-2xl p-10 border border-slate-200 shadow-md">
+            <h3 className="text-[28px] font-bold text-slate-900 mb-8 text-center">
+              {isHindi ? "अक्सर पूछे जाने वाले प्रश्न (FAQ)" : "Frequently Asked Questions (FAQs)"}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-bold text-slate-900 text-[15px]">
+                  {isHindi ? "❓ मुझे डेटा कैसे डाउनलोड करना है?" : "❓ How do I download data?"}
+                </h4>
+                <p className="text-slate-600 text-[13px] leading-relaxed">
+                  {isHindi
+                    ? "डैशबोर्ड पर 'कस्टम डेटासेट' विकल्प से आप फिल्टर लगाकर डेटा डाउनलोड कर सकते हैं।"
+                    : "Use the 'Custom Dataset' option on the dashboard to filter and download your data."}
+                </p>
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-bold text-slate-900 text-[15px]">
+                  {isHindi ? "❓ शिकायत दर्ज करने के बाद क्या होता है?" : "❓ What happens after filing a complaint?"}
+                </h4>
+                <p className="text-slate-600 text-[13px] leading-relaxed">
+                  {isHindi
+                    ? "आपको एक ट्रैकिंग नंबर दिया जाएगा जिससे आप अपनी शिकायत की स्थिति ट्रैक कर सकते हैं।"
+                    : "You'll receive a tracking number to monitor the status of your complaint."}
+                </p>
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-bold text-slate-900 text-[15px]">
+                  {isHindi ? "❓ क्या मैं AI असिस्टेंट से बात कर सकता हूँ?" : "❓ Can I chat with the AI Assistant?"}
+                </h4>
+                <p className="text-slate-600 text-[13px] leading-relaxed">
+                  {isHindi
+                    ? "हां, डैशबोर्ड में 'मदद चैटबॉट' सेक्शन से आप 24/7 AI असिस्टेंट से बात कर सकते हैं।"
+                    : "Yes, use the 'Help Chatbot' section for 24/7 AI Assistant support."}
+                </p>
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-bold text-slate-900 text-[15px]">
+                  {isHindi ? "❓ तकनीकी समस्या होने पर क्या करूं?" : "❓ What if I have a technical issue?"}
+                </h4>
+                <p className="text-slate-600 text-[13px] leading-relaxed">
+                  {isHindi
+                    ? "support-mplads@nic.in पर ईमेल करें या 1800-11-1992 पर कॉल करें।"
+                    : "Email support-mplads@nic.in or call 1800-11-1992 for technical support."}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────
+          PROFESSIONAL FOOTER — Landing Page Only
+      ───────────────────────────────────────────── */}
+      <footer className="mt-12 bg-white">
+        {/* Tricolor Top Gradient Line */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#FF6B00] via-white to-[#047A1E]" />
+        
+        {/* Main Footer Content with Light Tricolor Gradient Background */}
+        <div className="bg-gradient-to-br from-[#FFF9F0] via-[#F5FAFD] to-[#F0F9F5] py-12 px-6">
+          <div className="max-w-[1320px] mx-auto">
+            
+            {/* 4-Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+              
+              {/* Column 1: Government Branding */}
+              <div className="space-y-3">
+                <h3 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="text-[15px] font-bold text-[#1B3A7A] uppercase tracking-wide leading-tight"
+                >
+                  {isHindi ? "भारत सरकार" : "Government of India"}
+                </h3>
+                <p 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="text-[13px] text-slate-700 leading-relaxed"
+                >
+                  {isHindi
+                    ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय"
+                    : "Ministry of Statistics & Programme Implementation"}
+                </p>
+                <p className="text-[12px] text-slate-600 leading-relaxed">
+                  {isHindi
+                    ? "सभी संसदीय क्षेत्रों में पारदर्शी MPLADS कार्यान्वयन सुनिश्चित करना।"
+                    : "Ensuring transparent MPLADS implementation across all constituencies."}
+                </p>
+              </div>
+              
+              {/* Column 2: Quick Links */}
+              <div className="space-y-3">
+                <h3 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="text-[15px] font-bold text-[#047A1E] uppercase tracking-wide leading-tight"
+                >
+                  {isHindi ? "त्वरित लिंक" : "Quick Links"}
+                </h3>
+                <ul 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="space-y-2 text-[13px]"
+                >
+                  <li>
+                    <a href="#" className="text-slate-700 hover:text-[#1B3A7A] transition-colors font-medium">
+                      {isHindi ? "राष्ट्रीय पोर्टल" : "National Portal"}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-slate-700 hover:text-[#1B3A7A] transition-colors font-medium">
+                      {isHindi ? "आधिकारिक MPLADS" : "Official MPLADS"}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-slate-700 hover:text-[#1B3A7A] transition-colors font-medium">
+                      {isHindi ? "दिशा-निर्देश" : "Guidelines"}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-slate-700 hover:text-[#1B3A7A] transition-colors font-medium">
+                      {isHindi ? "FAQ" : "FAQs"}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Column 3: Contact Information */}
+              <div className="space-y-3">
+                <h3 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="text-[15px] font-bold text-[#FF6B00] uppercase tracking-wide leading-tight"
+                >
+                  {isHindi ? "संपर्क करें" : "Contact Us"}
+                </h3>
+                <ul 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="space-y-2 text-[13px] text-slate-700"
+                >
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold min-w-fit">{isHindi ? "फोन:" : "Phone:"}</span>
+                    <span>1800-11-1992</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold min-w-fit">{isHindi ? "ईमेल:" : "Email:"}</span>
+                    <a href="mailto:support@mplads.gov.in" className="text-[#1B3A7A] hover:underline">
+                      support@mplads.gov.in
+                    </a>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold min-w-fit">{isHindi ? "पता:" : "Address:"}</span>
+                    <span>National Informatics Centre, New Delhi</span>
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Column 4: Certifications */}
+              <div className="space-y-3">
+                <h3 
+                  style={{ fontFamily: "'Noto Sans', sans-serif" }}
+                  className="text-[15px] font-bold text-slate-800 uppercase tracking-wide leading-tight"
+                >
+                  {isHindi ? "प्रमाणपत्र" : "Certifications"}
+                </h3>
+                <div className="space-y-2 flex flex-col">
+                  <div className="inline-flex items-center gap-2 bg-blue-50 px-3 py-2 rounded border border-blue-200 w-fit">
+                    <Shield className="w-4 h-4 text-[#1B3A7A]" />
+                    <span className="text-[12px] font-bold text-[#1B3A7A]">ISO 27001</span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 bg-green-50 px-3 py-2 rounded border border-green-200 w-fit">
+                    <CheckCircle2 className="w-4 h-4 text-[#047A1E]" />
+                    <span className="text-[12px] font-bold text-[#047A1E]">
+                      {isHindi ? "GOV.IN सर्टीफाइड" : "GOV.IN Certified"}
+                    </span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 bg-amber-50 px-3 py-2 rounded border border-amber-200 w-fit">
+                    <Lock className="w-4 h-4 text-[#FF6B00]" />
+                    <span className="text-[12px] font-bold text-[#FF6B00]">TLS 1.3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Tricolor Divider Line */}
+            <div className="my-8 h-0.5 bg-gradient-to-r from-[#FF6B00] via-white to-[#047A1E] opacity-60" />
+            
+            {/* Bottom Section */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-slate-600"
+              style={{ fontFamily: "'Noto Sans', sans-serif" }}>
+              <div className="text-center md:text-left">
+                © 2026 {isHindi ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय" : "Ministry of Statistics & Programme Implementation"}, 
+                {isHindi ? " भारत सरकार। सर्वाधिकार सुरक्षित।" : " Government of India. All Rights Reserved."}
+              </div>
+              <div className="flex gap-4 flex-wrap justify-center">
+                <a href="#" className="text-slate-600 hover:text-[#1B3A7A] transition-colors font-medium">
+                  {isHindi ? "गोपनीयता नीति" : "Privacy Policy"}
+                </a>
+                <span className="text-slate-400">|</span>
+                <a href="#" className="text-slate-600 hover:text-[#1B3A7A] transition-colors font-medium">
+                  {isHindi ? "शर्तें और शिर्तें" : "Terms & Conditions"}
+                </a>
+                <span className="text-slate-400">|</span>
+                <a href="#" className="text-slate-600 hover:text-[#1B3A7A] transition-colors font-medium">
+                  {isHindi ? "पहुंचवि" : "Accessibility"}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* ─────────────────────────────────────────────
           LOGIN MODAL — full SSO sign-in overlay
@@ -778,7 +1399,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Modal header */}
             <div className="bg-[#1B3A7A] text-white px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <StateEmblem size="sm" theme="gold" />
+                <SatyamevJayateLogo size="sm" />
                 <div className="border-l border-white/20 pl-3">
                   <div className="text-[10px] uppercase font-bold text-blue-300 tracking-wider">
                     National Informatics Centre — NIC
@@ -1115,6 +1736,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       )}
+
+
 
     </div>
   );

@@ -12,6 +12,24 @@ import {
   ChevronRight,
   Filter,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  ComposedChart,
+} from "recharts";
 import { StateSummary, WorkRecord, Language } from "../types";
 import { MetricCard } from "../components/common/MetricCard";
 import { IndiaMap } from "../components/common/IndiaMap";
@@ -351,6 +369,218 @@ export const NationalOverviewView: React.FC<NationalOverviewViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* ==================== VISUALIZATION CHARTS SECTION ==================== */}
+      
+      {/* State-wise Performance Bar Chart */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
+        <div className="pb-3 border-b border-slate-100 mb-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            State-wise Fund Allocation & Expenditure
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">Sanctioned vs Actual spend across states</p>
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={[
+              { name: "UP", sanctioned: 25, actual: 18.4 },
+              { name: "MH", sanctioned: 18, actual: 14.2 },
+              { name: "BR", sanctioned: 14, actual: 11.8 },
+              { name: "RJ", sanctioned: 16, actual: 12.5 },
+              { name: "TN", sanctioned: 12, actual: 9.6 },
+              { name: "GJ", sanctioned: 11, actual: 7.1 },
+              { name: "WB", sanctioned: 13, actual: 8.3 },
+              { name: "KA", sanctioned: 12, actual: 10.2 },
+              { name: "AP", sanctioned: 10, actual: 7.8 },
+              { name: "MP", sanctioned: 11, actual: 8.9 },
+            ]}
+            margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey="name" stroke="#64748b" tick={{ fontSize: 12 }} />
+            <YAxis stroke="#64748b" tick={{ fontSize: 12 }} label={{ value: "Amount (₹ Cr)", angle: -90, position: "insideLeft" }} />
+            <Tooltip 
+              contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }}
+              formatter={(value) => `₹${value} Cr`}
+            />
+            <Legend />
+            <Bar dataKey="sanctioned" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="actual" fill="#ec4899" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Completion Rate vs Risk Score Line Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
+          <div className="pb-3 border-b border-slate-100 mb-4">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Completion Rate Trend
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">Work completion percentage across states</p>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart
+              data={[
+                { state: "UP", completion: 82 },
+                { state: "MH", completion: 78 },
+                { state: "BR", completion: 65 },
+                { state: "RJ", completion: 71 },
+                { state: "TN", completion: 88 },
+                { state: "GJ", completion: 91 },
+                { state: "WB", completion: 75 },
+                { state: "KA", completion: 82 },
+              ]}
+              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="state" stroke="#64748b" />
+              <YAxis stroke="#64748b" />
+              <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
+              <Line type="monotone" dataKey="completion" stroke="#10b981" strokeWidth={2} dot={{ fill: "#10b981" }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Risk Score Distribution Pie Chart */}
+        <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
+          <div className="pb-3 border-b border-slate-100 mb-4">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Risk Category Distribution
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">Works categorized by risk level</p>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={[
+                  { name: "Low Risk (0-30)", value: 4200, fill: "#10b981" },
+                  { name: "Medium Risk (31-60)", value: 5600, fill: "#f59e0b" },
+                  { name: "High Risk (61-80)", value: 2300, fill: "#f97316" },
+                  { name: "Critical (81-100)", value: 742, fill: "#dc2626" },
+                ]}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                <Cell fill="#10b981" />
+                <Cell fill="#f59e0b" />
+                <Cell fill="#f97316" />
+                <Cell fill="#dc2626" />
+              </Pie>
+              <Tooltip formatter={(value) => value.toLocaleString()} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Sector-wise Expenditure Horizontal Bar Chart */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
+        <div className="pb-3 border-b border-slate-100 mb-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Sector-wise Expenditure & Work Count
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">Distribution across 6 core sectors</p>
+        </div>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart
+            data={sectors}
+            layout="vertical"
+            margin={{ top: 5, right: 30, left: 200, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis type="number" stroke="#64748b" />
+            <YAxis dataKey="name" type="category" stroke="#64748b" width={195} tick={{ fontSize: 11 }} />
+            <Tooltip 
+              contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }}
+              formatter={(value) => `₹${value} Cr`}
+            />
+            <Legend />
+            <Bar dataKey="expenditure" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Area Chart: Cumulative Fund Flow Over Time */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
+        <div className="pb-3 border-b border-slate-100 mb-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Cumulative Fund Disbursement Timeline
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">Monthly fund release trend (FY 2025-26)</p>
+        </div>
+        <ResponsiveContainer width="100%" height={280}>
+          <AreaChart
+            data={[
+              { month: "Apr", sanctioned: 15, disbursed: 5, completed: 2 },
+              { month: "May", sanctioned: 28, disbursed: 10, completed: 4 },
+              { month: "Jun", sanctioned: 42, disbursed: 18, completed: 8 },
+              { month: "Jul", sanctioned: 58, disbursed: 28, completed: 14 },
+              { month: "Aug", sanctioned: 72, disbursed: 42, completed: 22 },
+              { month: "Sep", sanctioned: 85, disbursed: 65, completed: 35 },
+            ]}
+            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="colorSanctioned" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorDisbursed" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey="month" stroke="#64748b" />
+            <YAxis stroke="#64748b" />
+            <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
+            <Legend />
+            <Area type="monotone" dataKey="sanctioned" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSanctioned)" />
+            <Area type="monotone" dataKey="disbursed" stroke="#10b981" fillOpacity={1} fill="url(#colorDisbursed)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Composite Chart: State Performance Score */}
+      <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
+        <div className="pb-3 border-b border-slate-100 mb-4">
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            State Performance Scorecard
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">Expenditure, Completion Rate, and Risk Score composite view</p>
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <ComposedChart
+            data={[
+              { state: "UP", expenditure: 18.4, completion: 82, risk: 68 },
+              { state: "MH", expenditure: 14.2, completion: 78, risk: 52 },
+              { state: "BR", expenditure: 11.8, completion: 65, risk: 74 },
+              { state: "RJ", expenditure: 12.5, completion: 71, risk: 48 },
+              { state: "TN", expenditure: 9.6, completion: 88, risk: 34 },
+              { state: "GJ", expenditure: 7.1, completion: 91, risk: 31 },
+              { state: "WB", expenditure: 8.3, completion: 75, risk: 56 },
+              { state: "KA", expenditure: 10.2, completion: 82, risk: 45 },
+            ]}
+            margin={{ top: 20, right: 80, left: 0, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey="state" stroke="#64748b" />
+            <YAxis yAxisId="left" stroke="#64748b" label={{ value: "Expenditure (₹ Cr)", angle: -90, position: "insideLeft" }} />
+            <YAxis yAxisId="right" orientation="right" stroke="#64748b" label={{ value: "Completion %", angle: 90, position: "insideRight" }} />
+            <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
+            <Legend />
+            <Bar yAxisId="left" dataKey="expenditure" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Expenditure (₹ Cr)" />
+            <Line yAxisId="right" type="monotone" dataKey="completion" stroke="#10b981" strokeWidth={2.5} name="Completion %" dot={{ fill: "#10b981", r: 4 }} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ==================== END VISUALIZATION SECTION ==================== */}
 
       {/* Phase B: PFMS Digital Tranche Lifecycle Flow */}
       <PFMSFundFlow language={language} />

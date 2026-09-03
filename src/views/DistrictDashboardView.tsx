@@ -37,7 +37,48 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
 
-  const districtWorks = works.filter(
+  // Mock data for fallback when works prop is empty
+  const mockWorks: WorkRecord[] = [
+    {
+      work_id: "WK-2026-00142",
+      description: "Road Construction & Bituminous Surfacing - Sector 5 to 8",
+      district: "Ghaziabad",
+      state: "Uttar Pradesh",
+      sanctioned_cost: 1.5,
+      expenditure: 1.2,
+      completion_percentage: 72,
+      risk_score: 62,
+      risk_category: "HIGH",
+      status: "In Progress",
+    },
+    {
+      work_id: "WK-2026-00143",
+      description: "Primary School Building Renovation with WiFi Connectivity",
+      district: "Ghaziabad",
+      state: "Uttar Pradesh",
+      sanctioned_cost: 0.8,
+      expenditure: 0.45,
+      completion_percentage: 58,
+      risk_score: 68,
+      risk_category: "HIGH",
+      status: "In Progress",
+    },
+    {
+      work_id: "WK-2026-00144",
+      description: "Water Supply Pipeline Extension to Rural Habitations",
+      district: "Ghaziabad",
+      state: "Uttar Pradesh",
+      sanctioned_cost: 1.2,
+      expenditure: 0.92,
+      completion_percentage: 85,
+      risk_score: 35,
+      risk_category: "MEDIUM",
+      status: "Nearing Completion",
+    },
+  ];
+
+  const dataToUse = works && works.length > 0 ? works : mockWorks;
+  const districtWorks = dataToUse.filter(
     (w) => w.district.toLowerCase() === districtName.toLowerCase()
   );
 

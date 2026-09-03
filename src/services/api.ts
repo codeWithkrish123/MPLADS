@@ -39,8 +39,11 @@ export class ApiError extends Error {
 
 /**
  * Helper function to make API requests
+ * @param endpoint - The API endpoint path (e.g., "/api/projects")
+ * @param options - RequestInit options (method, headers, body, etc.)
+ * @returns Promise with the API response data
  */
-async function apiCall<T>(
+export async function apiCall<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -68,6 +71,25 @@ async function apiCall<T>(
     throw new ApiError(500, `Network error: ${error}`);
   }
 }
+
+// Export authApi and activityApi for compatibility
+export const authApi = {
+  login: async (email: string, password: string): Promise<{ token: string; role: string }> => {
+    return apiCall<{ token: string; role: string }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+  },
+};
+
+export const activityApi = {
+  log: async (action: string, data: any): Promise<any> => {
+    return apiCall<any>("/activity/log", {
+      method: "POST",
+      body: JSON.stringify({ action, ...data }),
+    });
+  },
+};
 
 /**
  * State API endpoints
