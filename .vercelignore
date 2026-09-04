@@ -4,7 +4,6 @@ node_modules
 .env.local
 docs
 .vscode
-dist
 server.ts
 server_old.ts
 server-simple.js
