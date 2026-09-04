@@ -138,17 +138,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           HEADER — Government branding + Nav + Login
       ───────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white border-b-2 border-[#1B3A7A]">
-        <div className="max-w-[1320px] mx-auto px-6 py-3 flex items-center justify-between gap-6">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3 md:gap-6 flex-wrap md:flex-nowrap">
 
           {/* Left: Emblem + Logo + Title */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0 min-w-0">
+            <div className="flex flex-col items-center shrink-0">
               <img 
                 src={new URL("../assets/images/Emblem_of_India.svg", import.meta.url).href}
                 alt="Emblem of India"
-                className="h-16 w-16 object-contain"
+                className="h-12 md:h-16 w-12 md:w-16 object-contain"
               />
-              <div className="text-[9px] font-bold text-[#1B3A7A] mt-0.5 leading-none">
+              <div className="text-[7px] md:text-[9px] font-bold text-[#1B3A7A] mt-0.5 leading-none">
                 {isHindi ? "सत्यमेव जयते" : ""}
               </div>
             </div>
@@ -157,29 +157,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <img 
               src={mpladsLogo}
               alt="MPLADS Logo"
-              className="h-16 w-16 object-contain"
+              className="h-12 md:h-16 w-12 md:w-16 object-contain"
             />
             
-            <div className="border-l-2 border-slate-300 pl-3">
-              <div className="text-[13px] font-bold text-slate-900 leading-tight">
+            <div className="border-l-2 border-slate-300 pl-2 md:pl-3 min-w-0">
+              <div className="text-[11px] md:text-[13px] font-bold text-slate-900 leading-tight">
                 {isHindi ? "भारत सरकार" : "Government of India"}
               </div>
-              <div className="text-[10px] text-slate-600 leading-tight">
+              <div className="text-[8px] md:text-[10px] text-slate-600 leading-tight">
                 {isHindi
                   ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय"
                   : "Ministry of Statistics & Programme Implementation"}
               </div>
-              <div className="text-[18px] font-extrabold text-[#1B3A7A] leading-tight mt-0.5">
+              <div className="text-[14px] md:text-[18px] font-extrabold text-[#1B3A7A] leading-tight mt-0.5">
                 MPLADS
               </div>
             </div>
           </div>
 
-          {/* Center: Nav */}
-          <nav className="hidden lg:flex items-center gap-6 flex-1 ml-8">
+          {/* Center: Nav - Hidden on mobile */}
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6 flex-1 ml-4 xl:ml-8">
             <a
               href="#top"
-              className="text-[13px] font-semibold text-[#1B3A7A] hover:text-[#0F2A6B] transition-colors outline-none focus:outline-none"
+              className="text-[12px] md:text-[13px] font-semibold text-[#1B3A7A] hover:text-[#0F2A6B] transition-colors outline-none focus:outline-none"
             >
               {isHindi ? "मुख्य पृष्ठ" : "Home"}
             </a>
