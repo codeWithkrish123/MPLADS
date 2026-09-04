@@ -1113,39 +1113,112 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          {/* Support Ticket CTA Section */}
-          <div className="bg-gradient-to-r from-[#1B3A7A] to-[#0F2A6B] rounded-2xl p-12 text-white text-center border border-slate-200 shadow-xl">
-            <div className="inline-block mb-4 px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-blue-100">
-                {isHindi ? "तत्काल कार्रवाई" : "IMMEDIATE ACTION"}
-              </span>
-            </div>
-            <h3 className="text-[28px] md:text-[32px] font-black mb-3 leading-tight">
-              {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Grievance"}
-            </h3>
-            <p className="text-blue-100 text-[15px] mb-8 max-w-2xl mx-auto">
-              {isHindi
-                ? "अपने सभी समस्याओं, सुझावों और शिकायतों के लिए सहायता टिकट खोलें। आप ट्रैकिंग नंबर प्राप्त करेंगे।"
-                : "Open a support ticket for all your issues, suggestions, and grievances. Get a tracking number for follow-up."}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={() => {
-                  const contactPageLink = "/contact";
-                  window.location.href = contactPageLink;
-                }}
-                className="px-10 py-4 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2"
-              >
-                <AlertTriangle className="w-5 h-5" />
-                {isHindi ? "सहायता टिकट खोलें" : "Open Support Ticket"}
-              </button>
-              <button 
-                onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-10 py-4 bg-white/20 hover:bg-white/30 border border-white text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm flex items-center justify-center gap-2"
-              >
-                <HelpCircle className="w-5 h-5" />
-                {isHindi ? "FAQ देखें" : "View FAQs"}
-              </button>
+          {/* Support Ticket CTA Section - Premium Redesign */}
+          <div className="relative overflow-hidden rounded-3xl p-14 text-white shadow-2xl" style={{
+            background: `
+              linear-gradient(135deg, #0F2A6B 0%, #1B3A7A 35%, #0D1F4A 70%, #05152F 100%),
+              radial-gradient(ellipse at 20% 50%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%)
+            `,
+            backdropFilter: "blur(10px)",
+            border: "1.5px solid rgba(255, 255, 255, 0.1)",
+          }}>
+            
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#FF6B00]/10 to-transparent rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl -ml-36 -mb-36 pointer-events-none" />
+            
+            {/* Content */}
+            <div className="relative z-10">
+              {/* Badge */}
+              <div className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-[#FF6B00]/20 to-orange-500/10 backdrop-blur-md border border-[#FF6B00]/30 rounded-full">
+                <span className="text-[12px] font-bold uppercase tracking-widest text-orange-300 drop-shadow-lg">
+                  {isHindi ? "🎯 तत्काल सहायता" : "🎯 IMMEDIATE ACTION"}
+                </span>
+              </div>
+
+              {/* Heading */}
+              <h3 className="text-[32px] md:text-[40px] font-black mb-5 leading-tight max-w-2xl" style={{
+                textShadow: "0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(255, 107, 0, 0.1)",
+              }}>
+                {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Grievance"}
+              </h3>
+
+              {/* Description */}
+              <p className="text-blue-100 text-[16px] mb-10 max-w-3xl leading-relaxed font-medium">
+                {isHindi
+                  ? "अपने सभी समस्याओं, सुझावों और शिकायतों के लिए तत्काल समर्थन प्राप्त करें। आपको ट्रैकिंग नंबर दिया जाएगा ताकि आप अपने टिकट को ट्रैक कर सकें।"
+                  : "Get immediate support for all your issues, suggestions, and grievances. You'll receive a tracking number to follow up on your ticket."}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-6 items-center">
+                <button 
+                  onClick={() => {
+                    const contactPageLink = "/contact";
+                    window.location.href = contactPageLink;
+                  }}
+                  className="group px-12 py-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8533] hover:from-[#FF7A1A] hover:to-[#FFA055] text-white font-bold text-[16px] rounded-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-3 border border-orange-400/50"
+                  style={{
+                    boxShadow: "0 10px 30px rgba(255, 107, 0, 0.3), 0 0 20px rgba(255, 107, 0, 0.1)",
+                  }}
+                >
+                  <AlertTriangle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>{isHindi ? "सहायता टिकट खोलें" : "Open Support Ticket"}</span>
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </button>
+
+                <button 
+                  onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="group px-12 py-4 bg-white/15 hover:bg-white/25 border-2 border-white/40 hover:border-white/60 text-white font-bold text-[16px] rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center gap-3"
+                >
+                  <HelpCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>{isHindi ? "FAQ देखें" : "View FAQs"}</span>
+                </button>
+              </div>
+
+              {/* Info badges */}
+              <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+                    <AlertTriangle className="w-5 h-5 text-orange-300" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
+                      {isHindi ? "तत्काल" : "Instant"}
+                    </p>
+                    <p className="text-[14px] text-white font-semibold">
+                      {isHindi ? "त्वरित प्रतिक्रिया" : "Quick Response"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                    <FileText className="w-5 h-5 text-blue-300" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
+                      {isHindi ? "ट्रैकिंग" : "Tracking"}
+                    </p>
+                    <p className="text-[14px] text-white font-semibold">
+                      {isHindi ? "संदर्भ संख्या" : "Reference Number"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                    <CheckCircle2 className="w-5 h-5 text-green-300" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
+                      {isHindi ? "सहायता" : "Support"}
+                    </p>
+                    <p className="text-[14px] text-white font-semibold">
+                      {isHindi ? "24/7 उपलब्ध" : "Available 24/7"}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
