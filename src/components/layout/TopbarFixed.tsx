@@ -52,7 +52,7 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
   const criticalCount = alerts.filter((a) => a.severity === "CRITICAL").length;
   const [showRoleMenu, setShowRoleMenu] = useState(false);
 
-  const roles: UserRole[] = ["Ministry", "MP", "District", "StateNodal", "Agency"];
+  const roles: UserRole[] = ["Ministry", "Member of Parliament", "District Authority", "State Nodal Authority"];
 
   return (
     <div className="w-full sticky top-0 z-50 flex flex-col bg-white shadow-md">

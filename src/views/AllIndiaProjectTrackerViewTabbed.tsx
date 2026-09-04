@@ -284,7 +284,7 @@ export const AllIndiaProjectTrackerViewTabbed: React.FC<
             <ChartCard
               title={isHindi ? "MP अनुशंसित बनाम वास्तविक व्यय (₹ Cr)" : "MP Recommended vs Actual Spend (₹ Cr)"}
               subtitle={isHindi ? "तुलना अध्ययन द्वारा प्रमुख काज" : "Comparative study by Top MPs"}
-              icon={BarChartIcon}
+              icon={BarChart3}
             >
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={mpRecommendedData}>
@@ -358,7 +358,7 @@ export const AllIndiaProjectTrackerViewTabbed: React.FC<
           <ChartCard
             title={isHindi ? "सदस्य संसद निधि आवंटन और कार्य अनुशंसा खाता (₹5 करोड़ कोटा बेंचमार्क)" : "Member of Parliament Fund Allocation & Work Recommendation Ledger (₹5.00 CR Quota Benchmark)"}
             subtitle={isHindi ? "Lok Sabha और Rajya Sabha भर में प्रत्येक सदस्य के ₹5 करोड़ कोटा उपयोग का पारदर्शी विश्लेषण" : "Transparent breakdown of ₹5 Cr quota utilization per Member across Lok Sabha and Rajya Sabha"}
-            icon={BarChartIcon}
+            icon={BarChart3}
           >
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={constituencyData}>
