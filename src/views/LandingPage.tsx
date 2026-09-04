@@ -38,10 +38,10 @@ import { SatyamevJayateLogo } from "../components/gov/SatyamevJayateLogo";
 import mpladsLogo from "../assets/MPLADS_logo.jpg";
 
 // Hero Images for carousel
-const heroBgImg1 = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
-const heroBgImg2 = new URL("../assets/images/parliament-house-hero.webp", import.meta.url).href;
-const heroBgImg3 = new URL("../assets/images/parliament-reflection.jpg", import.meta.url).href;
-const heroBgImg4 = new URL("../assets/images/parliament-picture.jpg", import.meta.url).href;
+const heroBgImg1 = new URL("../assets/images/mplads_portal_hero_1787771510954.jpg", import.meta.url).href; // MPLADS Road Project
+const heroBgImg2 = new URL("../assets/images/parliament-picture.jpg", import.meta.url).href; // Parliament Interior
+const heroBgImg3 = new URL("../assets/images/parliament-reflection.jpg", import.meta.url).href; // Parliament Reflection  
+const heroBgImg4 = new URL("../assets/images/parliament-house-hero.webp", import.meta.url).href; // Parliament Building
 
 const heroImages = [heroBgImg1, heroBgImg2, heroBgImg3, heroBgImg4];
 const portalHeroImg = heroBgImg1;
