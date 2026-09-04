@@ -14,6 +14,7 @@ import {
 import { UserRole, Language, RiskAlert } from "../../types";
 import { getTranslation } from "../../data/translations";
 import { SatyamevJayateLogo } from "../gov/SatyamevJayateLogo";
+import { MobileMenu } from "./MobileMenu";
 
 interface TopbarFixedProps {
   currentRole: UserRole;
@@ -51,6 +52,7 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
   const isHindi = language === "hi";
   const criticalCount = alerts.filter((a) => a.severity === "CRITICAL").length;
   const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const roles: UserRole[] = ["Ministry", "Member of Parliament", "District Authority", "State Nodal Authority"];
 
@@ -60,9 +62,9 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
       <div className="h-1 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
 
       {/* ===== TOP UTILITY BAR ===== */}
-      <div className="bg-[#0B192C] text-white text-sm px-4 md:px-6 py-2 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-[#0B192C] text-white text-sm px-4 md:px-6 py-2 flex items-center justify-between flex-wrap gap-2 md:gap-3">
         {/* Left: Emblem & Ministry Info */}
-        <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           <img 
             src={new URL("../../assets/images/Emblem_of_India.svg", import.meta.url).href}
             alt="Emblem"
@@ -78,35 +80,35 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
           </div>
         </div>
 
-        {/* Center: Helpline */}
+        {/* Center: Helpline - Hidden on very small screens */}
         <a 
           href="tel:1800111992" 
-          className="flex items-center gap-2 text-amber-400 hover:text-amber-300 font-semibold text-xs"
+          className="hidden sm:flex items-center gap-2 text-amber-400 hover:text-amber-300 font-semibold text-xs"
         >
           <PhoneCall className="w-4 h-4" />
           <span>1800-11-1992</span>
         </a>
 
         {/* Right: Accessibility & Links */}
-        <div className="flex items-center gap-4">
-          {/* Font Size */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Font Size - Hidden on mobile */}
           <button
             onClick={() => {
               if (fontSize === "small") onChangeFontSize("medium");
               else if (fontSize === "medium") onChangeFontSize("large");
               else onChangeFontSize("small");
             }}
-            className="flex items-center gap-1 hover:text-orange-400 transition-colors text-xs"
+            className="hidden md:flex items-center gap-1 hover:text-orange-400 transition-colors text-xs"
             title={isHindi ? "फ़ॉन्ट आकार" : "Font Size"}
           >
             <Type className="w-4 h-4" />
             <span>{fontSize === "small" ? "A-" : fontSize === "medium" ? "A" : "A+"}</span>
           </button>
 
-          {/* Contrast */}
+          {/* Contrast - Hidden on mobile */}
           <button
             onClick={onToggleHighContrast}
-            className={`flex items-center gap-1 transition-colors text-xs ${
+            className={`hidden md:flex items-center gap-1 transition-colors text-xs ${
               isHighContrast ? "text-orange-400" : "hover:text-orange-400"
             }`}
             title={isHindi ? "कंट्रास्ट" : "Contrast"}
@@ -124,7 +126,7 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
             {isHindi ? "EN" : "हि"}
           </button>
 
-          {/* Quick Links */}
+          {/* Quick Links - Hidden on mobile */}
           <div className="hidden lg:flex items-center gap-2 text-[10px] border-l border-slate-600 pl-3">
             <a href="https://uidai.gov.in" target="_blank" rel="noreferrer" className="hover:text-orange-400 transition-colors">
               Aadhaar
@@ -138,11 +140,11 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
       </div>
 
       {/* ===== MAIN HEADER ===== */}
-      <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-4">
+      <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3 md:gap-4">
         {/* LEFT: Logo & Title */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
           <button
-            onClick={onToggleSidebarMobile}
+            onClick={() => setMobileMenuOpen(true)}
             className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
             aria-label="Menu"
           >
@@ -151,33 +153,33 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
 
           <div 
             onClick={onOpenLanding}
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-2 cursor-pointer group min-w-0"
           >
             <SatyamevJayateLogo size="sm" className="shrink-0 group-hover:scale-110 transition-transform" />
             
-            <div className="border-l border-slate-300 pl-3">
-              <div className="font-black text-sm md:text-base text-slate-900 leading-tight">
+            <div className="border-l border-slate-300 pl-2 md:pl-3 min-w-0">
+              <div className="font-black text-xs md:text-sm lg:text-base text-slate-900 leading-tight truncate">
                 {isHindi ? "सांसद निधि" : "MPLADS"} <span className="text-orange-600">{isHindi ? "प्रहरी" : "SENTINEL"}</span>
               </div>
-              <div className="text-xs text-slate-600">{isHindi ? "पारदर्शी निगरानी" : "Transparent Monitoring"}</div>
+              <div className="text-[10px] md:text-xs text-slate-600 truncate">{isHindi ? "पारदर्शी निगरानी" : "Transparent Monitoring"}</div>
             </div>
           </div>
         </div>
 
         {/* CENTER: Search (Hidden on Mobile) */}
-        <div className="hidden md:flex flex-1 max-w-md mx-4">
+        <div className="hidden md:flex flex-1 max-w-md mx-2 lg:mx-4">
           <button
             onClick={onOpenSearch}
             className="w-full flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-600 text-sm"
           >
             <Search className="w-4 h-4 shrink-0" />
-            <span className="truncate">{isHindi ? "खोज..." : "Search..."}</span>
-            <kbd className="ml-auto text-xs bg-white px-2 py-1 rounded border border-slate-300 text-slate-500">⌘K</kbd>
+            <span className="truncate text-xs md:text-sm">{isHindi ? "खोज..." : "Search..."}</span>
+            <kbd className="ml-auto text-xs bg-white px-2 py-1 rounded border border-slate-300 text-slate-500 hidden lg:block">⌘K</kbd>
           </button>
         </div>
 
         {/* RIGHT: Controls */}
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-1 md:gap-3">
           {/* Mobile Search */}
           <button
             onClick={onOpenSearch}
@@ -201,8 +203,8 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
             )}
           </button>
 
-          {/* Role Selector */}
-          <div className="relative">
+          {/* Role Selector - Hidden on mobile */}
+          <div className="relative hidden lg:block">
             <button
               onClick={() => setShowRoleMenu(!showRoleMenu)}
               className="flex items-center gap-1 px-3 py-2 hover:bg-slate-100 rounded-lg transition-colors text-sm font-semibold text-slate-900"
@@ -231,24 +233,42 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
             )}
           </div>
 
-          {/* User Profile */}
+          {/* User Profile - Hidden on mobile */}
           <button
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
+            className="hidden lg:block p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
             title="Profile"
           >
             <User className="w-5 h-5" />
           </button>
 
-          {/* Logout */}
+          {/* Logout - Hidden on mobile */}
           <button
             onClick={onLogout}
-            className="p-2 hover:bg-red-50 rounded-lg transition-colors text-slate-700 hover:text-red-700"
+            className="hidden lg:block p-2 hover:bg-red-50 rounded-lg transition-colors text-slate-700 hover:text-red-700"
             title="Logout"
           >
             <LogOut className="w-5 h-5" />
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu Drawer */}
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        currentRole={currentRole}
+        onChangeRole={onChangeRole}
+        language={language}
+        onToggleLanguage={onToggleLanguage}
+        onOpenSearch={onOpenSearch}
+        onToggleNotifications={onToggleNotifications}
+        alerts={alerts}
+        fontSize={fontSize}
+        onChangeFontSize={onChangeFontSize}
+        isHighContrast={isHighContrast}
+        onToggleHighContrast={onToggleHighContrast}
+        onLogout={onLogout}
+      />
     </div>
   );
 };
