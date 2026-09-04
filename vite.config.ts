@@ -15,11 +15,14 @@ export default defineConfig(() => {
       outDir: 'dist',
       emptyOutDir: true,
       sourcemap: false,
+      minify: 'terser',
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom', 'react-router-dom'],
             recharts: ['recharts'],
+            icons: ['lucide-react'],
           },
         },
       },
