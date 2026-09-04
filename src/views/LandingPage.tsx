@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Shield,
   ArrowRight,
@@ -37,7 +37,7 @@ import { StateEmblem } from "../components/gov/StateEmblem";
 import { SatyamevJayateLogo } from "../components/gov/SatyamevJayateLogo";
 import mpladsLogo from "../assets/images/MPLADS_logo.jpg";
 
-const portalHeroImg = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
+const heroImages = ["/images/hero-1.jpg", "/images/hero-2.jpg", "/images/hero-3.jpg"];
 
 interface LandingPageProps {
   onExplore: () => void;
@@ -52,6 +52,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   language = "en",
   onToggleLanguage,
 }) => {
+  const [activeHero, setActiveHero] = useState(0);
   const [selectedRole, setSelectedRole] = useState<UserRole>("Ministry");
   const [govIdInput, setGovIdInput] = useState<string>("admin.mospi@nic.in");
   const [passcode, setPasscode] = useState<string>("••••••••••••");
@@ -63,6 +64,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [isSignInModalOpen, setIsSignInModalOpen] = useState<boolean>(false);
 
   const isHindi = language === "hi";
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveHero((current) => (current + 1) % heroImages.length);
+    }, 4000);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   const regenerateCaptcha = () => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
@@ -268,18 +277,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         className="relative w-full overflow-hidden"
         style={{ minHeight: "520px", perspective: "1000px" }}
       >
-        {/* Full-width Parliament background image with advanced filters */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${portalHeroImg})`,
-            backgroundAttachment: "fixed",
-            backgroundSize: "cover",
-            transform: "scale(1.05) translateZ(0)",
-            filter: "brightness(0.90) contrast(1.12) saturate(1.2) hue-rotate(3deg)",
-            WebkitBackfaceVisibility: "hidden",
-          }}
-        />
+        {/* Full-width Parliament background carousel with advanced filters */}
+        {heroImages.map((image, index) => (
+          <div
+            key={image}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
+            style={{
+              backgroundImage: `url(${image})`,
+              backgroundAttachment: "fixed",
+              backgroundSize: "cover",
+              transform: "translateZ(0)",
+              filter: "brightness(0.90) contrast(1.12) saturate(1.2) hue-rotate(3deg)",
+              opacity: activeHero === index ? 1 : 0,
+              WebkitBackfaceVisibility: "hidden",
+            }}
+          />
+        ))}
 
         {/* Premium gradient overlay - multiple sophisticated layers */}
         <div className="absolute inset-0" style={{
