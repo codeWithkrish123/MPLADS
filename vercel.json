@@ -2,5 +2,6 @@
   "version": 2,
   "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rootDirectory": "MPLADS-UI"
 }

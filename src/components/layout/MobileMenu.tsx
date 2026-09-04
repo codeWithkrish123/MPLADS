@@ -9,6 +9,11 @@ import {
   Contrast,
   Bell,
   ChevronDown,
+  Home,
+  Info,
+  FileText,
+  BookOpen,
+  Mail,
 } from "lucide-react";
 import { UserRole, Language, RiskAlert } from "../../types";
 
@@ -51,6 +56,23 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     "State Nodal Authority",
   ];
 
+  const navigationLinks = [
+    { id: "home", label: isHindi ? "मुख्य पृष्ठ" : "Home", icon: Home },
+    { id: "about", label: isHindi ? "MPLADS के बारे में" : "About MPLADS", icon: Info },
+    { id: "features", label: isHindi ? "विशेषताएं" : "Features", icon: FileText },
+    { id: "reports", label: isHindi ? "रिपोर्ट्स" : "Reports", icon: BookOpen },
+    { id: "guidelines", label: isHindi ? "दिशा-निर्देश" : "Guidelines", icon: FileText },
+    { id: "contact", label: isHindi ? "संपर्क करें" : "Contact Us", icon: Mail },
+  ];
+
+  const handleNavClick = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -64,8 +86,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* Sliding Menu */}
       <div className="fixed top-0 left-0 bottom-0 w-full max-w-xs bg-white shadow-2xl z-50 lg:hidden overflow-y-auto">
         {/* Header with Close Button */}
-        <div className="sticky top-0 flex items-center justify-between p-4 border-b border-slate-200 bg-white">
-          <h3 className="font-bold text-slate-900">
+        <div className="sticky top-0 flex items-center justify-between p-4 border-b border-slate-200 bg-white z-10">
+          <h3 className="font-bold text-slate-900 text-lg">
             {isHindi ? "मेनू" : "Menu"}
           </h3>
           <button
@@ -78,14 +100,39 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         </div>
 
         {/* Menu Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-6">
+          {/* Navigation Links Section */}
+          <div className="space-y-2">
+            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider px-2">
+              {isHindi ? "नेविगेशन" : "Navigation"}
+            </h4>
+            {navigationLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleNavClick(link.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors text-left font-medium"
+                >
+                  <Icon className="w-5 h-5 shrink-0" />
+                  <span>{link.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-slate-200" />
+
           {/* Role Selector */}
-          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+          <div className="space-y-2">
+            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider px-2">
+              {isHindi ? "भूमिका" : "Role"}
+            </h4>
             <button
               onClick={() => setShowRoleMenu(!showRoleMenu)}
-              className="w-full flex items-center justify-between font-bold text-slate-900 p-2"
+              className="w-full flex items-center justify-between bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 text-blue-900 font-bold p-3 rounded-lg hover:from-blue-100 hover:to-blue-150 transition-colors"
             >
-              <span className="text-sm">{isHindi ? "भूमिका:" : "Role:"} {currentRole}</span>
+              <span className="text-sm">{currentRole}</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${
                   showRoleMenu ? "rotate-180" : ""
@@ -94,7 +141,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             </button>
 
             {showRoleMenu && (
-              <div className="mt-3 space-y-1 pt-3 border-t border-slate-300">
+              <div className="space-y-1 p-2 bg-slate-50 rounded-lg border border-slate-200">
                 {roles.map((role) => (
                   <button
                     key={role}
@@ -102,9 +149,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                       onChangeRole(role);
                       setShowRoleMenu(false);
                     }}
-                    className={`block w-full text-left px-3 py-2 rounded text-sm transition-colors ${
+                    className={`block w-full text-left px-3 py-2.5 rounded text-sm font-medium transition-colors ${
                       role === currentRole
-                        ? "bg-blue-600 text-white font-bold"
+                        ? "bg-blue-600 text-white"
                         : "text-slate-700 hover:bg-slate-200"
                     }`}
                   >
@@ -115,10 +162,12 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             )}
           </div>
 
+          <div className="border-t border-slate-200" />
+
           {/* Accessibility Options */}
-          <div className="space-y-3 pt-4 border-t border-slate-200">
-            <h4 className="font-bold text-slate-900 text-sm">
-              {isHindi ? "पहुंच विकल्प" : "Accessibility"}
+          <div className="space-y-3">
+            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider px-2">
+              {isHindi ? "पहुंच" : "Accessibility"}
             </h4>
 
             {/* Font Size */}
@@ -130,7 +179,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               }}
               className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 rounded-lg transition-colors text-left"
             >
-              <Type className="w-5 h-5 text-slate-600" />
+              <Type className="w-5 h-5 text-slate-600 shrink-0" />
               <div className="flex-1">
                 <div className="text-sm font-semibold text-slate-900">
                   {isHindi ? "फ़ॉन्ट आकार" : "Font Size"}
@@ -139,7 +188,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                   {fontSize === "small" ? "A-" : fontSize === "medium" ? "A" : "A+"}
                 </div>
               </div>
-              <ChevronDown className="w-4 h-4 text-slate-400" />
             </button>
 
             {/* Contrast */}
@@ -147,7 +195,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               onClick={onToggleHighContrast}
               className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 rounded-lg transition-colors text-left"
             >
-              <Contrast className="w-5 h-5 text-slate-600" />
+              <Contrast className="w-5 h-5 text-slate-600 shrink-0" />
               <div className="flex-1">
                 <div className="text-sm font-semibold text-slate-900">
                   {isHindi ? "कंट्रास्ट" : "Contrast"}
@@ -163,7 +211,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               onClick={onToggleLanguage}
               className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 rounded-lg transition-colors text-left"
             >
-              <Globe className="w-5 h-5 text-slate-600" />
+              <Globe className="w-5 h-5 text-slate-600 shrink-0" />
               <div className="flex-1">
                 <div className="text-sm font-semibold text-slate-900">
                   {isHindi ? "भाषा" : "Language"}
@@ -175,17 +223,17 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             </button>
           </div>
 
+          <div className="border-t border-slate-200" />
+
           {/* Account Actions */}
-          <div className="space-y-2 pt-4 border-t border-slate-200">
-            <h4 className="font-bold text-slate-900 text-sm">
+          <div className="space-y-2">
+            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider px-2">
               {isHindi ? "खाता" : "Account"}
             </h4>
 
-            <button className="w-full flex items-center gap-3 p-3 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
-              <User className="w-5 h-5" />
-              <span className="font-medium">
-                {isHindi ? "प्रोफाइल" : "Profile"}
-              </span>
+            <button className="w-full flex items-center gap-3 p-3 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors font-medium">
+              <User className="w-5 h-5 shrink-0" />
+              <span>{isHindi ? "प्रोफाइल" : "Profile"}</span>
             </button>
 
             <button
@@ -193,30 +241,30 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 onLogout?.();
                 onClose();
               }}
-              className="w-full flex items-center gap-3 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="w-full flex items-center gap-3 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
             >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">{isHindi ? "लॉगआउट" : "Logout"}</span>
+              <LogOut className="w-5 h-5 shrink-0" />
+              <span>{isHindi ? "लॉगआउट" : "Logout"}</span>
             </button>
           </div>
 
           {/* Footer Links */}
-          <div className="pt-6 border-t border-slate-200 space-y-2">
+          <div className="pt-4 border-t border-slate-200 space-y-2">
             <a
               href="https://uidai.gov.in"
               target="_blank"
               rel="noreferrer"
-              className="block text-sm text-blue-600 hover:underline"
+              className="block text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
             >
-              Aadhaar
+              🔗 Aadhaar
             </a>
             <a
               href="https://digilocker.gov.in"
               target="_blank"
               rel="noreferrer"
-              className="block text-sm text-blue-600 hover:underline"
+              className="block text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
             >
-              DigiLocker
+              🔗 DigiLocker
             </a>
             <div className="text-xs text-slate-500 pt-4">
               {isHindi ? "संस्करण 1.0" : "Version 1.0"}
