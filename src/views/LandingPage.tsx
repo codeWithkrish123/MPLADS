@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Shield,
   ArrowRight,
@@ -37,7 +37,14 @@ import { StateEmblem } from "../components/gov/StateEmblem";
 import { SatyamevJayateLogo } from "../components/gov/SatyamevJayateLogo";
 import mpladsLogo from "../assets/MPLADS_logo.jpg";
 
-const portalHeroImg = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
+// Hero Images for carousel
+const heroBgImg1 = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
+const heroBgImg2 = new URL("../assets/images/parliament-house-hero.webp", import.meta.url).href;
+const heroBgImg3 = new URL("../assets/images/parliament-reflection.jpg", import.meta.url).href;
+const heroBgImg4 = new URL("../assets/images/parliament-picture.jpg", import.meta.url).href;
+
+const heroImages = [heroBgImg1, heroBgImg2, heroBgImg3, heroBgImg4];
+const portalHeroImg = heroBgImg1;
 
 interface LandingPageProps {
   onExplore: () => void;
@@ -61,6 +68,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [captchaInput, setCaptchaInput] = useState<string>("");
   const [captchaError, setCaptchaError] = useState<string>("");
   const [isSignInModalOpen, setIsSignInModalOpen] = useState<boolean>(false);
+  
+  // Carousel state
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (!isAutoPlay) return;
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [isAutoPlay]);
 
   const isHindi = language === "hi";
 
@@ -259,30 +279,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </header>
 
       {/* ─────────────────────────────────────────────
-          HERO — Parliament image with 3D depth effect
-          Left: headline + tricolor + desc + CTA buttons
-          Right: floating dark navy feature card
+          HERO — Animated 3D Carousel with smooth transitions
+          Auto-rotating Parliament images with smooth motion
       ───────────────────────────────────────────── */}
       <section
         id="top"
         className="relative w-full overflow-hidden"
         style={{ minHeight: "520px", perspective: "1000px" }}
       >
-        {/* Full-width Parliament background image with advanced filters */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${portalHeroImg})`,
-            backgroundAttachment: "fixed",
-            backgroundSize: "cover",
-            transform: "scale(1.05) translateZ(0)",
-            filter: "brightness(0.90) contrast(1.12) saturate(1.2) hue-rotate(3deg)",
-            WebkitBackfaceVisibility: "hidden",
-          }}
-        />
+        {/* Carousel Container */}
+        <div className="absolute inset-0 w-full h-full">
+          {heroImages.map((img, idx) => (
+            <div
+              key={idx}
+              className="absolute inset-0 transition-all duration-1000 ease-out"
+              style={{
+                opacity: idx === currentImageIndex ? 1 : 0,
+                transform: idx === currentImageIndex ? 'scale(1)' : 'scale(1.05)',
+                zIndex: idx === currentImageIndex ? 1 : 0,
+              }}
+            >
+              <img
+                src={img}
+                alt={`Slide ${idx + 1}`}
+                className="w-full h-full object-cover"
+                style={{
+                  filter: "brightness(0.90) contrast(1.12) saturate(1.2) hue-rotate(3deg)",
+                }}
+              />
+            </div>
+          ))}
+        </div>
 
         {/* Premium gradient overlay - multiple sophisticated layers */}
-        <div className="absolute inset-0" style={{
+        <div className="absolute inset-0 pointer-events-none" style={{
           background: `
             linear-gradient(135deg, rgba(31, 58, 122, 0.25) 0%, rgba(255,255,255,0) 45%),
             linear-gradient(45deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255,255,255,0) 100%),
@@ -305,7 +335,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         }} />
 
         {/* Sophisticated dual vignette effect */}
-        <div className="absolute inset-0" style={{
+        <div className="absolute inset-0 pointer-events-none" style={{
           background: `
             radial-gradient(ellipse 900px 650px at 25% 35%, transparent 35%, rgba(0,0,0,0.12) 75%, rgba(0,0,0,0.2) 100%),
             radial-gradient(ellipse 700px 900px at 90% 50%, transparent 45%, rgba(0,0,0,0.05) 100%)
@@ -313,7 +343,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         }} />
 
         {/* Premium ambient lighting effect */}
-        <div className="absolute inset-0 opacity-40" style={{
+        <div className="absolute inset-0 opacity-40 pointer-events-none" style={{
           background: `
             radial-gradient(ellipse at 20% 30%, rgba(255, 182, 193, 0.15) 0%, transparent 40%),
             radial-gradient(ellipse at 80% 70%, rgba(173, 216, 230, 0.1) 0%, transparent 50%)
@@ -321,10 +351,67 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         }} />
 
         {/* Subtle texture overlay for depth perception */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
           backgroundImage: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><filter id=\"noise\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.9\" numOctaves=\"4\" seed=\"2\" /></filter><rect width=\"100\" height=\"100\" filter=\"url(%23noise)\" /></svg>')",
           backgroundSize: "200px 200px",
         }} />
+
+        {/* Carousel Indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+          {heroImages.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setCurrentImageIndex(idx);
+                setIsAutoPlay(false);
+                setTimeout(() => setIsAutoPlay(true), 6000);
+              }}
+              className="transition-all duration-500 cursor-pointer"
+              style={{
+                width: currentImageIndex === idx ? '32px' : '10px',
+                height: '10px',
+                borderRadius: '5px',
+                backgroundColor: currentImageIndex === idx ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)',
+                boxShadow: currentImageIndex === idx ? '0 0 20px rgba(255,255,255,0.9)' : 'none',
+                border: '2px solid rgba(255,255,255,0.7)',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Navigation Arrows */}
+        <button
+          onClick={() => {
+            setCurrentImageIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+            setIsAutoPlay(false);
+            setTimeout(() => setIsAutoPlay(true), 6000);
+          }}
+          className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/30 group"
+        >
+          <svg className="w-6 h-6 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <button
+          onClick={() => {
+            setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+            setIsAutoPlay(false);
+            setTimeout(() => setIsAutoPlay(true), 6000);
+          }}
+          className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-all duration-300 backdrop-blur-sm border border-white/30 group"
+        >
+          <svg className="w-6 h-6 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        {/* Slide Counter */}
+        <div className="absolute top-8 right-8 z-20 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
+          <span className="text-white text-sm font-semibold">
+            {currentImageIndex + 1} / {heroImages.length}
+          </span>
+        </div>
 
         {/* Content layer with 3D perspective */}
         <div className="relative z-10 max-w-[1320px] mx-auto px-6 py-16 flex items-center min-h-[520px]">
