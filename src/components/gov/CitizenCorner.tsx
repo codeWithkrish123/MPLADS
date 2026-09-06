@@ -43,7 +43,7 @@ export const CitizenCorner: React.FC<CitizenCornerProps> = ({
 
   // Filter works by selected district
   const districtWorks = works.filter(
-    (w) => w.district.toLowerCase() === selectedDistrict.toLowerCase()
+    (w) => w.district && selectedDistrict && w.district.toLowerCase() === selectedDistrict.toLowerCase()
   );
 
   // Take the 3 most recent projects in the selected district

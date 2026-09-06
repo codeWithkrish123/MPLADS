@@ -10,14 +10,14 @@ import { getRoutePath } from "./routes/routeConfig";
 
 // API Service Layer
 import { 
-  workApi, 
-  stateApi, 
-  districtApi, 
   alertApi, 
-  agencyApi, 
-  complianceApi, 
-  auditApi 
 } from "./services/api";
+
+// Data Fetching Hooks
+import { useFetchProjects, useFetchAlerts } from "./hooks/useFetchData";
+
+// Services
+import { alertService } from "./services/analysisService";
 
 // Layout & Global Components
 import { Topbar } from "./components/layout/Topbar";
@@ -53,9 +53,23 @@ import { MapIntelligenceView } from "./views/MapIntelligenceView";
 
 export default function App() {
   // Get authentication state
-  const { isAuthenticated, user, role, logout, login } = useAuth();
+  const { isAuthenticated, user, role, logout, login, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Show loading spinner while validating authentication on app init
+  if (authLoading && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/' && location.pathname !== '/contact' && location.pathname !== '/role-selector') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          </div>
+          <p className="text-slate-600 font-medium">Validating session...</p>
+        </div>
+      </div>
+    );
+  }
   
   // Navigation State
   const [currentView, setCurrentView] = useState<string>("landing");
@@ -115,6 +129,39 @@ export default function App() {
   const [isHighContrast, setIsHighContrast] = useState<boolean>(false);
   const [savedThemeBeforeContrast, setSavedThemeBeforeContrast] = useState<GovTheme>("nic-blue");
 
+  // ==================== REAL DATA FETCHING ====================
+  // Only fetch projects if authenticated (skip if not logged in)
+  const { data: projectsData, loading: projectsLoading, error: projectsError, refetch: refetchProjects } = useFetchProjects();
+  const [projects, setProjects] = useState<WorkRecord[]>([]);
+
+  // Only fetch alerts if authenticated (skip if not logged in)
+  const { data: alertsData, loading: alertsLoading, error: alertsDataError, refetch: refetchAlerts } = useFetchAlerts();
+
+  // Update projects when data is fetched (only after authenticated)
+  useEffect(() => {
+    if (projectsData?.projects) {
+      console.log('[App] Updating projects from backend:', projectsData.projects.length, 'projects');
+      setProjects(projectsData.projects);
+    }
+  }, [projectsData]);
+
+  // Update alerts when data is fetched (only after authenticated)
+  useEffect(() => {
+    if (alertsData && Array.isArray(alertsData)) {
+      console.log('[App] Updating alerts from backend:', alertsData.length, 'alerts');
+      setAlerts(alertsData);
+    }
+  }, [alertsData]);
+
+  // Manually trigger data fetch after user authenticates
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('[App] User authenticated, enabling data fetches');
+      refetchProjects(); // Start fetching projects
+      refetchAlerts();   // Start fetching alerts
+    }
+  }, [isAuthenticated, refetchProjects, refetchAlerts]);
+
   // Load font size preference from localStorage on mount
   useEffect(() => {
     const savedFontSize = localStorage.getItem("mplads_font_size") as "small" | "medium" | "large" | null;
@@ -168,16 +215,34 @@ export default function App() {
     return pathMap[pathname] || "landing";
   };
 
-  // Sync URL changes to state
+  // Sync URL changes to state - but RESPECT authentication
   useEffect(() => {
     const pathname = location.pathname;
     const viewName = urlToViewName(pathname);
+
+    // PROTECTION: If not authenticated and trying to access protected route, redirect to landing
+    const publicRoutes = ["landing", "login", "contact", "roleSelector"];
+    const isPublicRoute = publicRoutes.includes(viewName);
+    
+    // Wait for auth to finish loading before checking authentication status
+    if (authLoading) {
+      return; // Don't navigate yet, still validating token
+    }
+    
+    if (!isAuthenticated && !isPublicRoute) {
+      // User not logged in but trying to access protected route (e.g., /overview)
+      // Force redirect to landing page
+      console.log(`[App] Auth blocked: User not authenticated, redirecting from ${viewName} to landing`);
+      setCurrentView("landing");
+      navigate("/", { replace: true });
+      return;
+    }
 
     // Only update if different to avoid infinite loops
     if (viewName !== currentView) {
       setCurrentView(viewName);
     }
-  }, [location.pathname]);
+  }, [location.pathname, isAuthenticated, navigate, authLoading]);
 
   // Load high contrast preference from localStorage on mount
   useEffect(() => {
@@ -487,7 +552,14 @@ export default function App() {
         onToggleNotifications={() => setIsNotificationsDrawerOpen(true)}
         onToggleSidebarMobile={() => setIsSidebarMobileOpen((o) => !o)}
         alerts={alerts}
-        onOpenLanding={() => navigateTo("landing")}
+        onOpenLanding={() => {
+          // If logged in, go to dashboard. If not logged in, go to landing page.
+          if (isAuthenticated) {
+            navigateTo("overview");
+          } else {
+            navigateTo("landing");
+          }
+        }}
         onStartTour={() => {
           setTourStep(0);
           setIsOnboardingTourOpen(true);
@@ -531,7 +603,7 @@ export default function App() {
             {currentView === "overview" && (
               <NationalOverviewView
                 states={[]}
-                works={[]}
+                works={projects}
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}
@@ -556,7 +628,7 @@ export default function App() {
             {currentView === "districtIntel" && (
               <DistrictDashboardView
                 districtName={currentDistrict}
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 onBackToState={() => navigateTo("stateIntel")}
                 language={language}
@@ -565,7 +637,7 @@ export default function App() {
 
             {currentView === "works" && (
               <WorkIntelligenceTableView
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -581,7 +653,7 @@ export default function App() {
             {currentView === "alerts" && (
               <AlertCenterView
                 alerts={alerts}
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
               />
@@ -590,7 +662,7 @@ export default function App() {
             {currentView === "map" && (
               <MapIntelligenceView
                 states={[]}
-                works={[]}
+                works={projects}
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
                 onSelectWork={handleOpenWorkDetail}

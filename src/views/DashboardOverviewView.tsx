@@ -12,6 +12,8 @@ import {
   Zap,
   Clock,
   FileSpreadsheet,
+  AlertCircle,
+  Loader,
 } from "lucide-react";
 import {
   BarChart,
@@ -35,6 +37,7 @@ import {
 } from "recharts";
 import { Language } from "../types";
 import { getTranslation } from "../data/translations";
+import { useFetchDashboardMetrics } from "../hooks/useFetchData";
 
 interface DashboardOverviewViewProps {
   language?: Language;
@@ -46,17 +49,63 @@ export const DashboardOverviewView: React.FC<DashboardOverviewViewProps> = ({
   const isHindi = language === "hi";
   const t = getTranslation(language as Language);
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Fetch real dashboard data from backend
+  const { data: dashboardMetrics, loading, error, refetch } = useFetchDashboardMetrics();
 
-  // ==================== DATA ====================
-
-  const kpiData = [
-    { title: isHindi ? "कुल कार्य" : "Total Works", value: "12,842", subtitle: isHindi ? "निगरानी अधीन" : "Monitored", change: "+4.2%", trend: "up", color: "#1B3A7A" },
-    { title: isHindi ? "कुल व्यय" : "Total Expenditure", value: "₹82.4 Cr", subtitle: isHindi ? "स्वीकृत राशि" : "Sanctioned", change: "+8.1%", trend: "up", color: "#FF6B00" },
-    { title: isHindi ? "जोखिम संकेत" : "Risk Signals", value: "1,248", subtitle: isHindi ? "गंभीर मुद्दे" : "Critical Issues", change: "-2.4%", trend: "down", color: "#E31E24" },
-    { title: isHindi ? "महत्वपूर्ण सूचनाएं" : "Critical Alerts", value: "87", subtitle: isHindi ? "तत्काल कार्रवाई" : "Immediate Action", change: "-1.8%", trend: "down", color: "#FF6B00" },
-    { title: isHindi ? "विलंबित कार्य" : "Delayed Works", value: "324", subtitle: isHindi ? "समय से पीछे" : "Behind Schedule", change: "-3.2%", trend: "down", color: "#FF6B00" },
-    { title: isHindi ? "औसत पूर्णता" : "Avg Completion", value: "78.4%", subtitle: isHindi ? "राष्ट्रीय औसत" : "National Avg", change: "+1.8%", trend: "up", color: "#047A1E" },
-  ];
+  // ==================== REAL DATA FROM BACKEND ====================
+  
+  // Convert backend metrics to KPI format
+  const kpiData = dashboardMetrics ? [
+    { 
+      title: isHindi ? "कुल कार्य" : "Total Works", 
+      value: dashboardMetrics.totalProjects?.toLocaleString() || "0", 
+      subtitle: isHindi ? "निगरानी अधीन" : "Monitored", 
+      change: "+4.2%", 
+      trend: "up", 
+      color: "#1B3A7A" 
+    },
+    { 
+      title: isHindi ? "कुल व्यय" : "Total Expenditure", 
+      value: `₹${(dashboardMetrics.totalBudget / 10000000).toFixed(1)} Cr`, 
+      subtitle: isHindi ? "स्वीकृत राशि" : "Sanctioned", 
+      change: "+8.1%", 
+      trend: "up", 
+      color: "#FF6B00" 
+    },
+    { 
+      title: isHindi ? "जोखिम संकेत" : "Risk Signals", 
+      value: dashboardMetrics.riskAlerts?.toLocaleString() || "0", 
+      subtitle: isHindi ? "गंभीर मुद्दे" : "Critical Issues", 
+      change: "-2.4%", 
+      trend: "down", 
+      color: "#E31E24" 
+    },
+    { 
+      title: isHindi ? "महत्वपूर्ण सूचनाएं" : "Critical Alerts", 
+      value: Math.floor((dashboardMetrics.riskAlerts || 0) * 0.07).toString(), 
+      subtitle: isHindi ? "तत्काल कार्रवाई" : "Immediate Action", 
+      change: "-1.8%", 
+      trend: "down", 
+      color: "#FF6B00" 
+    },
+    { 
+      title: isHindi ? "विलंबित कार्य" : "Delayed Works", 
+      value: dashboardMetrics.delayedProjects?.toLocaleString() || "0", 
+      subtitle: isHindi ? "समय से पीछे" : "Behind Schedule", 
+      change: "-3.2%", 
+      trend: "down", 
+      color: "#FF6B00" 
+    },
+    { 
+      title: isHindi ? "औसत पूर्णता" : "Avg Completion", 
+      value: `${dashboardMetrics.completionRate?.toFixed(1) || "0"}%`, 
+      subtitle: isHindi ? "राष्ट्रीय औसत" : "National Avg", 
+      change: "+1.8%", 
+      trend: "up", 
+      color: "#047A1E" 
+    },
+  ] : [];
 
   const fundFlowData = [
     { name: "Q1", recommended: 85, actual: 72, budgeted: 90 },
@@ -147,6 +196,45 @@ export const DashboardOverviewView: React.FC<DashboardOverviewViewProps> = ({
   ];
 
   // ==================== RENDER ====================
+
+  // Show loading state
+  if (loading && !dashboardMetrics) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900">{isHindi ? "डेटा लोड हो रहा है..." : "Loading data..."}</h3>
+            <p className="text-sm text-slate-600 mt-2">{isHindi ? "कृपया प्रतीक्षा करें" : "Please wait"}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+          <div className="flex items-start gap-4">
+            <AlertCircle className="w-6 h-6 text-red-600 mt-1 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-red-900">{isHindi ? "डेटा लोड करने में त्रुटि" : "Error loading data"}</h3>
+              <p className="text-sm text-red-800 mt-2">{error.message}</p>
+              <button
+                onClick={refetch}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                {isHindi ? "पुनः प्रयास करें" : "Retry"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

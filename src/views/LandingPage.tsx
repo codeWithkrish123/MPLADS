@@ -308,11 +308,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="lg:col-span-6 xl:col-span-6 space-y-7">
               <div className="space-y-4">
                 <h1 
-                  className="text-[36px] sm:text-[44px] lg:text-[52px] font-black text-[#0F2A6B] leading-[1.08] tracking-tight"
+                  className="text-[32px] sm:text-[40px] lg:text-[48px] font-black text-[#0F2A6B] leading-[1.08] tracking-tight"
                   style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontStyle: "italic",
-                    fontWeight: 700,
+                    fontFamily: "'Segoe UI', system-ui, sans-serif",
+                    fontStyle: "normal",
+                    fontWeight: 900,
                     textShadow: `
                       0 2px 4px rgba(255,255,255,0.9),
                       0 4px 12px rgba(15, 42, 107, 0.2),

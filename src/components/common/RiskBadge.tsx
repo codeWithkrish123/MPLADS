@@ -22,10 +22,16 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
   id,
   language = "en",
 }) => {
+  // ✅ FIX: Handle undefined severity - don't render if no severity
+  if (!severity) {
+    return null;
+  }
+
   const isHindi = language === "hi";
 
   const getRiskConfig = () => {
-    switch (severity) {
+    const sev = severity ? (severity as string).toUpperCase() : "LOW";
+    switch (sev) {
       case "CRITICAL":
         return {
           icon: Flame,
@@ -73,7 +79,7 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
 
   return (
     <span
-      id={id || `risk-badge-${severity.toLowerCase()}-${score || 'generic'}`}
+      id={id || `risk-badge-${(severity as string).toLowerCase()}-${score || 'generic'}`}
       className={cn(
         "inline-flex items-center rounded-[6px] border tracking-wide font-sans transition-colors whitespace-nowrap",
         config.bg,

@@ -1,34 +1,40 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Bot,
+  Phone,
   Send,
   Sparkles,
-  User,
-  ShieldAlert,
-  FileText,
-  Building2,
-  MapPin,
-  RefreshCw,
   Copy,
   Check,
+  Volume2,
+  Printer,
+  ThumbsUp,
+  ThumbsDown,
+  Layout,
+  Users,
+  Building2,
+  FileText,
+  Clock,
+  Shield,
+  CheckCircle,
 } from "lucide-react";
 import { AIMessage, Language } from "../types";
-import { getTranslation } from "../data/translations";
 
 interface AIAssistantViewProps {
-  onNavigateToWorks?: () => void;
-  onNavigateToDistrict?: (dist: string) => void;
   language?: Language;
 }
 
 export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
-  onNavigateToWorks,
-  onNavigateToDistrict,
   language = "en",
 }) => {
   const isHindi = language === "hi";
-  const t = getTranslation(language as Language);
   const [messages, setMessages] = useState<AIMessage[]>([]);
+  const [userMode, setUserMode] = useState<"citizen" | "officer">("citizen");
+  const [inputPrompt, setInputPrompt] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ [key: string]: "helpful" | "not-helpful" | null }>({});
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMessages([
@@ -36,36 +42,21 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
         id: "msg-0",
         role: "assistant",
         content: isHindi
-          ? "**सांसद निधि प्रहरी (MPLADS Sentinel AI)** में आपका स्वागत है। मैं सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय (MoSPI) के सांसद निधि संचालन दिशा-निर्देशों, व्यय अभिलेखों और बहु-कारकीय विसंगति मॉडल पर प्रशिक्षित प्रशासनिक सहायता प्रणाली हूँ।\n\nआज मैं आपकी ऑडिट, निगरानी या अनुपालन समीक्षा में कैसे सहायता कर सकता हूँ?"
-          : "Welcome to **MPLADS Sentinel AI**. I am your institutional decision-support assistant trained on MoSPI MPLADS operating guidelines, expenditure ledgers, and multi-factor anomaly models.\n\nHow may I assist your audit, monitoring, or compliance review today?",
-        timestamp: isHindi ? "अभी-अभी" : "Just now",
+          ? "Government of India • Ministry of Statistics & Programme Implementation (MoSPI)\n\nWelcome to the National MPLADS Citizen & Administrative Assistance Helpdesk.\n\nThis official electronic desk operates in accordance with the MoSPI Revised MPLADS Guidelines 2023, Public Financial Management System (PFMS) protocols, and district statutory rules.\n\nKey Areas of Official Assistance:\n1. Citizen Guidance: Permissible works in your locality, tracking local project progress, and submitting formal CPGRAMS quality complaints.\n2. MP Quota & Sanctions: Annual ₹5.00 Crore constituency entitlement, 45-day District Collector sanction rule, and negative/prohibited list.\n3. Government Audit & PFMS: CAG audit readiness, direct vendor digital transfer, and mandatory geo-tagged photographic inspection."
+          : "Government of India • Ministry of Statistics & Programme Implementation (MoSPI)\n\nWelcome to the National MPLADS Citizen & Administrative Assistance Helpdesk.\n\nThis official electronic desk operates in accordance with the MoSPI Revised MPLADS Guidelines 2023, Public Financial Management System (PFMS) protocols, and district statutory rules.\n\nKey Areas of Official Assistance:\n1. Citizen Guidance: Permissible works in your locality, tracking local project progress, and submitting formal CPGRAMS quality complaints.\n2. MP Quota & Sanctions: Annual ₹5.00 Crore constituency entitlement, 45-day District Collector sanction rule, and negative/prohibited list.\n3. Government Audit & PFMS: CAG audit readiness, direct vendor digital transfer, and mandatory geo-tagged photographic inspection.",
+        timestamp: isHindi ? "Just now" : "Just now",
         evidence: isHindi
-          ? ["MoSPI संशोधित दिशा-निर्देश 2023", "राष्ट्रीय सांसद निधि पोर्टफोलियो लेजर FY 2025-26"]
-          : ["MoSPI Revised Guidelines 2023", "National MPLADS Portfolio Ledger FY 2025-26"],
+          ? ["Gazette of India Notification MoSPI/MPLADS/2023/1", "DND Schedule of Rates (DSR) 2024"]
+          : ["Gazette of India Notification MoSPI/MPLADS/2023/1", "DND Schedule of Rates (DSR) 2024"],
       },
     ]);
   }, [language, isHindi]);
 
-  const [inputPrompt, setInputPrompt] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const suggestedQuestions = isHindi
-    ? [
-        "गाज़ियाबाद जिले को उच्च जोखिम के रूप में क्यों वर्गीकृत किया गया है?",
-        "गंभीर भौतिक-वित्तीय प्रगति अंतर वाले जिले दिखाएं",
-        "किन कार्यान्वयन एजेंसियों में बार-बार लागत वृद्धि होती है?",
-        "उन शीर्ष कार्यों की सूची बनाएं जिनकी निर्धारित समयसीमा छूटने का पूर्वानुमान है",
-        "निजी ट्रस्टों पर सांसद निधि नियम MPLADS-RULE-001 समझाएं",
-      ]
-    : [
-        "Why is Ghaziabad classified as High Risk?",
-        "Show districts with severe physical-financial progress gaps",
-        "Which implementing agencies have recurring cost overruns?",
-        "List top works predicted to miss scheduled handover",
-        "Explain rule MPLADS-RULE-001 on private trusts",
-      ];
+  const quickInquiries = [
+    "What public works can be built under the ₹5 Crore MPLADS fund in my locality?",
+    "How do I file a formal complaint if a sanctioned project is delayed or substandard?",
+    "Can MPLADS funds be used on private land, gated communities or trust properties?",
+  ];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -94,7 +85,7 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
       const res = await fetch("/api/ai/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text, language }),
+        body: JSON.stringify({ question: text, language, mode: userMode }),
       });
 
       const data = await res.json();
@@ -102,24 +93,21 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
       const aiMsg: AIMessage = {
         id: `ai-${Date.now()}`,
         role: "assistant",
-        content: data.answer || "I have analyzed the portfolio. Here are the observed metrics and compliance citations.",
+        content:
+          data.answer ||
+          "Based on the MoSPI Revised MPLADS Guidelines 2023, this matter has been reviewed. For specific cases, please file a formal CPGRAMS complaint or contact the District Magistrate office.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        evidence: data.evidence || [
-          "MPLADS Anomaly Surveillance Database",
-          "District Schedule of Rates (SOR)",
-        ],
-        citations: data.citations || ["2023 Guidelines Para 4.1"],
+        evidence: data.evidence || ["MoSPI Revised MPLADS Guidelines 2023"],
       };
 
       setMessages((prev) => [...prev, aiMsg]);
     } catch {
-      // Fallback robust answer
       const fallbackMsg: AIMessage = {
         id: `ai-${Date.now()}`,
         role: "assistant",
-        content: `**Institutional Intelligence Assessment:**\n\nBased on current portfolio scans, the query regarding "${text}" has been correlated with our anomaly matrices:\n\n• **Core Observation:** Elevated risk signals are observed in municipal infrastructure contracts with high financial velocity.\n• **Empirical Metric:** Average cost anomaly index stands at 74/100.\n• **Statutory Directive:** Recommend verifying Measurement Book (MB) submissions and third-party inspection certifications before authorizing subsequent tranche releases.`,
+        content: `Based on the MoSPI Revised MPLADS Guidelines 2023 and institutional knowledge of the scheme, your query regarding "${text}" requires verification against district-level records. Please contact the District Magistrate office or file a CPGRAMS complaint for formal resolution.`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        evidence: ["District Planning Database", "MoSPI Scheme Guidelines"],
+        evidence: ["MoSPI Revised MPLADS Guidelines 2023"],
       };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
@@ -133,145 +121,340 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  return (
-    <div id="ask-mplads-ai-view" className="h-[calc(100vh-8.5rem)] flex flex-col bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden animate-in fade-in duration-200">
-      {/* Assistant Header */}
-      <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#112E51] border border-slate-700 flex items-center justify-center text-amber-300">
-            <Bot className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold tracking-tight">Ask MPLADS AI Assistant</h2>
-              <span className="text-[10px] font-mono font-bold bg-slate-800 text-slate-200 px-2 py-0.5 rounded border border-slate-700">
-                Gemini 3.7 Flash
-              </span>
+  const handleSpeak = (text: string, id: string) => {
+    if ("speechSynthesis" in window) {
+      const cleanText = text.replace(/\*\*/g, "").replace(/##/g, "");
+
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = isHindi ? "hi-IN" : "en-IN";
+      utterance.rate = 0.9;
+
+      utterance.onstart = () => setSpeakingId(id);
+      utterance.onend = () => setSpeakingId(null);
+      utterance.onerror = () => setSpeakingId(null);
+
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const handlePrint = (content: string) => {
+    const printWindow = window.open("", "", "width=900,height=600");
+    if (printWindow) {
+      const cleanContent = content.replace(/\*\*/g, "").replace(/##/g, "");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>MPLADS Official Guidance</title>
+            <style>
+              body { font-family: 'Noto Sans', Arial, sans-serif; margin: 40px; line-height: 1.8; color: #1f2937; }
+              .header { border-bottom: 3px solid #FF9933; padding-bottom: 15px; margin-bottom: 20px; }
+              .header h1 { margin: 0; color: #003399; font-size: 16px; font-weight: 700; }
+              .header p { margin: 5px 0; color: #6b7280; font-size: 12px; }
+              .content { margin: 20px 0; font-size: 13px; line-height: 1.8; }
+              .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</h1>
+              <p>National MPLADS Citizen & Administrative Helpdesk</p>
             </div>
-            <p className="text-[11px] text-slate-400">
-              Grounded Decision Support &amp; Statutory Risk Intelligence
-            </p>
+            <div class="content">${cleanContent}</div>
+            <div class="footer">
+              <p>This is official guidance from the MoSPI helpdesk. For statutory decisions, contact the District Magistrate office.</p>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleFeedback = (id: string, type: "helpful" | "not-helpful") => {
+    setFeedback((prev) => ({
+      ...prev,
+      [id]: prev[id] === type ? null : type,
+    }));
+  };
+
+  return (
+    <div className="h-full flex flex-col bg-gray-50 animate-in fade-in duration-200" style={{ fontFamily: "'Noto Sans', 'Noto Sans Devanagari', Arial, sans-serif" }}>
+      {/* TOP TRICOLOR STRIPE */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+      {/* PROFESSIONAL HEADER */}
+      <div className="bg-white px-6 py-4 border-b border-gray-200">
+        <div className="flex items-start justify-between gap-6">
+          {/* Left: Logo & Branding */}
+          <div className="flex items-start gap-4 flex-1">
+            {/* National Emblem - Lion Capital */}
+            <img
+              src="/assets/HD-wallpaper-satyamev-jayate-bharat-civil-service-history-ias-india-indian-ips-lion-emblem-motivation.jpg"
+              alt="Indian National Emblem"
+              className="w-14 h-14 rounded-lg shadow-md shrink-0 object-contain bg-white p-1"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23003399%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2260%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 font-weight=%22bold%22%3EIN%3C/text%3E%3C/svg%3E';
+              }}
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-xs font-bold text-gray-700 tracking-wider">
+                  GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION
+                </p>
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                  Official e-Helpdesk
+                </span>
+              </div>
+              <h1 className="text-base font-bold text-gray-900">
+                National MPLADS Citizen & Administrative Helpdesk
+              </h1>
+              <p className="text-xs text-gray-600 mt-0.5">
+                MoSPI Revised Guidelines 2023, PFMS Direct Disbursal, Sanction Procedures & Citizen Grievance Assistance
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Helpline Info Box */}
+          <div className="bg-white border border-gray-300 rounded-lg p-3 shrink-0 text-right min-w-fit">
+            <div className="flex items-center justify-end gap-2 mb-2">
+              <Phone className="w-4 h-4 text-[#003399]" />
+              <p className="text-xs text-gray-700 font-bold">National Toll-Free Helpline</p>
+            </div>
+            <p className="text-lg font-bold text-[#003399]">1800-11-2826</p>
+            <p className="text-xs text-gray-600 mt-1">Working Days: Mon - Fri</p>
+            <p className="text-xs text-gray-600">09:30 AM - 06:00 PM IST</p>
           </div>
         </div>
 
-        <button
-          onClick={() =>
-            setMessages([
-              {
-                id: "msg-reset",
-                role: "assistant",
-                content: "Session reset. How may I assist your review?",
-                timestamp: "Just now",
-              },
-            ])
-          }
-          className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors"
-          title="Reset Conversation"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        {/* MODE TOGGLE & INFO */}
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-700 uppercase">Guidance Mode:</span>
+            
+            {/* Citizen Mode Button */}
+            <button
+              onClick={() => setUserMode("citizen")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+                userMode === "citizen"
+                  ? "bg-[#003399] text-white shadow-sm"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              Citizen Portal
+            </button>
+
+            {/* Officer Mode Button */}
+            <button
+              onClick={() => setUserMode("officer")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 ${
+                userMode === "officer"
+                  ? "bg-[#138808] text-white shadow-sm"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              Officer & Auditor Desk
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs text-gray-600 font-medium">
+            <span className="flex items-center gap-1">
+              <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+              MoSPI 2023 Certified
+            </span>
+            <span>Session Ref: ResPI/2026/SAC-4</span>
+          </div>
+        </div>
       </div>
 
-      {/* Suggested Questions Pill Row */}
-      <div className="p-3 bg-slate-50 border-b border-slate-200 overflow-x-auto flex items-center gap-2 shrink-0">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono whitespace-nowrap">
-          Suggested:
-        </span>
-        {suggestedQuestions.map((q, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleSendMessage(q)}
-            className="px-2.5 py-1 bg-white hover:bg-slate-100 border border-slate-200 hover:border-slate-300 rounded-full text-xs text-slate-700 whitespace-nowrap transition-colors shadow-2xs font-medium"
-          >
-            {q}
-          </button>
-        ))}
+      {/* QUICK INQUIRIES */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <div className="flex items-center gap-2 mb-2">
+          <Layout className="w-3.5 h-3.5 text-gray-700" />
+          <p className="text-xs font-bold text-gray-700 uppercase">Quick Official Inquiries:</p>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {quickInquiries.map((q, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSendMessage(q)}
+              className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-700 whitespace-nowrap hover:border-[#003399] hover:outline-2 hover:outline-[#003399] hover:outline-offset-1 transition-all font-medium shrink-0"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+      {/* MESSAGES AREA */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-50">
         {messages.map((msg) => {
           const isAssistant = msg.role === "assistant";
           return (
-            <div
-              key={msg.id}
-              className={`flex items-start gap-3 ${isAssistant ? "justify-start" : "justify-end"}`}
-            >
+            <div key={msg.id} className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}>
               {isAssistant && (
-                <div className="w-7 h-7 rounded-md bg-slate-900 text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bot className="w-4 h-4" />
-                </div>
+                <img
+                  src="/assets/{20A93098-17BC-4845-8DE2-CEB41F73B330}.png"
+                  alt="Assistant"
+                  className="w-8 h-8 rounded-lg shrink-0 mt-1 object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23003399%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2260%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 font-weight=%22bold%22%3EIN%3C/text%3E%3C/svg%3E';
+                  }}
+                />
               )}
 
-              <div
-                className={`max-w-2xl rounded-lg p-4 space-y-2 shadow-2xs ${
-                  isAssistant
-                    ? "bg-slate-50 border border-slate-200 text-slate-800"
-                    : "bg-blue-600 text-white font-medium"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-4 text-[10px] opacity-70 mb-1">
-                  <span>{isAssistant ? "Sentinel Decision Support Engine" : "Authorized User"}</span>
-                  <span>{msg.timestamp}</span>
-                </div>
+              <div className={`max-w-2xl ${isAssistant ? "ml-3" : "mr-3"}`}>
+                {isAssistant && (
+                  <div className="bg-white border border-gray-300 rounded-lg p-4 mb-2">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-3 pb-3 border-b border-gray-200">
+                      <div>
+                        <p className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                          Ministry of Statistics & Programme Implementation
+                        </p>
+                      </div>
+                      <p className="text-xs text-gray-500 font-mono">{msg.timestamp}</p>
+                    </div>
 
-                <div className="text-xs leading-relaxed whitespace-pre-line font-sans">
-                  {msg.content}
-                </div>
+                    {/* Content */}
+                    <div className="text-xs leading-relaxed text-gray-800 mb-3 font-sans whitespace-pre-wrap">
+                      {msg.content}
+                    </div>
 
-                {/* Evidence citations if assistant */}
-                {isAssistant && msg.evidence && msg.evidence.length > 0 && (
-                  <div className="pt-2 mt-2 border-t border-slate-200/80 text-[11px] space-y-1">
-                    <span className="font-bold text-slate-500 uppercase tracking-wider block text-[10px]">
-                      Grounded Empirical Evidence:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {msg.evidence.map((ev, eIdx) => (
-                        <span
-                          key={eIdx}
-                          className="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 font-mono text-[10px]"
+                    {/* Evidence */}
+                    {msg.evidence && msg.evidence.length > 0 && (
+                      <div className="bg-gray-50 border border-gray-200 rounded p-2 mb-3">
+                        <p className="text-xs font-bold text-gray-700 uppercase mb-1.5 tracking-wider">
+                          Statute References:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {msg.evidence.map((ev, eIdx) => (
+                            <span
+                              key={eIdx}
+                              className="px-2 py-1 bg-white border border-[#FF9933] rounded-full text-xs text-[#FF9933] font-semibold"
+                            >
+                              {ev}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Bar */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-200 gap-4">
+                      {/* Left: Feedback */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleFeedback(msg.id, "helpful")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border ${
+                            feedback[msg.id] === "helpful"
+                              ? "bg-green-50 text-green-700 border-green-300"
+                              : "text-gray-600 border-gray-300 hover:bg-gray-50"
+                          }`}
                         >
-                          • {ev}
-                        </span>
-                      ))}
+                          <ThumbsUp className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(msg.id, "not-helpful")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 border ${
+                            feedback[msg.id] === "not-helpful"
+                              ? "bg-red-50 text-red-700 border-red-300"
+                              : "text-gray-600 border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          <ThumbsDown className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {/* Middle: Question */}
+                      <p className="text-xs text-gray-600 flex-1 text-center">
+                        Was this official guidance helpful?
+                      </p>
+
+                      {/* Right: Action Buttons */}
+                      <div className="flex items-center gap-2 ml-auto">
+                        {/* Read Aloud */}
+                        <button
+                          onClick={() => {
+                            if (speakingId === msg.id) {
+                              window.speechSynthesis.cancel();
+                              setSpeakingId(null);
+                            } else {
+                              handleSpeak(msg.content, msg.id);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                            speakingId === msg.id
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                          }`}
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          {speakingId === msg.id ? "Stop" : "Read Aloud"}
+                        </button>
+
+                        {/* Print */}
+                        <button
+                          onClick={() => handlePrint(msg.content)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          Print Memo
+                        </button>
+
+                        {/* Copy */}
+                        <button
+                          onClick={() => handleCopy(msg.content, msg.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                            copiedId === msg.id
+                              ? "bg-green-50 text-green-700 border-green-300"
+                              : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
+                          }`}
+                        >
+                          {copiedId === msg.id ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {isAssistant && (
-                  <div className="pt-1 flex justify-end">
-                    <button
-                      onClick={() => handleCopy(msg.content, msg.id)}
-                      className="text-slate-400 hover:text-slate-600 p-1 rounded"
-                      title="Copy Answer"
-                    >
-                      {copiedId === msg.id ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>
+                {!isAssistant && (
+                  <div className="bg-[#003399] text-white rounded-lg p-3">
+                    <p className="text-xs font-medium">{msg.content}</p>
                   </div>
                 )}
               </div>
-
-              {!isAssistant && (
-                <div className="w-7 h-7 rounded-md bg-blue-700 text-white flex items-center justify-center shrink-0 mt-0.5">
-                  <User className="w-4 h-4" />
-                </div>
-              )}
             </div>
           );
         })}
 
         {isLoading && (
-          <div className="flex items-start gap-3">
-            <div className="w-7 h-7 rounded-md bg-slate-900 text-blue-300 flex items-center justify-center shrink-0">
-              <Bot className="w-4 h-4 animate-pulse" />
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-500 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-spin" />
-              <span>Analyzing portfolio data &amp; synthesizing policy citations...</span>
+          <div className="flex gap-3 items-start">
+            <img
+              src="/assets/{20A93098-17BC-4845-8DE2-CEB41F73B330}.png"
+              alt="Assistant"
+              className="w-8 h-8 rounded-lg shrink-0 animate-pulse object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23003399%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2260%22 font-size=%2240%22 fill=%22white%22 text-anchor=%22middle%22 font-weight=%22bold%22%3EIN%3C/text%3E%3C/svg%3E';
+              }}
+            />
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-xs text-gray-600">
+                <Sparkles className="w-3.5 h-3.5 text-[#FF9933] animate-spin" />
+                <span>Processing official guidance...</span>
+              </div>
             </div>
           </div>
         )}
@@ -279,34 +462,79 @@ export const AIAssistantView: React.FC<AIAssistantViewProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Prompt Box */}
-      <div className="p-3 border-t border-slate-200 bg-slate-50/80 shrink-0">
+      {/* INPUT AREA */}
+      <div className="bg-gray-50 border-t border-gray-200 px-6 py-4 space-y-3">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSendMessage();
           }}
-          className="flex items-center gap-2"
+          className="flex gap-2"
         >
           <input
             type="text"
-            placeholder="Ask anything about MPLADS works, cost anomalies, delayed projects or guidelines..."
+            placeholder="Type your query regarding MPLADS works, ₹5 Cr quota, sanction rules, or grievances..."
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
             disabled={isLoading}
-            className="flex-1 bg-white border border-slate-300 rounded-lg px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-blue-600 placeholder:text-slate-400 shadow-2xs"
+            className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-xs text-gray-900 outline-none focus:border-[#003399] focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
           />
           <button
             type="submit"
             disabled={isLoading || !inputPrompt.trim()}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-5 py-2.5 bg-[#3B5998] hover:bg-[#2D4373] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
           >
-            <span>Ask</span>
+            <span>Submit Query</span>
             <Send className="w-3.5 h-3.5" />
           </button>
         </form>
-        <div className="text-[10px] text-slate-400 text-center mt-1.5 font-mono">
-          Decision Support System • Does not replace statutory administrative review
+
+        {/* SERVICE CARDS */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white border border-gray-300 rounded-lg p-3">
+            <div className="flex items-start gap-2 mb-2">
+              <FileText className="w-5 h-5 text-[#003399] shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-bold text-gray-900">Revised 2023 Guidelines Manual</p>
+                <p className="text-xs text-gray-600">Official MoSPI statutory circular and permissible list.</p>
+              </div>
+            </div>
+            <a href="https://mospi.gov.in/mplads-guidelines" target="_blank" rel="noopener noreferrer" className="text-xs text-[#003399] font-semibold hover:underline inline-block">
+              View Official Circular →
+            </a>
+          </div>
+
+          <div className="bg-white border border-gray-300 rounded-lg p-3">
+            <div className="flex items-start gap-2 mb-2">
+              <Clock className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-bold text-gray-900">45-Day DM Sanction SLA</p>
+                <p className="text-xs text-gray-600">Statutory deadline for District Collector sanction under Para 3.4.</p>
+              </div>
+            </div>
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold inline-block">
+              Rule 3.4 Mandated
+            </span>
+          </div>
+
+          <div className="bg-white border border-gray-300 rounded-lg p-3">
+            <div className="flex items-start gap-2 mb-2">
+              <Shield className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-bold text-gray-900">CPGRAMS Public Grievance Desk</p>
+                <p className="text-xs text-gray-600">Escalate unresolved civil works to Central Vigilance Desk.</p>
+              </div>
+            </div>
+            <a href="https://pgportal.gov.in" target="_blank" rel="noopener noreferrer" className="text-xs text-orange-600 font-semibold hover:underline inline-block">
+              Go to pgportal.gov.in →
+            </a>
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="bg-gray-100 border border-gray-300 rounded p-2.5 text-xs text-gray-700">
+          <p className="font-medium mb-1">NIC Secure e-Governance Architecture (GIGW 3.0 Certified)</p>
+          <p>Institutional guidance for public reference. Governed by official Gazette circulars.</p>
         </div>
       </div>
     </div>

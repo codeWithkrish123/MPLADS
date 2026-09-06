@@ -17,9 +17,10 @@ import {
   Megaphone,
   Eye,
   Contrast,
-  Type
+  Type,
+  LogOut
 } from "lucide-react";
-import { UserRole, Language, GovTheme, RiskAlert } from "../../types";
+import { UserRole, Language, GovTheme, RiskAlert, User as UserType } from "../../types";
 import { cn } from "../../lib/utils";
 import { getTranslation } from "../../data/translations";
 import { StateEmblem } from "../gov/StateEmblem";
@@ -46,6 +47,8 @@ interface TopbarProps {
   onChangeFontSize: (size: "small" | "medium" | "large") => void;
   isHighContrast: boolean;
   onToggleHighContrast: () => void;
+  onLogout?: () => void;
+  user?: UserType | null;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
@@ -69,6 +72,8 @@ export const Topbar: React.FC<TopbarProps> = ({
   onChangeFontSize,
   isHighContrast,
   onToggleHighContrast,
+  onLogout,
+  user,
 }) => {
   const t = getTranslation(language);
   const criticalCount = alerts.filter((a) => a.severity === "CRITICAL" && a.status === "Open").length;
@@ -332,19 +337,31 @@ export const Topbar: React.FC<TopbarProps> = ({
             )}
           </button>
 
-          {/* Citizen / Official User Avatar */}
+          {/* Citizen / Official User Avatar & Logout */}
           <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
             <div className="w-8 h-8 rounded-full border border-primary-border flex items-center justify-center bg-primary-light text-primary">
               <User className="w-4 h-4" />
             </div>
             <div className="hidden 2xl:flex flex-col text-[11px]">
               <span className="font-semibold leading-tight text-[#0F172A]">
-                {isHindi ? "आम नागरिक / अधिकारी" : "Citizen / Official"}
+                {user?.email ? user.email.split('@')[0] : (isHindi ? "आम नागरिक / अधिकारी" : "Citizen / Official")}
               </span>
               <span className="text-[9px] font-mono text-[#64748B]">
-                GOV-SECURE-ID
+                {user?.role || "GOV-SECURE-ID"}
               </span>
             </div>
+            
+            {/* Logout Button */}
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="ml-2 pl-2 border-l border-[#E2E8F0] p-2 rounded-[8px] transition-all text-[#64748B] hover:text-red-600 hover:bg-red-50 duration-200 flex items-center gap-1"
+                title={isHindi ? "लॉग आउट करें" : "Sign out"}
+                aria-label="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </header>
