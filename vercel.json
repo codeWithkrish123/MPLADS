@@ -1,0 +1,26 @@
+{
+  \"version\": 2,
+  \"buildCommand\": \"npm run build\",
+  \"installCommand\": \"npm install --legacy-peer-deps\",
+  \"outputDirectory\": \"dist\",
+  \"env\": {
+    \"VITE_API_BASE_URL\": \"https://api.mplads.gov.in\"
+  },
+  \"rewrites\": [
+    {
+      \"source\": \"/(.*)\",
+      \"destination\": \"/index.html\"
+    }
+  ],
+  \"headers\": [
+    {
+      \"source\": \"/\",
+      \"headers\": [
+        {
+          \"key\": \"X-Frame-Options\",
+          \"value\": \"SAMEORIGIN\"
+        }
+      ]
+    }
+  ]
+}
