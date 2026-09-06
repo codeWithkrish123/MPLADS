@@ -3,7 +3,6 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist",
-  "public": false,
   "rewrites": [
     {
       "source": "/(.*)",
