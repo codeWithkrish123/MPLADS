@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": "dist",
+  "buildCommand": "npm run build --prefix MPLADS-UI",
+  "installCommand": "npm install --legacy-peer-deps --prefix MPLADS-UI",
+  "outputDirectory": "MPLADS-UI/dist",
   "rewrites": [
     {
       "source": "/(.*)",
