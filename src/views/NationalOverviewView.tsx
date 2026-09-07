@@ -233,9 +233,9 @@ export const NationalOverviewView: React.FC<NationalOverviewViewProps> = ({
             </div>
 
             <div className="divide-y divide-slate-100 mt-2 max-h-[380px] overflow-y-auto">
-              {states.map((st) => (
+              {states && states.map((st) => (
                 <div
-                  key={st.code}
+                  key={st.code || st.state}
                   onClick={() => onSelectState(st.state)}
                   className={`py-2.5 px-2 rounded-md transition-colors cursor-pointer flex items-center justify-between gap-2 hover:bg-slate-50 ${
                     selectedState === st.state ? "bg-blue-50/80 border border-blue-200" : ""
@@ -256,7 +256,7 @@ export const NationalOverviewView: React.FC<NationalOverviewViewProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <RiskBadge severity={st.risk_category} score={st.avg_risk_score} size="sm" />
+                    {st.risk_category && <RiskBadge severity={st.risk_category} score={st.avg_risk_score} size="sm" />}
                   </div>
                 </div>
               ))}
@@ -337,25 +337,25 @@ export const NationalOverviewView: React.FC<NationalOverviewViewProps> = ({
             </div>
 
             <div className="space-y-2.5">
-              {works.slice(0, 3).map((work) => (
+              {works && works.slice(0, 3).map((work, idx) => (
                 <div
-                  key={work.work_id}
+                  key={work.id || work.work_id || `work-${idx}`}
                   onClick={() => onSelectWork(work)}
                   className="p-3 bg-slate-50/70 hover:bg-slate-100 border border-slate-200 rounded-lg transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <span className="font-mono text-xs font-bold text-slate-900 group-hover:text-blue-700">
-                      {work.work_id}
+                      {work.id || work.work_id || 'N/A'}
                     </span>
-                    <RiskBadge severity={work.risk_category} score={work.risk_score} size="sm" />
+                    {work.risk_category && <RiskBadge severity={work.risk_category} score={work.risk_score} size="sm" />}
                   </div>
                   <div className="text-xs font-semibold text-slate-800 truncate mb-1">
-                    {work.description}
+                    {work.name || work.description || 'Unnamed Project'}
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span>{work.district}, {work.state}</span>
+                    <span>{work.district_id || work.district || 'N/A'}, {work.state_id || work.state || 'N/A'}</span>
                     <span className="font-mono font-bold text-slate-700">
-                      {formatCr(work.sanctioned_cost)}
+                      {work.budget ? formatCr(parseFloat(work.budget)) : formatCr(work.sanctioned_cost)}
                     </span>
                   </div>
                 </div>

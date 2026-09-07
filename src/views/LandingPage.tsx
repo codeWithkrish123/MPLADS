@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Shield,
   ArrowRight,
@@ -138,17 +138,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           HEADER — Government branding + Nav + Login
       ───────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white border-b-2 border-[#1B3A7A]">
-        <div className="max-w-[1320px] mx-auto px-6 py-3 flex items-center justify-between gap-6">
+        <div className="max-w-[1320px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-3 md:gap-6 flex-wrap md:flex-nowrap">
 
           {/* Left: Emblem + Logo + Title */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0 min-w-0">
+            <div className="flex flex-col items-center shrink-0">
               <img 
                 src={new URL("../assets/images/Emblem_of_India.svg", import.meta.url).href}
                 alt="Emblem of India"
-                className="h-16 w-16 object-contain"
+                className="h-12 md:h-16 w-12 md:w-16 object-contain"
               />
-              <div className="text-[9px] font-bold text-[#1B3A7A] mt-0.5 leading-none">
+              <div className="text-[7px] md:text-[9px] font-bold text-[#1B3A7A] mt-0.5 leading-none">
                 {isHindi ? "सत्यमेव जयते" : ""}
               </div>
             </div>
@@ -157,29 +157,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <img 
               src={mpladsLogo}
               alt="MPLADS Logo"
-              className="h-16 w-16 object-contain"
+              className="h-12 md:h-16 w-12 md:w-16 object-contain"
             />
             
-            <div className="border-l-2 border-slate-300 pl-3">
-              <div className="text-[13px] font-bold text-slate-900 leading-tight">
+            <div className="border-l-2 border-slate-300 pl-2 md:pl-3 min-w-0">
+              <div className="text-[11px] md:text-[13px] font-bold text-slate-900 leading-tight">
                 {isHindi ? "भारत सरकार" : "Government of India"}
               </div>
-              <div className="text-[10px] text-slate-600 leading-tight">
+              <div className="text-[8px] md:text-[10px] text-slate-600 leading-tight">
                 {isHindi
                   ? "सांख्यिकी और कार्यक्रम कार्यान्वयन मंत्रालय"
                   : "Ministry of Statistics & Programme Implementation"}
               </div>
-              <div className="text-[18px] font-extrabold text-[#1B3A7A] leading-tight mt-0.5">
+              <div className="text-[14px] md:text-[18px] font-extrabold text-[#1B3A7A] leading-tight mt-0.5">
                 MPLADS
               </div>
             </div>
           </div>
 
-          {/* Center: Nav */}
-          <nav className="hidden lg:flex items-center gap-6 flex-1 ml-8">
+          {/* Center: Nav - Hidden on mobile */}
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-6 flex-1 ml-4 xl:ml-8">
             <a
               href="#top"
-              className="text-[13px] font-semibold text-[#1B3A7A] hover:text-[#0F2A6B] transition-colors outline-none focus:outline-none"
+              className="text-[12px] md:text-[13px] font-semibold text-[#1B3A7A] hover:text-[#0F2A6B] transition-colors outline-none focus:outline-none"
             >
               {isHindi ? "मुख्य पृष्ठ" : "Home"}
             </a>
@@ -259,7 +259,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </header>
 
       {/* ─────────────────────────────────────────────
-          HERO — Parliament image with 3D depth effect
+          HERO — Simple static Parliament background
           Left: headline + tricolor + desc + CTA buttons
           Right: floating dark navy feature card
       ───────────────────────────────────────────── */}
@@ -268,63 +268,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         className="relative w-full overflow-hidden"
         style={{ minHeight: "520px", perspective: "1000px" }}
       >
-        {/* Full-width Parliament background image with advanced filters */}
+        {/* Full-width Parliament background image - simple static */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url(${portalHeroImg})`,
-            backgroundAttachment: "fixed",
             backgroundSize: "cover",
-            transform: "scale(1.05) translateZ(0)",
-            filter: "brightness(0.90) contrast(1.12) saturate(1.2) hue-rotate(3deg)",
-            WebkitBackfaceVisibility: "hidden",
+            filter: "brightness(0.85) contrast(1.1)",
           }}
         />
 
-        {/* Premium gradient overlay - multiple sophisticated layers */}
-        <div className="absolute inset-0" style={{
-          background: `
-            linear-gradient(135deg, rgba(31, 58, 122, 0.25) 0%, rgba(255,255,255,0) 45%),
-            linear-gradient(45deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255,255,255,0) 100%),
-            linear-gradient(to right, 
-              rgba(255,255,255,0.99) 0%, 
-              rgba(255,255,255,0.95) 18%, 
-              rgba(255,255,255,0.85) 32%, 
-              rgba(255,255,255,0.55) 50%, 
-              rgba(255,255,255,0.25) 70%,
-              rgba(255,255,255,0.05) 88%,
-              rgba(255,255,255,0.0) 100%
-            ),
-            linear-gradient(to bottom, 
-              rgba(150, 190, 255, 0.12) 0%, 
-              rgba(255,255,255,0.06) 45%,
-              rgba(0,0,0,0.03) 100%
-            )
-          `,
-          backdropFilter: "blur(1px)",
-        }} />
+        {/* Simple white gradient overlay from left */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(to right, 
+              rgba(255,255,255,0.98) 0%, 
+              rgba(255,255,255,0.90) 20%, 
+              rgba(255,255,255,0.70) 40%,
+              rgba(255,255,255,0.30) 60%,
+              rgba(255,255,255,0) 85%
+            )`,
+          }}
+        />
 
-        {/* Sophisticated dual vignette effect */}
-        <div className="absolute inset-0" style={{
-          background: `
-            radial-gradient(ellipse 900px 650px at 25% 35%, transparent 35%, rgba(0,0,0,0.12) 75%, rgba(0,0,0,0.2) 100%),
-            radial-gradient(ellipse 700px 900px at 90% 50%, transparent 45%, rgba(0,0,0,0.05) 100%)
-          `,
-        }} />
-
-        {/* Premium ambient lighting effect */}
-        <div className="absolute inset-0 opacity-40" style={{
-          background: `
-            radial-gradient(ellipse at 20% 30%, rgba(255, 182, 193, 0.15) 0%, transparent 40%),
-            radial-gradient(ellipse at 80% 70%, rgba(173, 216, 230, 0.1) 0%, transparent 50%)
-          `,
-        }} />
-
-        {/* Subtle texture overlay for depth perception */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\"><filter id=\"noise\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.9\" numOctaves=\"4\" seed=\"2\" /></filter><rect width=\"100\" height=\"100\" filter=\"url(%23noise)\" /></svg>')",
-          backgroundSize: "200px 200px",
-        }} />
+        {/* Subtle vignette */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 1000px 700px at 20% 50%, transparent 40%, rgba(0,0,0,0.1) 100%)`,
+          }}
+        />
 
         {/* Content layer with 3D perspective */}
         <div className="relative z-10 max-w-[1320px] mx-auto px-6 py-16 flex items-center min-h-[520px]">
@@ -334,11 +308,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="lg:col-span-6 xl:col-span-6 space-y-7">
               <div className="space-y-4">
                 <h1 
-                  className="text-[36px] sm:text-[44px] lg:text-[52px] font-black text-[#0F2A6B] leading-[1.08] tracking-tight"
+                  className="text-[32px] sm:text-[40px] lg:text-[48px] font-black text-[#0F2A6B] leading-[1.08] tracking-tight"
                   style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontStyle: "italic",
-                    fontWeight: 700,
+                    fontFamily: "'Segoe UI', system-ui, sans-serif",
+                    fontStyle: "normal",
+                    fontWeight: 900,
                     textShadow: `
                       0 2px 4px rgba(255,255,255,0.9),
                       0 4px 12px rgba(15, 42, 107, 0.2),
@@ -1139,39 +1113,112 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          {/* Support Ticket CTA Section */}
-          <div className="bg-gradient-to-r from-[#1B3A7A] to-[#0F2A6B] rounded-2xl p-12 text-white text-center border border-slate-200 shadow-xl">
-            <div className="inline-block mb-4 px-3 py-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
-              <span className="text-[12px] font-bold uppercase tracking-wider text-blue-100">
-                {isHindi ? "तत्काल कार्रवाई" : "IMMEDIATE ACTION"}
-              </span>
-            </div>
-            <h3 className="text-[28px] md:text-[32px] font-black mb-3 leading-tight">
-              {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Grievance"}
-            </h3>
-            <p className="text-blue-100 text-[15px] mb-8 max-w-2xl mx-auto">
-              {isHindi
-                ? "अपने सभी समस्याओं, सुझावों और शिकायतों के लिए सहायता टिकट खोलें। आप ट्रैकिंग नंबर प्राप्त करेंगे।"
-                : "Open a support ticket for all your issues, suggestions, and grievances. Get a tracking number for follow-up."}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={() => {
-                  const contactPageLink = "/contact";
-                  window.location.href = contactPageLink;
-                }}
-                className="px-10 py-4 bg-[#FF6B00] hover:bg-[#E55A00] text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2"
-              >
-                <AlertTriangle className="w-5 h-5" />
-                {isHindi ? "सहायता टिकट खोलें" : "Open Support Ticket"}
-              </button>
-              <button 
-                onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-10 py-4 bg-white/20 hover:bg-white/30 border border-white text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 backdrop-blur-sm flex items-center justify-center gap-2"
-              >
-                <HelpCircle className="w-5 h-5" />
-                {isHindi ? "FAQ देखें" : "View FAQs"}
-              </button>
+          {/* Support Ticket CTA Section - Premium Redesign */}
+          <div className="relative overflow-hidden rounded-3xl p-14 text-white shadow-2xl" style={{
+            background: `
+              linear-gradient(135deg, #0F2A6B 0%, #1B3A7A 35%, #0D1F4A 70%, #05152F 100%),
+              radial-gradient(ellipse at 20% 50%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%)
+            `,
+            backdropFilter: "blur(10px)",
+            border: "1.5px solid rgba(255, 255, 255, 0.1)",
+          }}>
+            
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#FF6B00]/10 to-transparent rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl -ml-36 -mb-36 pointer-events-none" />
+            
+            {/* Content */}
+            <div className="relative z-10">
+              {/* Badge */}
+              <div className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-[#FF6B00]/20 to-orange-500/10 backdrop-blur-md border border-[#FF6B00]/30 rounded-full">
+                <span className="text-[12px] font-bold uppercase tracking-widest text-orange-300 drop-shadow-lg">
+                  {isHindi ? "🎯 तत्काल सहायता" : "🎯 IMMEDIATE ACTION"}
+                </span>
+              </div>
+
+              {/* Heading */}
+              <h3 className="text-[32px] md:text-[40px] font-black mb-5 leading-tight max-w-2xl" style={{
+                textShadow: "0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(255, 107, 0, 0.1)",
+              }}>
+                {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Grievance"}
+              </h3>
+
+              {/* Description */}
+              <p className="text-blue-100 text-[16px] mb-10 max-w-3xl leading-relaxed font-medium">
+                {isHindi
+                  ? "अपने सभी समस्याओं, सुझावों और शिकायतों के लिए तत्काल समर्थन प्राप्त करें। आपको ट्रैकिंग नंबर दिया जाएगा ताकि आप अपने टिकट को ट्रैक कर सकें।"
+                  : "Get immediate support for all your issues, suggestions, and grievances. You'll receive a tracking number to follow up on your ticket."}
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-6 items-center">
+                <button 
+                  onClick={() => {
+                    const contactPageLink = "/contact";
+                    window.location.href = contactPageLink;
+                  }}
+                  className="group px-12 py-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8533] hover:from-[#FF7A1A] hover:to-[#FFA055] text-white font-bold text-[16px] rounded-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-3 border border-orange-400/50"
+                  style={{
+                    boxShadow: "0 10px 30px rgba(255, 107, 0, 0.3), 0 0 20px rgba(255, 107, 0, 0.1)",
+                  }}
+                >
+                  <AlertTriangle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>{isHindi ? "सहायता टिकट खोलें" : "Open Support Ticket"}</span>
+                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </button>
+
+                <button 
+                  onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="group px-12 py-4 bg-white/15 hover:bg-white/25 border-2 border-white/40 hover:border-white/60 text-white font-bold text-[16px] rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center gap-3"
+                >
+                  <HelpCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>{isHindi ? "FAQ देखें" : "View FAQs"}</span>
+                </button>
+              </div>
+
+              {/* Info badges */}
+              <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
+                    <AlertTriangle className="w-5 h-5 text-orange-300" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
+                      {isHindi ? "तत्काल" : "Instant"}
+                    </p>
+                    <p className="text-[14px] text-white font-semibold">
+                      {isHindi ? "त्वरित प्रतिक्रिया" : "Quick Response"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                    <FileText className="w-5 h-5 text-blue-300" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
+                      {isHindi ? "ट्रैकिंग" : "Tracking"}
+                    </p>
+                    <p className="text-[14px] text-white font-semibold">
+                      {isHindi ? "संदर्भ संख्या" : "Reference Number"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                    <CheckCircle2 className="w-5 h-5 text-green-300" />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
+                      {isHindi ? "सहायता" : "Support"}
+                    </p>
+                    <p className="text-[14px] text-white font-semibold">
+                      {isHindi ? "24/7 उपलब्ध" : "Available 24/7"}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

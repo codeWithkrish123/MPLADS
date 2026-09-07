@@ -1,7 +1,12 @@
 /**
- * MPLADS API Service Layer
- * This module handles all API communication with the backend
- * Replace API_BASE_URL with your actual backend endpoint
+ * MPLADS API Service Layer - Enhanced with JWT & Error Handling
+ * 
+ * Features:
+ * - JWT authentication interceptor
+ * - Automatic retry logic (3 attempts)
+ * - Detailed error handling
+ * - Request logging
+ * - Response validation
  */
 
 import {
@@ -15,10 +20,13 @@ import {
   AuditLogEntry,
 } from "../types";
 
-// Configure this with your backend endpoint
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+// Configure API base URL from environment
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // milliseconds
 
-// API Response wrapper for consistency
+// ==================== TYPES ====================
+
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -26,244 +34,420 @@ interface ApiResponse<T> {
   message?: string;
 }
 
-// API Error class
+export interface RequestConfig extends RequestInit {
+  timeout?: number;
+  retries?: number;
+  skipAuth?: boolean;
+}
+
+// ==================== ERROR HANDLING ====================
+
 export class ApiError extends Error {
   constructor(
     public status: number,
-    public message: string
+    public message: string,
+    public details?: any
   ) {
     super(message);
     this.name = "ApiError";
   }
-}
 
-/**
- * Helper function to make API requests
- * @param endpoint - The API endpoint path (e.g., "/api/projects")
- * @param options - RequestInit options (method, headers, body, etc.)
- * @returns Promise with the API response data
- */
-export async function apiCall<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      ...options,
-    });
+  isClientError(): boolean {
+    return this.status >= 400 && this.status < 500;
+  }
 
-    if (!response.ok) {
-      throw new ApiError(response.status, `API Error: ${response.statusText}`);
-    }
+  isServerError(): boolean {
+    return this.status >= 500;
+  }
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(500, `Network error: ${error}`);
+  isAuthError(): boolean {
+    return this.status === 401 || this.status === 403;
+  }
+
+  isNetworkError(): boolean {
+    return this.status === 0 || this.message.includes("Network");
   }
 }
 
-// Export authApi and activityApi for compatibility
+// ==================== CORE API FUNCTION ====================
+
+/**
+ * Make an API request with retry logic and error handling
+ * @param endpoint API endpoint (e.g., "/projects")
+ * @param options Request options
+ * @returns Promise<T> Parsed response data
+ */
+export async function apiCall<T>(
+  endpoint: string,
+  options: RequestConfig = {}
+): Promise<T> {
+  const {
+    timeout = 30000,
+    retries = MAX_RETRIES,
+    skipAuth = false,
+    ...fetchOptions
+  } = options;
+
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  // Build headers
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...fetchOptions.headers,
+  };
+
+  // Add JWT token if available and not skipped
+  if (!skipAuth) {
+    const token = localStorage.getItem(import.meta.env.VITE_AUTH_TOKEN_KEY || "auth_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
+  // Request with timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  let lastError: ApiError | null = null;
+  let attempt = 0;
+
+  while (attempt < retries) {
+    try {
+      attempt++;
+      console.log(`[API] Attempt ${attempt}/${retries} - ${options.method || "GET"} ${endpoint}`);
+
+      const response = await fetch(url, {
+        ...fetchOptions,
+        headers,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Handle response
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new ApiError(
+          response.status,
+          errorData.error || response.statusText || "Unknown error",
+          errorData
+        );
+
+        // Handle auth errors - redirect to login
+        if (error.isAuthError()) {
+          console.warn("[API] Authentication error - redirecting to login");
+          localStorage.removeItem(import.meta.env.VITE_AUTH_TOKEN_KEY || "auth_token");
+          localStorage.removeItem(import.meta.env.VITE_AUTH_USER_KEY || "auth_user");
+          window.location.href = "/login";
+        }
+
+        throw error;
+      }
+
+      // Parse and return response
+      const data = (await response.json()) as T;
+      console.log(`✓ [${response.status}] ${options.method || "GET"} ${endpoint}`);
+      return data;
+    } catch (error) {
+      lastError = error as ApiError;
+
+      // Determine if retryable
+      const isRetryable =
+        lastError.isNetworkError() ||
+        (lastError.isServerError() && lastError.status !== 503);
+
+      if (!isRetryable || attempt >= retries) {
+        clearTimeout(timeoutId);
+        console.error(`✗ [${lastError.status}] ${options.method || "GET"} ${endpoint}`, lastError.message);
+        throw lastError;
+      }
+
+      // Wait before retry
+      const delay = RETRY_DELAY * attempt;
+      console.log(`[API] Retry in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  clearTimeout(timeoutId);
+  throw lastError || new ApiError(500, "Unknown error occurred");
+}
+
+// ==================== AUTHENTICATION ====================
+
 export const authApi = {
-  login: async (email: string, password: string): Promise<{ token: string; role: string }> => {
-    return apiCall<{ token: string; role: string }>("/auth/login", {
+  login: async (email: string, password: string, role: string) => {
+    // Ensure role is lowercase (backend expects lowercase)
+    const normalizedRole = role.toLowerCase();
+    
+    console.log(`[API] Login request:`, { email, role: normalizedRole });
+    
+    const response = await apiCall<{
+      token: string;
+      user: { id: string; email: string; role: string; name?: string };
+    }>("/auth/login-with-role", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      skipAuth: true,
+      body: JSON.stringify({ email, password, role: normalizedRole }),
+    });
+
+    // Note: Token storage is handled in AuthContext.login() to avoid duplication
+    // This ensures consistent state management through React Context
+
+    return response;
+  },
+
+  logout: async () => {
+    try {
+      await apiCall("/auth/logout", { method: "POST" });
+    } finally {
+      localStorage.removeItem(import.meta.env.VITE_AUTH_TOKEN_KEY || "auth_token");
+      localStorage.removeItem(import.meta.env.VITE_AUTH_USER_KEY || "auth_user");
+    }
+  },
+
+  getProfile: async () => {
+    return apiCall("/auth/profile");
+  },
+
+  refreshToken: async () => {
+    const response = await apiCall<{ token: string }>("/auth/refresh-token", {
+      method: "POST",
+    });
+
+    localStorage.setItem(import.meta.env.VITE_AUTH_TOKEN_KEY || "auth_token", response.token);
+    return response.token;
+  },
+};
+
+// ==================== DATA ENDPOINTS ====================
+
+export const projectApi = {
+  getAll: async (filters?: {
+    state?: string;
+    district?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters?.state) params.append("state", filters.state);
+    if (filters?.district) params.append("district", filters.district);
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.page) params.append("page", String(filters.page));
+    if (filters?.limit) params.append("limit", String(filters.limit));
+
+    return apiCall<{
+      data: WorkRecord[];
+      total: number;
+      page: number;
+      limit: number;
+    }>(`/data/projects?${params.toString()}`);
+  },
+
+  getById: async (projectId: string) => {
+    return apiCall<WorkRecord>(`/data/projects/${projectId}`);
+  },
+
+  create: async (data: Partial<WorkRecord>) => {
+    return apiCall<WorkRecord>("/data/projects", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (projectId: string, data: Partial<WorkRecord>) => {
+    return apiCall<WorkRecord>(`/data/projects/${projectId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (projectId: string) => {
+    return apiCall(`/data/projects/${projectId}`, { method: "DELETE" });
+  },
+};
+
+// ==================== ANALYSIS ENDPOINTS ====================
+
+export const analysisApi = {
+  getDashboardSummary: async () => {
+    return apiCall("/analysis/dashboard/summary");
+  },
+
+  analyzeProject: async (projectId: string) => {
+    return apiCall("/analysis/project", {
+      method: "POST",
+      body: JSON.stringify({ projectId }),
+    });
+  },
+
+  getProjectAnalysis: async (projectId: string) => {
+    return apiCall(`/analysis/project/${projectId}`);
+  },
+
+  getRiskSignals: async (projectId: string) => {
+    return apiCall(`/analysis/project/${projectId}/signals`);
+  },
+
+  getComplianceIssues: async (projectId: string) => {
+    return apiCall(`/analysis/project/${projectId}/compliance`);
+  },
+
+  getPeerContext: async (projectId: string) => {
+    return apiCall(`/analysis/project/${projectId}/peer-context`);
+  },
+
+  getRisks: async (filters?: { status?: string; severity?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.severity) params.append("severity", filters.severity);
+
+    return apiCall<RiskAlert[]>(`/analysis/risks?${params.toString()}`);
+  },
+};
+
+// ==================== ALERT ENDPOINTS ====================
+
+export const alertApi = {
+  getAll: async (filters?: { status?: string; severity?: string }) => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.severity) params.append("severity", filters.severity);
+
+    return apiCall<RiskAlert[]>(`/analysis/risks?${params.toString()}`);
+  },
+
+  getByProject: async (projectId: string) => {
+    return apiCall<RiskAlert[]>(`/analysis/project/${projectId}/signals`);
+  },
+
+  acknowledge: async (alertId: string) => {
+    return apiCall(`/analysis/risks/${alertId}/acknowledge`, {
+      method: "PATCH",
     });
   },
 };
 
+// ==================== ML ENDPOINTS ====================
+
+export const mlApi = {
+  detectCostAnomalies: async () => {
+    return apiCall("/ml/analysis/cost-anomaly", { method: "POST" });
+  },
+
+  getCostAnomalies: async () => {
+    return apiCall("/ml/analysis/cost-anomaly");
+  },
+
+  detectDuplicates: async () => {
+    return apiCall("/ml/analysis/duplicates", { method: "POST" });
+  },
+
+  getDuplicates: async () => {
+    return apiCall<NearDuplicatePair[]>("/ml/analysis/duplicates");
+  },
+
+  predictDelays: async () => {
+    return apiCall("/ml/analysis/delay-prediction", { method: "POST" });
+  },
+
+  getDelayPredictions: async () => {
+    return apiCall("/ml/analysis/delay-prediction");
+  },
+
+  detectSignals: async (projectId: string) => {
+    return apiCall("/ml/signals/detect", {
+      method: "POST",
+      body: JSON.stringify({ projectId }),
+    });
+  },
+
+  getActiveSignals: async () => {
+    return apiCall("/ml/signals/active");
+  },
+
+  getRecommendations: async (projectId: string) => {
+    return apiCall(`/ml/recommendations/${projectId}`);
+  },
+
+  getInvestigationPriorities: async () => {
+    return apiCall("/ml/investigations/priority");
+  },
+};
+
+// ==================== AUDIT ENDPOINTS ====================
+
+export const auditApi = {
+  getLogs: async (filters?: { user?: string; action?: string; limit?: number }) => {
+    const params = new URLSearchParams();
+    if (filters?.user) params.append("user", filters.user);
+    if (filters?.action) params.append("action", filters.action);
+    if (filters?.limit) params.append("limit", String(filters.limit));
+
+    return apiCall(`/audit/logs?${params.toString()}`);
+  },
+
+  getById: async (logId: string) => {
+    return apiCall(`/audit/logs/${logId}`);
+  },
+};
+
+// ==================== STATE & DISTRICT ENDPOINTS ====================
+
+export const stateApi = {
+  getAll: async () => {
+    return apiCall<StateSummary[]>("/data/states");
+  },
+
+  getById: async (stateName: string) => {
+    return apiCall<StateSummary>(`/data/states/${stateName}`);
+  },
+};
+
+export const districtApi = {
+  getByState: async (stateName: string) => {
+    return apiCall<DistrictSummary[]>(`/data/districts/${stateName}`);
+  },
+
+  getById: async (stateName: string, districtName: string) => {
+    return apiCall<DistrictSummary>(`/data/districts/${stateName}/${districtName}`);
+  },
+};
+
+// ==================== SYSTEM ENDPOINTS ====================
+
+export const systemApi = {
+  getHealth: async () => {
+    try {
+      return await apiCall("/system/health", { skipAuth: true });
+    } catch (error) {
+      return { status: "error", message: "Backend unavailable" };
+    }
+  },
+
+  getConfig: async () => {
+    return apiCall("/system/config");
+  },
+};
+
+// ==================== LEGACY ALIASES ====================
+
 export const activityApi = {
-  log: async (action: string, data: any): Promise<any> => {
-    return apiCall<any>("/activity/log", {
+  log: async (action: string, data: any) => {
+    return apiCall("/activity/logs", {
       method: "POST",
       body: JSON.stringify({ action, ...data }),
     });
   },
 };
 
-/**
- * State API endpoints
- */
-export const stateApi = {
-  getAll: async (): Promise<StateSummary[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<StateSummary[]>("/states");
-    return [];
-  },
-
-  getById: async (stateCode: string): Promise<StateSummary | null> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<StateSummary>(`/states/${stateCode}`);
-    return null;
-  },
-};
-
-/**
- * District API endpoints
- */
-export const districtApi = {
-  getAll: async (): Promise<DistrictSummary[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<DistrictSummary[]>("/districts");
-    return [];
-  },
-
-  getByState: async (stateName: string): Promise<DistrictSummary[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<DistrictSummary[]>(`/districts?state=${stateName}`);
-    return [];
-  },
-
-  getById: async (districtId: string): Promise<DistrictSummary | null> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<DistrictSummary>(`/districts/${districtId}`);
-    return null;
-  },
-};
-
-/**
- * Work Record API endpoints
- */
-export const workApi = {
-  getAll: async (filters?: {
-    state?: string;
-    district?: string;
-    category?: string;
-  }): Promise<WorkRecord[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // const params = new URLSearchParams();
-    // if (filters?.state) params.append("state", filters.state);
-    // if (filters?.district) params.append("district", filters.district);
-    // if (filters?.category) params.append("category", filters.category);
-    // return apiCall<WorkRecord[]>(`/works?${params.toString()}`);
-    return [];
-  },
-
-  getById: async (workId: string): Promise<WorkRecord | null> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<WorkRecord>(`/works/${workId}`);
-    return null;
-  },
-
-  search: async (query: string): Promise<WorkRecord[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<WorkRecord[]>(`/works/search?q=${query}`);
-    return [];
-  },
-};
-
-/**
- * Alert API endpoints
- */
-export const alertApi = {
-  getAll: async (): Promise<RiskAlert[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<RiskAlert[]>("/alerts");
-    return [];
-  },
-
-  getByStatus: async (status: string): Promise<RiskAlert[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<RiskAlert[]>(`/alerts?status=${status}`);
-    return [];
-  },
-
-  create: async (alert: Partial<RiskAlert>): Promise<RiskAlert> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<RiskAlert>("/alerts", {
-    //   method: "POST",
-    //   body: JSON.stringify(alert),
-    // });
-    throw new Error("Create alert not yet implemented");
-  },
-
-  update: async (alertId: string, data: Partial<RiskAlert>): Promise<RiskAlert> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<RiskAlert>(`/alerts/${alertId}`, {
-    //   method: "PATCH",
-    //   body: JSON.stringify(data),
-    // });
-    throw new Error("Update alert not yet implemented");
-  },
-};
-
-/**
- * Agency API endpoints
- */
-export const agencyApi = {
-  getAll: async (): Promise<ImplementingAgency[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<ImplementingAgency[]>("/agencies");
-    return [];
-  },
-
-  getById: async (agencyId: string): Promise<ImplementingAgency | null> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<ImplementingAgency>(`/agencies/${agencyId}`);
-    return null;
-  },
-};
-
-/**
- * Compliance Rules API endpoints
- */
-export const complianceApi = {
-  getAll: async (): Promise<ComplianceRule[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<ComplianceRule[]>("/compliance/rules");
-    return [];
-  },
-
-  getByCategory: async (category: string): Promise<ComplianceRule[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<ComplianceRule[]>(`/compliance/rules?category=${category}`);
-    return [];
-  },
-};
-
-/**
- * Audit Log API endpoints
- */
-export const auditApi = {
-  getAll: async (filters?: { user?: string; action?: string }): Promise<AuditLogEntry[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // const params = new URLSearchParams();
-    // if (filters?.user) params.append("user", filters.user);
-    // if (filters?.action) params.append("action", filters.action);
-    // return apiCall<AuditLogEntry[]>(`/audit-logs?${params.toString()}`);
-    return [];
-  },
-
-  getById: async (logId: string): Promise<AuditLogEntry | null> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<AuditLogEntry>(`/audit-logs/${logId}`);
-    return null;
-  },
-};
-
-/**
- * Duplicate Detection API endpoints
- */
 export const duplicateApi = {
-  getAll: async (): Promise<NearDuplicatePair[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<NearDuplicatePair[]>("/duplicates");
-    return [];
+  getAll: async () => {
+    return mlApi.getDuplicates();
   },
 
-  getSuspicious: async (): Promise<NearDuplicatePair[]> => {
-    // TODO: Replace with actual API call when backend is ready
-    // return apiCall<NearDuplicatePair[]>("/duplicates/suspicious");
-    return [];
+  getSuspicious: async () => {
+    return mlApi.getDuplicates();
   },
 };
