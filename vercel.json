@@ -1,12 +1,9 @@
 {
   "version": 2,
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npm run build && node root-build.js",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "env": {
+    "npm_config_legacy_peer_deps": "true"
+  }
 }
