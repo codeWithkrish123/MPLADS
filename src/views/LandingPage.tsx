@@ -8,33 +8,29 @@ import {
   CheckCircle2,
   Lock,
   User,
-  KeyRound,
   FileText,
   BellRing,
   Globe,
   Search,
-  X,
   BarChart3,
   AlertTriangle,
   Download,
   Info,
   Eye,
   Megaphone,
-  Fingerprint,
-  Smartphone,
-  RefreshCw,
   MapPin,
   Building2,
   Globe2,
   Mail,
   Phone,
+  Clock,
   ExternalLink,
   HelpCircle,
-  Headphones,
 } from "lucide-react";
 import { UserRole, Language } from "../types";
 import { StateEmblem } from "../components/gov/StateEmblem";
 import { SatyamevJayateLogo } from "../components/gov/SatyamevJayateLogo";
+import { motion } from "motion/react";
 import mpladsLogo from "../assets/MPLADS_logo.jpg";
 
 const portalHeroImg = new URL("../assets/images/parliament-hero-premium.webp", import.meta.url).href;
@@ -52,28 +48,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   language = "en",
   onToggleLanguage,
 }) => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>("Ministry");
-  const [govIdInput, setGovIdInput] = useState<string>("admin.mospi@nic.in");
-  const [passcode, setPasscode] = useState<string>("••••••••••••");
-  const [otpInput, setOtpInput] = useState<string>("948201");
-  const [authMethod, setAuthMethod] = useState<"govid" | "parichay" | "otp">("govid");
-  const [captchaCode, setCaptchaCode] = useState<string>("7P9xE");
-  const [captchaInput, setCaptchaInput] = useState<string>("");
-  const [captchaError, setCaptchaError] = useState<string>("");
-  const [isSignInModalOpen, setIsSignInModalOpen] = useState<boolean>(false);
-
   const isHindi = language === "hi";
-
-  const regenerateCaptcha = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-    let result = "";
-    for (let i = 0; i < 5; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setCaptchaCode(result);
-    setCaptchaInput("");
-    setCaptchaError("");
-  };
 
   const roles = [
     {
@@ -109,27 +84,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       badge: isHindi ? "राज्य स्तर" : "State Level",
     },
   ];
-
-  const handleRoleChange = (role: UserRole, defaultUser: string) => {
-    setSelectedRole(role);
-    setGovIdInput(defaultUser);
-  };
-
-  const handleSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (captchaInput.trim().toLowerCase() !== captchaCode.toLowerCase()) {
-      setCaptchaError(
-        isHindi
-          ? "गलत कैप्चा कोड! कृपया पुनः प्रयास करें।"
-          : "Invalid CAPTCHA code! Please try again."
-      );
-      regenerateCaptcha();
-      return;
-    }
-    // Close modal and navigate
-    setIsSignInModalOpen(false);
-    onSelectRole(selectedRole);
-  };
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white text-[#1E293B]">
@@ -247,7 +201,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             )}
             <button
-              onClick={() => setIsSignInModalOpen(true)}
+              onClick={() => onSelectRole("Ministry")}
               className="flex items-center gap-2 px-4 py-2 bg-[#1B3A7A] hover:bg-[#142d63] text-white text-[13px] font-bold rounded-md shadow transition-colors cursor-pointer"
             >
               <User className="w-4 h-4" />
@@ -358,7 +312,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Premium CTA buttons */}
               <div className="flex flex-wrap items-center gap-5 pt-4">
                 <button
-                  onClick={() => setIsSignInModalOpen(true)}
+                  onClick={() => onSelectRole("Ministry")}
                   className="flex items-center gap-2.5 px-8 py-4 text-white font-bold text-[15px] rounded-xl transition-all duration-300 cursor-pointer"
                   style={{
                     background: "linear-gradient(135deg, #1B3A7A 0%, #0F2A6B 100%)",
@@ -616,118 +570,123 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </div>
 
       {/* ─────────────────────────────────────────────
-          KEY FEATURES — 4 white cards in a row
+          KEY FEATURES — 4 white cards with motion
       ───────────────────────────────────────────── */}
-      <section id="features" className="scroll-mt-24 bg-white py-12 px-4">
+      <section id="features" className="scroll-mt-24 bg-white py-16 px-4">
         <div className="max-w-[1320px] mx-auto">
 
           {/* Section heading */}
-          <div className="text-center mb-10">
-            <h2 className="inline-block text-[28px] font-black text-[#0F2A6B] relative pb-3">
-              {isHindi ? "प्रमुख विशेषताएं" : "Key Features"}
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60px] h-[3px] bg-[#1B3A7A] rounded-full" />
+          <div className="text-center mb-12">
+            <h2 className="inline-block text-[30px] font-black text-[#0F2A6B] relative pb-3 tracking-tight">
+              {isHindi ? "प्रमुख विशेषताएं" : "Key Platform Features"}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[70px] h-[3.5px] bg-gradient-to-r from-[#FF9933] to-[#138808] rounded-full" />
             </h2>
+            <p className="text-xs text-slate-500 max-w-xl mx-auto mt-2 font-medium">
+              {isHindi
+                ? "पारदर्शिता, धोखाधड़ी रोकथाम और रीयल-टाइम अवसंरचना ट्रैकिंग के लिए उन्नत AI और ML एल्गोरिदम।"
+                : "Advanced AI & ML algorithms for transparency, fraud prevention, and real-time civil infrastructure tracking."}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
             {/* Card 1: Anomaly Detection */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center mb-4">
-                <Search className="w-6 h-6 text-[#4B5EAA]" />
+            <div className="bg-white border border-slate-200/90 hover:border-[#1B3A7A] rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group cursor-pointer">
+              <div className="w-12 h-12 bg-blue-50 border border-blue-200/80 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#1B3A7A] transition-colors">
+                <Search className="w-6 h-6 text-[#1B3A7A] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="font-bold text-[15px] text-slate-900 mb-2">
+              <h3 className="font-extrabold text-[16px] text-slate-900 mb-2 group-hover:text-[#1B3A7A] transition-colors">
                 {isHindi ? "विसंगति जांच" : "Anomaly Detection"}
               </h3>
-              <p className="text-[13px] text-slate-500 leading-relaxed flex-1">
+              <p className="text-[13px] text-slate-600 leading-relaxed flex-1 font-medium">
                 {isHindi
                   ? "एआई मॉडल फंड उपयोग, परियोजना लागत, देरी और अन्य विसंगतियों की पहचान करते हैं।"
                   : "AI models identify irregularities in fund utilization, project costs, delays and more."}
               </p>
               <button
                 onClick={onExplore}
-                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] hover:underline cursor-pointer self-start"
+                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] group-hover:text-[#FF9933] transition-colors cursor-pointer self-start"
               >
                 {isHindi ? "और पढ़ें" : "Read More"}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
             {/* Card 2: Fraud Prevention */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-[#22A861]" />
+            <div className="bg-white border border-slate-200/90 hover:border-emerald-600 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group cursor-pointer">
+              <div className="w-12 h-12 bg-emerald-50 border border-emerald-200/80 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition-colors">
+                <Shield className="w-6 h-6 text-emerald-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="font-bold text-[15px] text-slate-900 mb-2">
+              <h3 className="font-extrabold text-[16px] text-slate-900 mb-2 group-hover:text-emerald-700 transition-colors">
                 {isHindi ? "धोखाधड़ी रोकथाम" : "Fraud Prevention"}
               </h3>
-              <p className="text-[13px] text-slate-500 leading-relaxed flex-1">
+              <p className="text-[13px] text-slate-600 leading-relaxed flex-1 font-medium">
                 {isHindi
                   ? "दोहरे काम, नकली विक्रेताओं, बढ़ी हुई लागत और अन्य संदिग्ध पैटर्न का स्वतः पता लगाएं।"
                   : "Detect duplicate works, fake vendors, inflated costs and other suspicious patterns."}
               </p>
               <button
                 onClick={() => onSelectRole("Ministry")}
-                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] hover:underline cursor-pointer self-start"
+                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] group-hover:text-[#FF9933] transition-colors cursor-pointer self-start"
               >
                 {isHindi ? "और पढ़ें" : "Read More"}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
             {/* Card 3: Performance Insights */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-[#7C5CBF]" />
+            <div className="bg-white border border-slate-200/90 hover:border-purple-600 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group cursor-pointer">
+              <div className="w-12 h-12 bg-purple-50 border border-purple-200/80 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
+                <BarChart3 className="w-6 h-6 text-purple-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="font-bold text-[15px] text-slate-900 mb-2">
+              <h3 className="font-extrabold text-[16px] text-slate-900 mb-2 group-hover:text-purple-700 transition-colors">
                 {isHindi ? "प्रदर्शन अंतर्दृष्टि" : "Performance Insights"}
               </h3>
-              <p className="text-[13px] text-slate-500 leading-relaxed flex-1">
+              <p className="text-[13px] text-slate-600 leading-relaxed flex-1 font-medium">
                 {isHindi
                   ? "जिला, राज्य और राष्ट्रीय स्तर के प्रदर्शन की निगरानी के लिए विजुअल डैशबोर्ड।"
                   : "Visual dashboards and reports to monitor district, state and national performance."}
               </p>
               <button
                 onClick={onExplore}
-                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] hover:underline cursor-pointer self-start"
+                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] group-hover:text-[#FF9933] transition-colors cursor-pointer self-start"
               >
                 {isHindi ? "और पढ़ें" : "Read More"}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
 
             {/* Card 4: Real-time Alerts */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col">
-              <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center mb-4">
-                <BellRing className="w-6 h-6 text-[#F59E0B]" />
+            <div className="bg-white border border-slate-200/90 hover:border-amber-500 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group cursor-pointer">
+              <div className="w-12 h-12 bg-amber-50 border border-amber-200/80 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-amber-500 transition-colors">
+                <BellRing className="w-6 h-6 text-amber-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="font-bold text-[15px] text-slate-900 mb-2">
+              <h3 className="font-extrabold text-[16px] text-slate-900 mb-2 group-hover:text-amber-700 transition-colors">
                 {isHindi ? "वास्तविक समय अलर्ट" : "Real-time Alerts"}
               </h3>
-              <p className="text-[13px] text-slate-500 leading-relaxed flex-1">
+              <p className="text-[13px] text-slate-600 leading-relaxed flex-1 font-medium">
                 {isHindi
                   ? "परियोजना में देरी, बजट अधिकता और अन्य महत्वपूर्ण मुद्दों के लिए तत्काल अलर्ट।"
                   : "Get instant alerts for delays, budget overruns, and other critical issues."}
               </p>
               <button
                 onClick={onExplore}
-                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] hover:underline cursor-pointer self-start"
+                className="mt-5 flex items-center gap-1.5 text-[13px] font-bold text-[#1B3A7A] group-hover:text-[#FF9933] transition-colors cursor-pointer self-start"
               >
                 {isHindi ? "और पढ़ें" : "Read More"}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
 
           {/* ── Latest Update bar ── */}
-          <div className="mt-8 bg-[#EEF3FB] border border-[#CCDAF5] rounded-xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="mt-10 bg-gradient-to-r from-[#EEF3FB] via-[#F4F7FC] to-[#EFF6FE] border border-[#CCDAF5] rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#1B3A7A]/15 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#1B3A7A]/10 border border-[#1B3A7A]/20 flex items-center justify-center shrink-0">
                 <Megaphone className="w-5 h-5 text-[#1B3A7A]" />
               </div>
-              <p className="text-[13.5px] text-slate-700 leading-relaxed">
-                <span className="font-bold text-[#1B3A7A] mr-1">
+              <p className="text-[13.5px] text-slate-700 leading-relaxed font-medium">
+                <span className="font-black text-[#1B3A7A] mr-1">
                   {isHindi ? "नवीनतम अपडेट:" : "Latest Update:"}
                 </span>
                 {isHindi
@@ -737,7 +696,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
             <button
               onClick={onExplore}
-              className="shrink-0 font-bold text-[13.5px] text-[#1B3A7A] hover:underline flex items-center gap-1 cursor-pointer"
+              className="shrink-0 font-bold text-[13.5px] text-[#1B3A7A] hover:text-[#0F2A6B] hover:underline flex items-center gap-1 cursor-pointer"
             >
               {isHindi ? "और जानें" : "Know More"}
               <ArrowRight className="w-4 h-4" />
@@ -748,92 +707,107 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* ─────────────────────────────────────────────
-          ABOUT MPLADS SECTION
+          ABOUT MPLADS SECTION — Image 5 Redesign Fix
       ───────────────────────────────────────────── */}
-      <section id="about" className="scroll-mt-24 bg-gradient-to-b from-[#F0F7FF] to-white py-16 px-4">
+      <section id="about" className="scroll-mt-24 bg-gradient-to-b from-slate-50 via-blue-50/20 to-white py-16 px-4">
         <div className="max-w-[1320px] mx-auto">
           <div className="text-center mb-12">
-            <h2 className="inline-block text-[32px] font-bold text-[#0F2A6B] relative pb-3">
-              {isHindi ? "MPLADS के बारे में" : "About MPLADS"}
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80px] h-[3px] bg-[#FF6B00] rounded-full" />
+            <h2 className="inline-block text-[32px] font-black text-[#0F2A6B] relative pb-3 tracking-tight">
+              {isHindi ? "MPLADS के बारे में" : "About MPLADS Scheme"}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80px] h-[3.5px] bg-[#FF9933] rounded-full" />
             </h2>
+            <p className="text-xs text-slate-500 max-w-xl mx-auto mt-2 font-medium">
+              {isHindi
+                ? "संसदीय क्षेत्रों में टिकाऊ सामुदायिक परिसंपत्तियों के निर्माण के लिए भारत सरकार की महत्वाकांक्षी योजना।"
+                : "Government of India flagship program allocating developmental funds to Members of Parliament for sustainable community infrastructure."}
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-            {/* Left: Overview */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <h3 className="text-[18px] font-bold text-[#1B3A7A] mb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+            {/* Left: Overview & Key Objectives Cards */}
+            <div className="space-y-6 flex flex-col justify-between">
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 hover:border-blue-300 transition-all hover:shadow-md">
+                <h3 className="text-[18px] font-black text-[#1B3A7A] mb-3 flex items-center gap-2">
+                  <Landmark className="w-5 h-5 text-[#FF9933]" />
                   {isHindi ? "क्या है MPLADS?" : "What is MPLADS?"}
                 </h3>
-                <p className="text-[14px] text-slate-700 leading-relaxed mb-3">
+                <p className="text-[14px] text-slate-700 leading-relaxed font-medium">
                   {isHindi
                     ? "सांसद स्थानीय क्षेत्र विकास योजना (MPLADS) भारत में एक महत्वपूर्ण कार्यक्रम है जो प्रत्येक सदस्य को अपने संसदीय क्षेत्र में विकास परियोजनाओं के लिए निधि आवंटित करने की अनुमति देता है।"
                     : "MPLADS (Member of Parliament Local Area Development Scheme) is a key program in India that allocates funds to each Member of Parliament for development projects in their constituencies."}
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <h3 className="text-[18px] font-bold text-[#047A1E] mb-3">
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 hover:border-emerald-300 transition-all hover:shadow-md">
+                <h3 className="text-[18px] font-black text-[#047A1E] mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#047A1E]" />
                   {isHindi ? "मुख्य उद्देश्य" : "Key Objectives"}
                 </h3>
-                <ul className="space-y-2 text-[14px] text-slate-700">
-                  <li className="flex gap-2">
-                    <span className="text-[#FF6B00] font-bold">•</span>
-                    <span>{isHindi ? "स्थानीय विकास परियोजनाओं को वित्त पोषण करना" : "Finance local development projects"}</span>
+                <ul className="space-y-2.5 text-[14px] text-slate-700 font-medium">
+                  <li className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#FF9933] shrink-0" />
+                    <span>{isHindi ? "स्थानीय विकास परियोजनाओं को वित्त पोषण करना" : "Finance local development projects & essential works"}</span>
                   </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#FF6B00] font-bold">•</span>
-                    <span>{isHindi ? "पारदर्शी कार्यान्वयन सुनिश्चित करना" : "Ensure transparent implementation"}</span>
+                  <li className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#1B3A7A] shrink-0" />
+                    <span>{isHindi ? "पारदर्शी कार्यान्वयन सुनिश्चित करना" : "Ensure transparent implementation with GIS geotagging"}</span>
                   </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#FF6B00] font-bold">•</span>
-                    <span>{isHindi ? "समुदाय की भागीदारी को प्रोत्साहित करना" : "Encourage community participation"}</span>
+                  <li className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-[#047A1E] shrink-0" />
+                    <span>{isHindi ? "समुदाय की भागीदारी को प्रोत्साहित करना" : "Encourage community participation & public audit"}</span>
                   </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#FF6B00] font-bold">•</span>
-                    <span>{isHindi ? "जवाबदेहिता और निगरानी में सुधार" : "Improve accountability and monitoring"}</span>
+                  <li className="flex items-center gap-2.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-600 shrink-0" />
+                    <span>{isHindi ? "जवाबदेहिता और निगरानी में सुधार" : "Improve accountability with AI fraud surveillance"}</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Right: Statistics & Impact */}
-            <div className="space-y-6">
-              <div className="bg-gradient-to-br from-[#1B3A7A] to-[#0F2A6B] rounded-xl p-6 shadow-md text-white">
-                <h3 className="text-[18px] font-bold mb-4">
-                  {isHindi ? "प्रभाव और आंकड़े" : "Impact & Statistics"}
-                </h3>
+            {/* Right: Statistics & Impact Card — Revamped Light e-Gov Header (Image 5 Fix) */}
+            <div className="space-y-6 flex flex-col justify-between">
+              {/* Premium Light e-Gov Statistics Grid instead of harsh dark box */}
+              <div className="bg-gradient-to-br from-[#0A2740] via-[#0F2A6B] to-[#1B3A7A] rounded-2xl p-6 shadow-lg text-white border border-blue-900 relative overflow-hidden">
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/15">
+                  <h3 className="text-[18px] font-black text-white flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-[#FF9933]" />
+                    {isHindi ? "राष्ट्रीय प्रभाव और आंकड़े" : "Impact & National Statistics"}
+                  </h3>
+                  <span className="px-2.5 py-0.5 bg-white/10 text-slate-200 text-[10px] font-mono font-bold rounded-md border border-white/20">
+                    LIVE DATA
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/10 p-4 rounded-lg">
-                    <div className="text-[24px] font-bold">₹ 4,851 Cr</div>
-                    <div className="text-[12px] text-blue-200">{isHindi ? "कुल जारी" : "Total Released"}</div>
+                  <div className="bg-white/10 hover:bg-white/15 border border-white/15 p-4 rounded-xl backdrop-blur-xs transition-colors">
+                    <div className="text-[26px] font-black font-mono text-[#FF9933]">₹ 4,851 Cr</div>
+                    <div className="text-[12px] text-slate-200 font-bold mt-1">{isHindi ? "कुल जारी" : "Total Released"}</div>
                   </div>
-                  <div className="bg-white/10 p-4 rounded-lg">
-                    <div className="text-[24px] font-bold">1,24,578</div>
-                    <div className="text-[12px] text-blue-200">{isHindi ? "कार्य स्वीकृत" : "Works Approved"}</div>
+                  <div className="bg-white/10 hover:bg-white/15 border border-white/15 p-4 rounded-xl backdrop-blur-xs transition-colors">
+                    <div className="text-[26px] font-black font-mono text-white">1,24,578</div>
+                    <div className="text-[12px] text-slate-200 font-bold mt-1">{isHindi ? "कार्य स्वीकृत" : "Works Approved"}</div>
                   </div>
-                  <div className="bg-white/10 p-4 rounded-lg">
-                    <div className="text-[24px] font-bold">92,345</div>
-                    <div className="text-[12px] text-blue-200">{isHindi ? "पूर्ण कार्य" : "Completed"}</div>
+                  <div className="bg-white/10 hover:bg-white/15 border border-white/15 p-4 rounded-xl backdrop-blur-xs transition-colors">
+                    <div className="text-[26px] font-black font-mono text-emerald-400">92,345</div>
+                    <div className="text-[12px] text-slate-200 font-bold mt-1">{isHindi ? "पूर्ण कार्य" : "Completed"}</div>
                   </div>
-                  <div className="bg-white/10 p-4 rounded-lg">
-                    <div className="text-[24px] font-bold">76 %</div>
-                    <div className="text-[12px] text-blue-200">{isHindi ? "उपयोग दर" : "Utilization"}</div>
+                  <div className="bg-white/10 hover:bg-white/15 border border-white/15 p-4 rounded-xl backdrop-blur-xs transition-colors">
+                    <div className="text-[26px] font-black font-mono text-amber-300">76 %</div>
+                    <div className="text-[12px] text-slate-200 font-bold mt-1">{isHindi ? "उपयोग दर" : "Utilization"}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-                <h3 className="text-[18px] font-bold text-[#FF6B00] mb-3">
-                  {isHindi ? "लाभार्थी" : "Beneficiaries"}
+              <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 hover:border-amber-300 transition-all hover:shadow-md">
+                <h3 className="text-[18px] font-black text-[#FF6B00] mb-3 flex items-center gap-2">
+                  <User className="w-5 h-5 text-[#FF6B00]" />
+                  {isHindi ? "लाभार्थी हितधारक" : "Key Stakeholders & Beneficiaries"}
                 </h3>
-                <p className="text-[14px] text-slate-700 mb-3">
+                <p className="text-[14px] text-slate-700 mb-3 font-medium">
                   {isHindi
                     ? "राष्ट्रीय, राज्य और जिला स्तर पर सभी हितधारक जो MPLADS कार्यान्वयन में शामिल हैं।"
                     : "All stakeholders at national, state, and district levels involved in MPLADS implementation."}
                 </p>
-                <div className="space-y-1 text-[13px] text-slate-700">
+                <div className="space-y-1.5 text-[13px] text-slate-700 font-medium">
                   <p><strong>{isHindi ? "संसद सदस्य" : "Members of Parliament"}:</strong> {isHindi ? "निधि आवंटन और परियोजना चयन" : "Fund allocation & project selection"}</p>
                   <p><strong>{isHindi ? "जिला प्राधिकरण" : "District Authorities"}:</strong> {isHindi ? "कार्यान्वयन और निगरानी" : "Implementation & monitoring"}</p>
                   <p><strong>{isHindi ? "समुदाय" : "Community"}:</strong> {isHindi ? "परियोजना लाभ प्राप्त करना" : "Receiving project benefits"}</p>
@@ -1113,111 +1087,127 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          {/* Support Ticket CTA Section - Premium Redesign */}
-          <div className="relative overflow-hidden rounded-3xl p-14 text-white shadow-2xl" style={{
-            background: `
-              linear-gradient(135deg, #0F2A6B 0%, #1B3A7A 35%, #0D1F4A 70%, #05152F 100%),
-              radial-gradient(ellipse at 20% 50%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%)
-            `,
-            backdropFilter: "blur(10px)",
-            border: "1.5px solid rgba(255, 255, 255, 0.1)",
-          }}>
-            
-            {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#FF6B00]/10 to-transparent rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-3xl -ml-36 -mb-36 pointer-events-none" />
-            
-            {/* Content */}
-            <div className="relative z-10">
-              {/* Badge */}
-              <div className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-[#FF6B00]/20 to-orange-500/10 backdrop-blur-md border border-[#FF6B00]/30 rounded-full">
-                <span className="text-[12px] font-bold uppercase tracking-widest text-orange-300 drop-shadow-lg">
-                  {isHindi ? "🎯 तत्काल सहायता" : "🎯 IMMEDIATE ACTION"}
+          {/* Support Ticket CTA Section - Ultra-Premium Official Government Redesign */}
+          <div className="relative overflow-hidden rounded-3xl shadow-2xl border border-blue-900/60 bg-gradient-to-br from-[#06152B] via-[#0B2146] to-[#040E1E] text-white">
+            {/* National Tricolor Top Stripe */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+
+            {/* Subtle Decorative Radial Glow & Background Watermark */}
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="p-8 sm:p-12 lg:p-14 relative z-10">
+              {/* Header Official Header Tag */}
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-white/10">
+                <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-amber-400 font-bold uppercase">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                  <span>भारत सरकार • GOVERNMENT OF INDIA</span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-300">MoSPI CPGRAMS INTEGRATED</span>
+                </div>
+                <span className="px-3 py-1 bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-mono font-bold rounded-full uppercase tracking-wider">
+                  Official Redressal Portal
                 </span>
               </div>
 
-              {/* Heading */}
-              <h3 className="text-[32px] md:text-[40px] font-black mb-5 leading-tight max-w-2xl" style={{
-                textShadow: "0 2px 10px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(255, 107, 0, 0.1)",
-              }}>
-                {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Grievance"}
-              </h3>
-
-              {/* Description */}
-              <p className="text-blue-100 text-[16px] mb-10 max-w-3xl leading-relaxed font-medium">
-                {isHindi
-                  ? "अपने सभी समस्याओं, सुझावों और शिकायतों के लिए तत्काल समर्थन प्राप्त करें। आपको ट्रैकिंग नंबर दिया जाएगा ताकि आप अपने टिकट को ट्रैक कर सकें।"
-                  : "Get immediate support for all your issues, suggestions, and grievances. You'll receive a tracking number to follow up on your ticket."}
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-6 items-center">
-                <button 
-                  onClick={() => {
-                    const contactPageLink = "/contact";
-                    window.location.href = contactPageLink;
-                  }}
-                  className="group px-12 py-4 bg-gradient-to-r from-[#FF6B00] to-[#FF8533] hover:from-[#FF7A1A] hover:to-[#FFA055] text-white font-bold text-[16px] rounded-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex items-center justify-center gap-3 border border-orange-400/50"
-                  style={{
-                    boxShadow: "0 10px 30px rgba(255, 107, 0, 0.3), 0 0 20px rgba(255, 107, 0, 0.1)",
-                  }}
-                >
-                  <AlertTriangle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span>{isHindi ? "सहायता टिकट खोलें" : "Open Support Ticket"}</span>
-                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                </button>
-
-                <button 
-                  onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="group px-12 py-4 bg-white/15 hover:bg-white/25 border-2 border-white/40 hover:border-white/60 text-white font-bold text-[16px] rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center gap-3"
-                >
-                  <HelpCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span>{isHindi ? "FAQ देखें" : "View FAQs"}</span>
-                </button>
-              </div>
-
-              {/* Info badges */}
-              <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500/30">
-                    <AlertTriangle className="w-5 h-5 text-orange-300" />
+              {/* 2-Column Main Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                
+                {/* Left Column: Information & Overview */}
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-gradient-to-r from-[#FF9933]/20 to-amber-500/10 border border-[#FF9933]/40 rounded-full">
+                    <AlertTriangle className="w-4 h-4 text-[#FF9933]" />
+                    <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                      {isHindi ? "🎯 लोक शिकायत एवं निवारण कक्ष" : "🎯 PUBLIC GRIEVANCE & COMPLAINT DESK"}
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
-                      {isHindi ? "तत्काल" : "Instant"}
-                    </p>
-                    <p className="text-[14px] text-white font-semibold">
-                      {isHindi ? "त्वरित प्रतिक्रिया" : "Quick Response"}
-                    </p>
+
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
+                    {isHindi ? "समस्या की रिपोर्ट करें या शिकायत दर्ज करें" : "Report an Issue or File a Statutory Grievance"}
+                  </h3>
+
+                  <p className="text-sm md:text-base text-blue-100/90 leading-relaxed font-medium">
+                    {isHindi
+                      ? "परियोजना में देरी, बजट विसंगतियों या घटिया निर्माण के लिए सीधे शिकायत दर्ज करें। प्रत्येक शिकायत को MoSPI और CPGRAMS सिस्टम में एक अद्वितीय डिजिटल संदर्भ संख्या प्राप्त होती है।"
+                      : "Lodge official complaints regarding project delay, expenditure mismatch, or substandard construction. Every grievance receives a unique cryptographic tracking reference under MoSPI Revised Guidelines 2023."}
+                  </p>
+
+                  {/* 3 Callout Metrics Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+                    <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-xl border border-white/10 space-y-1 hover:border-amber-400/40 transition-colors">
+                      <div className="flex items-center gap-2 text-amber-400 text-xs font-bold font-mono">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>INSTANT SLA</span>
+                      </div>
+                      <p className="text-xs font-bold text-white">100% Tracking</p>
+                      <p className="text-[10px] text-slate-400">CPGRAMS Docket ID</p>
+                    </div>
+
+                    <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-xl border border-white/10 space-y-1 hover:border-blue-400/40 transition-colors">
+                      <div className="flex items-center gap-2 text-blue-300 text-xs font-bold font-mono">
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>EVIDENCE HASH</span>
+                      </div>
+                      <p className="text-xs font-bold text-white">SHA-256 Ledger</p>
+                      <p className="text-[10px] text-slate-400">IT Act Authenticated</p>
+                    </div>
+
+                    <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-xl border border-white/10 space-y-1 hover:border-emerald-400/40 transition-colors">
+                      <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold font-mono">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>SUPPORT 24/7</span>
+                      </div>
+                      <p className="text-xs font-bold text-white">DM Escalation</p>
+                      <p className="text-[10px] text-slate-400">Direct Nodal Audit</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-                    <FileText className="w-5 h-5 text-blue-300" />
+
+                {/* Right Column: High-Contrast Official Action Box */}
+                <div className="lg:col-span-5 bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-xl p-6 sm:p-8 rounded-2xl border border-slate-700/80 shadow-2xl space-y-6">
+                  <div className="space-y-2 border-b border-slate-800 pb-4">
+                    <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-amber-400 block">
+                      STATUTORY ACTION DESK
+                    </span>
+                    <h4 className="text-base font-extrabold text-white">
+                      Lodge Official Complaint / Inquiry
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Submit direct public tickets or track existing grievance status via CPGRAMS portal.
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
-                      {isHindi ? "ट्रैकिंग" : "Tracking"}
-                    </p>
-                    <p className="text-[14px] text-white font-semibold">
-                      {isHindi ? "संदर्भ संख्या" : "Reference Number"}
-                    </p>
+
+                  <div className="space-y-3.5">
+                    <button 
+                      onClick={() => {
+                        window.location.href = "/contact";
+                      }}
+                      className="w-full py-3.5 px-6 bg-gradient-to-r from-[#FF9933] via-amber-500 to-[#e07b1b] hover:from-[#e07b1b] hover:to-[#c8690e] text-white font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-lg hover:shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer border border-amber-300/40 active:scale-98"
+                    >
+                      <AlertTriangle className="w-4 h-4 text-white" />
+                      <span>{isHindi ? "शिकायत टिकट खोलें" : "Lodge Official Public Ticket"}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    <button 
+                      onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="w-full py-3 px-6 bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <HelpCircle className="w-4 h-4 text-slate-400" />
+                      <span>{isHindi ? "अक्सर पूछे जाने वाले प्रश्न (FAQ)" : "Search Guidelines & FAQs"}</span>
+                    </button>
+                  </div>
+
+                  {/* Toll-Free Helpline Footer Bar */}
+                  <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <Phone className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="text-[11px]">Toll-Free Helpline:</span>
+                    </div>
+                    <span className="font-bold text-amber-400 text-xs">1800-11-1992 (MoSPI Node)</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center border border-green-500/30">
-                    <CheckCircle2 className="w-5 h-5 text-green-300" />
-                  </div>
-                  <div>
-                    <p className="text-[12px] text-blue-200 uppercase font-bold tracking-wider">
-                      {isHindi ? "सहायता" : "Support"}
-                    </p>
-                    <p className="text-[14px] text-white font-semibold">
-                      {isHindi ? "24/7 उपलब्ध" : "Available 24/7"}
-                    </p>
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
@@ -1276,7 +1266,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* ─────────────────────────────────────────────
           PROFESSIONAL FOOTER — Landing Page Only
       ───────────────────────────────────────────── */}
-      <footer className="mt-12 bg-white">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="mt-12 bg-white"
+      >
         {/* Tricolor Top Gradient Line */}
         <div className="h-1 w-full bg-gradient-to-r from-[#FF6B00] via-white to-[#047A1E]" />
         
@@ -1427,364 +1423,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
         </div>
-      </footer>
-
-      {/* ─────────────────────────────────────────────
-          LOGIN MODAL — full SSO sign-in overlay
-      ───────────────────────────────────────────── */}
-      {isSignInModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-300 overflow-hidden my-8">
-
-            {/* Tricolor top strip */}
-            <div className="flex h-2.5 w-full">
-              <div className="w-1/3 bg-[#FF6B00]" />
-              <div className="w-1/3 bg-white border-y border-slate-100" />
-              <div className="w-1/3 bg-[#047A1E]" />
-            </div>
-
-            {/* Modal header */}
-            <div className="bg-[#1B3A7A] text-white px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <SatyamevJayateLogo size="sm" />
-                <div className="border-l border-white/20 pl-3">
-                  <div className="text-[10px] uppercase font-bold text-blue-300 tracking-wider">
-                    National Informatics Centre — NIC
-                  </div>
-                  <h3 className="text-[16px] font-bold tracking-tight mt-0.5">
-                    {isHindi ? "सरकारी लॉगिन पोर्टल" : "Government Single Sign-On Gateway"}
-                  </h3>
-                  <p className="text-[11px] text-blue-200">
-                    {isHindi
-                      ? "सांसद स्थानीय क्षेत्र विकास योजना (MPLADS)"
-                      : "Member of Parliament Local Area Development Scheme"}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsSignInModalOpen(false)}
-                className="p-2 text-blue-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Two-column body */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-
-              {/* Left: credentials form (7 cols) */}
-              <div className="lg:col-span-7 p-6 space-y-5">
-
-                <div className="border-b border-slate-100 pb-3">
-                  <p className="text-[10px] font-bold text-[#FF6B00] uppercase tracking-wider">
-                    {isHindi ? "सुरक्षित पहचान सत्यापन" : "SECURE IDENTITY VERIFICATION"}
-                  </p>
-                  <h4 className="text-[15px] font-bold text-slate-800 mt-0.5">
-                    {isHindi ? "अपने अधिकृत क्रेडेंशियल्स दर्ज करें" : "Enter Authorized Gateway Credentials"}
-                  </h4>
-                </div>
-
-                {/* Role selector */}
-                <div className="space-y-2">
-                  <label className="text-[11px] font-extrabold uppercase tracking-wide text-[#1B3A7A]">
-                    {isHindi ? "शासकीय भूमिका चुनें:" : "Select Governance Role:"}
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {roles.map((r) => {
-                      const isSelected = selectedRole === r.id;
-                      return (
-                        <button
-                          key={r.id}
-                          onClick={() => handleRoleChange(r.id, r.defaultUser)}
-                          className={`p-2.5 rounded-lg border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-[#EBF2FD] border-[#1B3A7A] ring-2 ring-[#1B3A7A]/20"
-                              : "bg-white border-slate-200 hover:bg-slate-50"
-                          }`}
-                        >
-                          <div
-                            className={`p-1.5 rounded shrink-0 mt-0.5 ${
-                              isSelected ? "bg-[#1B3A7A] text-white" : "bg-slate-100 text-slate-500"
-                            }`}
-                          >
-                            <r.icon className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="text-[11px] min-w-0">
-                            <div
-                              className={`font-bold truncate ${
-                                isSelected ? "text-[#1B3A7A]" : "text-slate-800"
-                              }`}
-                            >
-                              {r.title}
-                            </div>
-                            <div className="text-[10px] text-slate-500 mt-0.5">{r.badge}</div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Auth method tabs */}
-                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                  {(["govid", "parichay", "otp"] as const).map((method) => (
-                    <button
-                      key={method}
-                      onClick={() => setAuthMethod(method)}
-                      className={`flex-1 py-1.5 text-[11px] font-bold rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                        authMethod === method
-                          ? "bg-white text-[#1B3A7A] shadow-sm"
-                          : "text-slate-500 hover:text-slate-700"
-                      }`}
-                    >
-                      {method === "govid" && <Lock className="w-3.5 h-3.5" />}
-                      {method === "parichay" && <Fingerprint className="w-3.5 h-3.5" />}
-                      {method === "otp" && <Smartphone className="w-3.5 h-3.5" />}
-                      <span>
-                        {method === "govid" ? "GovID" : method === "parichay" ? "Parichay SSO" : "OTP Login"}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                    {authMethod === "govid" && (
-                      <>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1 block">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
-                            {isHindi ? "सरकारी ईमेल / यूज़र आईडी" : "GovID / Official Email"}
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={govIdInput}
-                            onChange={(e) => setGovIdInput(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-[12px] focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1 block">
-                            <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-                            {isHindi ? "पासकोड" : "Passcode"}
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            value={passcode}
-                            onChange={(e) => setPasscode(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-[12px] focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                          />
-                        </div>
-                      </>
-                    )}
-                    {authMethod === "parichay" && (
-                      <>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1 block">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
-                            Parichay ID / Mobile
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={govIdInput}
-                            onChange={(e) => setGovIdInput(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-[12px] focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1 block">
-                            <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-                            Password
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            value={passcode}
-                            onChange={(e) => setPasscode(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-[12px] focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                          />
-                        </div>
-                      </>
-                    )}
-                    {authMethod === "otp" && (
-                      <>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 mb-1 flex items-center gap-1 block">
-                            <Smartphone className="w-3.5 h-3.5 text-slate-400" />
-                            {isHindi ? "पंजीकृत मोबाइल नंबर" : "Registered Mobile Number"}
-                          </label>
-                          <div className="flex gap-2">
-                            <span className="bg-slate-200 border border-slate-300 rounded-md px-2.5 py-2 text-[11px] font-bold text-slate-600 flex items-center">
-                              +91
-                            </span>
-                            <input
-                              type="tel"
-                              required
-                              defaultValue="9876543210"
-                              className="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-md text-[12px] focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                            />
-                            <button
-                              type="button"
-                              className="px-3 bg-slate-200 hover:bg-slate-300 border border-slate-300 rounded-md text-[11px] font-bold text-slate-700 transition-colors cursor-pointer"
-                            >
-                              {isHindi ? "ओटीपी भेजें" : "Send OTP"}
-                            </button>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-700 mb-1 block">
-                            {isHindi ? "6-अंकीय ओटीपी" : "6-Digit OTP"}
-                          </label>
-                          <input
-                            type="text"
-                            maxLength={6}
-                            required
-                            value={otpInput}
-                            onChange={(e) => setOtpInput(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-[14px] font-mono tracking-widest text-center focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                          />
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* CAPTCHA */}
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 mb-1.5 flex items-center gap-1 block">
-                      <Shield className="w-3.5 h-3.5 text-[#1B3A7A]" />
-                      {isHindi ? "सुरक्षा सत्यापन (कैप्चा)" : "Security Verification (CAPTCHA)"}
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 select-none border-2 border-dashed border-slate-300 font-mono text-xl font-extrabold tracking-widest text-[#1B3A7A] px-5 h-10 rounded-md flex items-center justify-center italic">
-                          {captchaCode}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={regenerateCaptcha}
-                          className="p-2 hover:bg-slate-100 border border-slate-200 rounded-md text-[#1B3A7A] cursor-pointer"
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        required
-                        value={captchaInput}
-                        onChange={(e) => {
-                          setCaptchaInput(e.target.value);
-                          setCaptchaError("");
-                        }}
-                        placeholder={isHindi ? "कैप्चा कोड दर्ज करें" : "Enter code above"}
-                        className="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-md text-[12px] font-mono focus:ring-2 focus:ring-[#1B3A7A] outline-none"
-                      />
-                    </div>
-                    {captchaError && (
-                      <p className="text-[11px] text-red-600 font-bold mt-1 flex items-center gap-1">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        {captchaError}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsSignInModalOpen(false)}
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[12px] font-bold rounded-md cursor-pointer"
-                    >
-                      {isHindi ? "रद्द करें" : "Cancel"}
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 bg-[#1B3A7A] hover:bg-[#142d63] text-white text-[12px] font-bold rounded-md shadow flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Lock className="w-3.5 h-3.5 text-amber-300" />
-                      {isHindi ? "प्रवेश करें" : `Sign In as ${selectedRole}`}
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Right: Help panel (5 cols) */}
-              <div className="lg:col-span-5 p-6 bg-slate-50 space-y-5">
-                <div className="border-b border-slate-200 pb-3">
-                  <p className="text-[10px] font-extrabold text-[#047A1E] uppercase tracking-wider">
-                    {isHindi ? "सहायता एवं निर्देश" : "INSTRUCTIONAL GUIDANCE"}
-                  </p>
-                  <h4 className="text-[15px] font-bold text-[#1B3A7A] mt-0.5">
-                    {isHindi ? "महत्वपूर्ण लिंक्स" : "Official Manual & Support"}
-                  </h4>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
-                    <h5 className="text-[11px] font-extrabold text-[#1B3A7A] uppercase tracking-wider mb-1">
-                      {isHindi ? "सहायता मैनुअल" : "Help Manual / User Guide"}
-                    </h5>
-                    <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">
-                      {isHindi
-                        ? "सभी भूमिकाओं के लिए व्यापक उपयोगकर्ता मार्गदर्शिका"
-                        : "Comprehensive instructions for all user roles."}
-                    </p>
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#FF6B00] hover:underline"
-                    >
-                      <Download className="w-3 h-3" />
-                      {isHindi ? "डाउनलोड करें" : "Download PDF Guide"}
-                    </a>
-                  </div>
-
-                  <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
-                    <h5 className="text-[11px] font-extrabold text-slate-800 uppercase tracking-wider mb-1">
-                      {isHindi ? "पासवर्ड रीसेट" : "Forgot Password / Reset"}
-                    </h5>
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1B3A7A] hover:underline"
-                    >
-                      <KeyRound className="w-3.5 h-3.5" />
-                      {isHindi ? "क्रेडेंशियल्स रिकवरी" : "Recover Account Credentials"}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="p-3.5 bg-amber-50 border-l-4 border-[#FF6B00] rounded-r-lg">
-                  <p className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5 mb-1.5">
-                    <Shield className="w-4 h-4 text-[#FF6B00]" />
-                    {isHindi ? "सुरक्षा सलाह" : "Security Advisory"}
-                  </p>
-                  <ul className="text-[11px] text-slate-700 space-y-1 list-disc list-inside leading-relaxed">
-                    <li>{isHindi ? "URL में 'https://' की जांच करें।" : "Verify URL authenticity before entering passwords."}</li>
-                    <li>{isHindi ? "OTP किसी के साथ साझा न करें।" : "Never share OTP or passwords with anyone."}</li>
-                    <li>{isHindi ? "काम पूरा होने पर Log Out करें।" : "Always Log Out after your session ends."}</li>
-                  </ul>
-                </div>
-
-                <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 font-medium">
-                  <span>NIC Gateway v3.12</span>
-                  <span>TLS 1.3 Secured</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Modal footer */}
-            <div className="bg-slate-900 text-slate-400 text-[10px] px-6 py-3 text-center border-t border-slate-800 leading-relaxed">
-              {isHindi
-                ? "यह एनआईसी द्वारा सुरक्षित एक अधिकृत सरकारी प्रणाली है। सभी गतिविधियां रिकॉर्ड की जा रही हैं।"
-                : "WARNING: This is a secure Government of India system. All actions are logged and audited per IT Act, 2000."}
-            </div>
-          </div>
-        </div>
-      )}
-
-
+      </motion.footer>
 
     </div>
   );

@@ -11,7 +11,7 @@ import {
   PlusCircle,
   ChevronRight,
 } from "lucide-react";
-import { WorkRecord, Language } from "../types";
+import { WorkRecord, Language, UserRole } from "../types";
 import { MetricCard } from "../components/common/MetricCard";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { formatINR, formatCr } from "../lib/utils";
@@ -21,17 +21,25 @@ interface MPDashboardViewProps {
   works: WorkRecord[];
   onSelectWork: (work: WorkRecord) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const MPDashboardView: React.FC<MPDashboardViewProps> = ({
   works,
   onSelectWork,
   language = "en",
+  currentRole = "Member of Parliament",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
-  const t = getTranslation(currentLang);
-  const mpWorks = works.filter((w) => w.constituency === "Ghaziabad (LS-12)");
+  const filteredMpWorks = (works && works.length > 0)
+    ? works.filter(
+        (w) =>
+          (w.constituency || "").toLowerCase().includes("ghaziabad") ||
+          (w.district || "").toLowerCase().includes("ghaziabad")
+      )
+    : [];
+  const mpWorks = filteredMpWorks.length > 0 ? filteredMpWorks : (works && works.length > 0 ? works : []);
 
   return (
     <div id="mp-constituency-dashboard" className="space-y-6 animate-in fade-in duration-200">
@@ -48,7 +56,9 @@ export const MPDashboardView: React.FC<MPDashboardViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <Landmark className="w-6 h-6 text-blue-700" />
-            {isHindi ? "मेरा एमपीलैड्स — गाजियाबाद (लोकसभा-12) कार्यस्थान" : "My MPLADS — Ghaziabad (LS-12) Workspace"}
+            {currentRole === "Member of Parliament"
+              ? (isHindi ? "सांसद पोर्टल एवं निधि पात्रता — गाजियाबाद" : "MP Portal & Fund Entitlement — Ghaziabad")
+              : (isHindi ? "सांसद पोर्टल (समीक्षा) — गाजियाबाद" : "Member of Parliament Portal — Ghaziabad")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi
@@ -159,9 +169,9 @@ export const MPDashboardView: React.FC<MPDashboardViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {mpWorks.map((work) => (
+              {mpWorks.map((work, idx) => (
                 <tr
-                  key={work.work_id}
+                  key={`${work.work_id}-${idx}`}
                   onClick={() => onSelectWork(work)}
                   className="hover:bg-slate-50 transition-colors cursor-pointer group"
                 >

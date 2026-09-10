@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import L from "leaflet";
-import { ZoomIn, ZoomOut, RotateCcw, MapPin, Layers, Filter, Globe, Eye, Sparkles } from "lucide-react";
-import { StateSummary, RiskSeverity } from "../../types";
+import "leaflet/dist/leaflet.css";
+import { ZoomIn, ZoomOut, RotateCcw, MapPin, Layers, Filter, Globe, Eye, Sparkles, AlertCircle, ShieldAlert } from "lucide-react";
+import { StateSummary, WorkRecord, RiskSeverity } from "../../types";
 import { RiskBadge } from "./RiskBadge";
 import { cn } from "../../lib/utils";
 
 interface IndiaMapProps {
   states: StateSummary[];
+  works?: WorkRecord[];
   selectedState: string;
   onSelectState: (state: string) => void;
+  onSelectWork?: (work: WorkRecord) => void;
   className?: string;
   id?: string;
   mapHeight?: string;
@@ -48,25 +51,27 @@ const REAL_STATE_COORDINATES: StateGeoInfo[] = [
 
 // Key Hotspot Constituency Markers for Real GIS Inspection
 const CRITICAL_CONSTITUENCY_PINS = [
-  { id: "GZB", name: "Ghaziabad (UP)", mp: "Atul Garg", lat: 28.6692, lng: 77.4538, risk: "CRITICAL", signals: "3 Overlaps / SFL" },
-  { id: "PAT", name: "Patna Sahib (Bihar)", mp: "Ravi Shankar Prasad", lat: 25.5941, lng: 85.1376, risk: "CRITICAL", signals: "Price +28% SOR" },
-  { id: "VAR", name: "Varanasi (UP)", mp: "Narendra Modi", lat: 25.3176, lng: 82.9739, risk: "LOW", signals: "98% Geo-tagged" },
-  { id: "CBE", name: "Coimbatore (TN)", mp: "K. Annamalai", lat: 11.0168, lng: 76.9558, risk: "HIGH", signals: "Delay +110 days" },
-  { id: "NAG", name: "Nagpur (MH)", mp: "Nitin Gadkari", lat: 21.1458, lng: 79.0882, risk: "MEDIUM", signals: "Vendor Split Risk" },
-  { id: "JPR", name: "Jaipur (RJ)", mp: "Manju Sharma", lat: 26.9124, lng: 75.7873, risk: "HIGH", signals: "3 Duplicate RFQs" },
-  { id: "BLR", name: "Bengaluru South (KA)", mp: "Tejasvi Surya", lat: 12.9716, lng: 77.5946, risk: "LOW", signals: "100% Geo-verified" },
-  { id: "KOL", name: "Kolkata South (WB)", mp: "Mala Roy", lat: 22.5726, lng: 88.3639, risk: "HIGH", signals: "Delayed Milestone" },
+  { id: "GZB", name: "Ghaziabad (UP)", mp: "Atul Garg", lat: 28.6692, lng: 77.4538, risk: "CRITICAL", signals: "3 Overlaps / SFL Anomaly" },
+  { id: "PAT", name: "Patna Sahib (Bihar)", mp: "Ravi Shankar Prasad", lat: 25.5941, lng: 85.1376, risk: "CRITICAL", signals: "Cost +28% over SOR" },
+  { id: "VAR", name: "Varanasi (UP)", mp: "Narendra Modi", lat: 25.3176, lng: 82.9739, risk: "LOW", signals: "98% Geo-tagged / On Track" },
+  { id: "CBE", name: "Coimbatore (TN)", mp: "K. Annamalai", lat: 11.0168, lng: 76.9558, risk: "HIGH", signals: "Timeline Delay +110 days" },
+  { id: "NAG", name: "Nagpur (MH)", mp: "Nitin Gadkari", lat: 21.1458, lng: 79.0882, risk: "MEDIUM", signals: "Vendor Splitting Warning" },
+  { id: "JPR", name: "Jaipur (RJ)", mp: "Manju Sharma", lat: 26.9124, lng: 75.7873, risk: "HIGH", signals: "3 Duplicate RFQ Matches" },
+  { id: "BLR", name: "Bengaluru South (KA)", mp: "Tejasvi Surya", lat: 12.9716, lng: 77.5946, risk: "LOW", signals: "100% Digital Verified" },
+  { id: "KOL", name: "Kolkata South (WB)", mp: "Mala Roy", lat: 22.5726, lng: 88.3639, risk: "HIGH", signals: "Milestone Milestone Lag" },
 ];
 
 type MapStyle = "civic" | "satellite" | "street" | "radar";
 
 export const IndiaMap: React.FC<IndiaMapProps> = ({
   states,
+  works = [],
   selectedState,
   onSelectState,
+  onSelectWork,
   className,
   id,
-  mapHeight = "480px",
+  mapHeight = "520px",
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -77,31 +82,50 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
   const [hoveredState, setHoveredState] = useState<StateSummary | null>(null);
 
+  // Optional custom Mapbox API Key support
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAP_API_KEY;
+  const isMapboxConfigured = Boolean(
+    mapboxToken &&
+    mapboxToken.startsWith("pk.") &&
+    !mapboxToken.includes("your_mapbox_token_here")
+  );
+
   const tileUrls: Record<MapStyle, { url: string; attr: string }> = {
-    civic: {
-      url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      attr: "&copy; OpenStreetMap contributors &copy; CARTO",
-    },
-    satellite: {
-      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      attr: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
-    },
+    civic: isMapboxConfigured
+      ? {
+        url: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`,
+        attr: "&copy; Mapbox &copy; OpenStreetMap",
+      }
+      : {
+        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        attr: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+      },
+    satellite: isMapboxConfigured
+      ? {
+        url: `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{z}/{x}/{y}?access_token=${mapboxToken}`,
+        attr: "&copy; Mapbox &copy; DigitalGlobe",
+      }
+      : {
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS",
+      },
     street: {
-      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      attr: "&copy; OpenStreetMap contributors",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+      attr: "Tiles &copy; Esri World Street Map",
     },
     radar: {
-      url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      attr: "&copy; OpenStreetMap contributors &copy; CARTO",
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+      attr: "Tiles &copy; Esri Dark Gray",
     },
   };
 
   const getStateData = (name: string): StateSummary | undefined => {
+    if (!name) return undefined;
     return states.find(
       (s) =>
-        s.state.toLowerCase() === name.toLowerCase() ||
-        name.toLowerCase().includes(s.state.toLowerCase()) ||
-        s.state.toLowerCase().includes(name.toLowerCase())
+        (s?.state || "").toLowerCase() === name.toLowerCase() ||
+        name.toLowerCase().includes((s?.state || "").toLowerCase()) ||
+        (s?.state || "").toLowerCase().includes(name.toLowerCase())
     );
   };
 
@@ -110,26 +134,39 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       case "CRITICAL":
         return "#EF4444"; // red-500
       case "HIGH":
-        return "#EA580C"; // orange-600
+        return "#F97316"; // orange-500
       case "MEDIUM":
-        return "#EAB308"; // yellow-500
+        return "#F59E0B"; // amber-500
       case "LOW":
-        return "#16A34A"; // green-600
+        return "#10B981"; // emerald-500
       default:
         return "#3B82F6"; // blue-500
     }
   };
 
-  // Initialize Map
+  // Initialize Map with proper centered location for India
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
+    const safeInvalidateSize = () => {
+      if (mapInstanceRef.current) {
+        try {
+          const container = mapInstanceRef.current.getContainer();
+          if (container && (mapInstanceRef.current as any)._mapPane) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        } catch {
+          // Ignore unmount resize errors gracefully
+        }
+      }
+    };
+
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [22.8, 79.6],
+        center: [22.9734, 78.6569], // Exact Geographic Center of India
         zoom: 5,
         minZoom: 4,
-        maxZoom: 12,
+        maxZoom: 13,
         zoomControl: false,
         attributionControl: false,
       });
@@ -137,6 +174,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       const initialTile = L.tileLayer(tileUrls[mapStyle].url, {
         attribution: tileUrls[mapStyle].attr,
         maxZoom: 18,
+        subdomains: "abc",
       }).addTo(map);
 
       tileLayerRef.current = initialTile;
@@ -144,15 +182,74 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       mapInstanceRef.current = map;
     }
 
+    // Invalidate map size multiple times to ensure full tile rendering safely
+    const t1 = setTimeout(safeInvalidateSize, 100);
+    const t2 = setTimeout(safeInvalidateSize, 300);
+    const t3 = setTimeout(safeInvalidateSize, 800);
+
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch {
+          // Ignore Leaflet cleanup errors
+        }
         mapInstanceRef.current = null;
       }
     };
   }, []);
 
-  // Switch Tile Layer
+  // Handle window resize & container size updates via ResizeObserver
+  useEffect(() => {
+    const handleResize = () => {
+      if (mapInstanceRef.current) {
+        try {
+          const container = mapInstanceRef.current.getContainer();
+          if (container && (mapInstanceRef.current as any)._mapPane) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        } catch {
+          // Ignore resize error on unmounted map
+        }
+      }
+    };
+    window.addEventListener("resize", handleResize);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (mapContainerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        handleResize();
+      });
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Focus map when selectedState changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    if (selectedState && selectedState !== "All States") {
+      const geo = REAL_STATE_COORDINATES.find(
+        (g) =>
+          g.name.toLowerCase().includes(selectedState.toLowerCase()) ||
+          selectedState.toLowerCase().includes(g.name.toLowerCase())
+      );
+      if (geo) {
+        mapInstanceRef.current.setView([geo.lat, geo.lng], 7, { animate: true });
+      }
+    } else {
+      mapInstanceRef.current.setView([22.9734, 78.6569], 5, { animate: true });
+    }
+  }, [selectedState]);
+
+  // Switch Map Tile Layer dynamically
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     if (tileLayerRef.current) {
@@ -162,17 +259,19 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
     const newTile = L.tileLayer(tileUrls[mapStyle].url, {
       attribution: tileUrls[mapStyle].attr,
       maxZoom: 18,
+      subdomains: "abc",
     }).addTo(mapInstanceRef.current);
 
     tileLayerRef.current = newTile;
   }, [mapStyle]);
 
-  // Update State Polygons, Pins & Markers
+  // Render Map Markers, Circles & Hotspots
   useEffect(() => {
     if (!mapInstanceRef.current || !layerGroupRef.current) return;
 
     layerGroupRef.current.clearLayers();
 
+    // 1. Render State Radius Boundaries & Custom Pin Badges
     REAL_STATE_COORDINATES.forEach((geo) => {
       const stateData = getStateData(geo.name);
       const riskCategory = stateData?.risk_category || "LOW";
@@ -182,7 +281,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
 
       const isSelected =
         selectedState.toLowerCase() === geo.name.toLowerCase() ||
-        (stateData && selectedState.toLowerCase() === stateData.state.toLowerCase());
+        (stateData && stateData.state && selectedState.toLowerCase() === stateData.state.toLowerCase());
 
       const colorHex = getRiskHex(riskCategory);
 
@@ -192,13 +291,11 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
         color: isSelected ? "#000000" : colorHex,
         weight: isSelected ? 3 : 1.5,
         fillColor: colorHex,
-        fillOpacity: isSelected ? 0.35 : 0.22,
+        fillOpacity: isSelected ? 0.38 : 0.2,
       });
 
       circle.on("click", () => {
-        if (stateData) {
-          onSelectState(stateData.state);
-        }
+        if (stateData) onSelectState(stateData.state);
       });
 
       circle.on("mouseover", () => {
@@ -211,31 +308,32 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
 
       circle.addTo(layerGroupRef.current!);
 
-      // Custom DivIcon Pin for State
+      // Premium Styled Pin Badge
       const badgeHtml = `
         <div style="
-          background-color: ${isSelected ? "#1E293B" : colorHex};
+          background: ${isSelected ? "#0F172A" : colorHex};
           color: #FFFFFF;
-          font-weight: 700;
+          font-weight: 800;
           font-size: 11px;
           font-family: ui-sans-serif, system-ui, sans-serif;
-          padding: 3px 8px;
+          padding: 4px 9px;
           border-radius: 9999px;
           border: 2px solid #FFFFFF;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 5px;
           white-space: nowrap;
           cursor: pointer;
-          transform: translate(-50%, -50%);
-        ">
-          <span>${geo.code}</span>
+          transition: transform 0.2s ease;
+        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1.0)'">
+          <span style="letter-spacing: 0.5px;">${geo.code}</span>
           <span style="
             background: rgba(255,255,255,0.25);
-            padding: 1px 4px;
-            border-radius: 4px;
-            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
           ">${stateData ? Math.round(stateData.avg_risk_score) : "--"}</span>
         </div>
       `;
@@ -243,8 +341,8 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       const customIcon = L.divIcon({
         className: "custom-state-pin",
         html: badgeHtml,
-        iconSize: [40, 24],
-        iconAnchor: [20, 12],
+        iconSize: [46, 26],
+        iconAnchor: [23, 13],
       });
 
       const marker = L.marker([geo.lat, geo.lng], { icon: customIcon });
@@ -264,38 +362,36 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       marker.addTo(layerGroupRef.current!);
     });
 
-    // Add Hotspot Constituency Markers with Pulsing Radar Effect
+    // 2. Add Hotspot Constituency Markers with Pulsing Radar Effect
     CRITICAL_CONSTITUENCY_PINS.forEach((pin) => {
       if (filterSeverity !== "ALL" && pin.risk !== filterSeverity) return;
 
       const isCritical = pin.risk === "CRITICAL";
-      const pinColor = isCritical ? "#EF4444" : pin.risk === "HIGH" ? "#EA580C" : "#16A34A";
+      const pinColor = isCritical ? "#EF4444" : pin.risk === "HIGH" ? "#F97316" : "#10B981";
 
       const pinHtml = `
-        <div style="position: relative; cursor: pointer;">
-          ${
-            isCritical
-              ? `<div style="
+        <div style="position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          ${isCritical
+          ? `<div style="
                   position: absolute;
-                  top: -8px;
-                  left: -8px;
                   width: 28px;
                   height: 28px;
                   border-radius: 50%;
                   background-color: ${pinColor};
-                  opacity: 0.4;
-                  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+                  opacity: 0.5;
+                  animation: mapPulse 1.6s ease-out infinite;
                 "></div>`
-              : ""
-          }
+          : ""
+        }
           <div style="
             position: relative;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background-color: ${pinColor};
-            border: 2px solid #FFFFFF;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            border: 2.5px solid #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            z-index: 10;
           "></div>
         </div>
       `;
@@ -303,55 +399,114 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       const pinIcon = L.divIcon({
         className: "constituency-hotspot-pin",
         html: pinHtml,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
       });
 
       const hotspotMarker = L.marker([pin.lat, pin.lng], { icon: pinIcon });
 
       const popupContent = `
-        <div style="font-family: sans-serif; padding: 4px; min-width: 160px;">
-          <div style="font-weight: 700; font-size: 13px; color: #1E293B;">${pin.name}</div>
-          <div style="font-size: 11px; color: #64748B; margin-top: 2px;">MP: ${pin.mp}</div>
-          <div style="margin-top: 6px; display: inline-block; padding: 2px 6px; background: ${
-            isCritical ? "#FEF2F2" : "#FFF7ED"
-          }; color: ${pinColor}; border: 1px solid ${
-        isCritical ? "#FECACA" : "#FFEDD5"
-      }; font-size: 10px; font-weight: 700; border-radius: 4px;">
-            ${pin.signals}
+        <div style="font-family: ui-sans-serif, system-ui, sans-serif; padding: 6px; min-width: 190px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <div style="font-weight: 800; font-size: 13px; color: #0F172A;">${pin.name}</div>
+            <span style="padding: 2px 6px; background-color: ${isCritical ? "#FEF2F2" : "#FFF7ED"}; color: ${pinColor}; border: 1px solid ${isCritical ? "#FECACA" : "#FFEDD5"}; font-size: 10px; font-weight: 800; border-radius: 4px;">
+              ${pin.risk}
+            </span>
+          </div>
+          <div style="font-size: 11px; color: #64748B; margin-top: 3px;">Hon. MP: <strong>${pin.mp}</strong></div>
+          <div style="margin-top: 6px; font-size: 11px; color: #1E293B; background: #F8FAFC; padding: 5px 8px; border-radius: 6px; border: 1px solid #E2E8F0; font-weight: 600;">
+            ⚠️ Signal: ${pin.signals}
           </div>
         </div>
       `;
 
-      hotspotMarker.bindPopup(popupContent);
+      hotspotMarker.bindPopup(popupContent, { className: "custom-leaflet-popup" });
       hotspotMarker.addTo(layerGroupRef.current!);
     });
-  }, [states, selectedState, filterSeverity, mapStyle]);
+
+    // 3. Render Real Live Works Pins from Backend API
+    if (works && works.length > 0) {
+      works.forEach((w) => {
+        const lat = w.latitude || w.lat || w.mock_visualization?.lat;
+        const lng = w.longitude || w.lng || w.mock_visualization?.lng;
+        if (!lat || !lng) return;
+
+        const severity = w.risk_category || w.risk_level || "LOW";
+        if (filterSeverity !== "ALL" && severity !== filterSeverity) return;
+
+        const isCritical = severity === "CRITICAL";
+        const isHigh = severity === "HIGH";
+        const pinColor = isCritical ? "#EF4444" : isHigh ? "#F97316" : "#3B82F6";
+
+        const workPinIcon = L.divIcon({
+          className: "work-live-pin",
+          html: `<div style="width:12px; height:12px; border-radius:50%; background-color:${pinColor}; border:2px solid #FFFFFF; box-shadow:0 2px 6px rgba(0,0,0,0.35); cursor:pointer;"></div>`,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
+        });
+
+        const workMarker = L.marker([lat, lng], { icon: workPinIcon });
+        const title = w.work_description || w.description || w.name || w.work_name || w.work_id || "Live Project";
+        const sanctionVal = w.sanctioned_cost || w.sanction_amount || w.actual_expenditure || 0;
+        const scoreVal = w.risk_score || w.composite_risk_score || "--";
+
+        const popupContent = `
+          <div style="font-family: ui-sans-serif, system-ui, sans-serif; padding: 6px; min-width: 200px;">
+            <div style="font-weight: 800; font-size: 12px; color: #0F172A;">${w.work_id || w.id || "Work Record"}</div>
+            <div style="font-size: 11px; color: #475569; margin-top: 3px; line-height: 1.4;">${title.slice(0, 70)}${title.length > 70 ? "..." : ""}</div>
+            <div style="margin-top: 6px; font-size: 11px; font-weight: 700; color: #0F172A; display: flex; justify-content: space-between;">
+              <span>Sanction: ₹${(sanctionVal / 100000).toFixed(2)} Lakh</span>
+              <span style="color: ${pinColor}">Score: ${scoreVal}</span>
+            </div>
+          </div>
+        `;
+
+        workMarker.bindPopup(popupContent, { className: "custom-leaflet-popup" });
+        if (onSelectWork) {
+          workMarker.on("click", () => onSelectWork(w));
+        }
+        workMarker.addTo(layerGroupRef.current!);
+      });
+    }
+  }, [states, works, selectedState, filterSeverity, mapStyle]);
 
   const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
-  const handleReset = () => mapInstanceRef.current?.setView([22.8, 79.6], 5);
+  const handleReset = () => mapInstanceRef.current?.setView([22.9734, 78.6569], 5);
 
   return (
     <div
       id={id || "national-risk-map-container"}
-      className={cn("bg-white border border-[#E5E7EB] rounded-xl p-4 shadow-xs relative flex flex-col", className)}
+      className={cn("bg-white border border-slate-200 rounded-xl p-4 shadow-sm relative flex flex-col gap-3", className)}
     >
+      {/* Keyframe Styles for Animation */}
+      <style>{`
+        @keyframes mapPulse {
+          0% { transform: scale(0.6); opacity: 0.8; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
+        .custom-leaflet-popup .leaflet-popup-content-wrapper {
+          border-radius: 12px;
+          box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+          border: 1px solid #E2E8F0;
+        }
+      `}</style>
+
       {/* Map Header & Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div>
-          <h3 className="text-sm font-bold text-[#111827] uppercase tracking-wider flex items-center gap-2 font-sans">
-            <Globe className="w-4 h-4 text-[#2563EB]" />
-            National Geographic Real GIS Intelligence
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 font-sans">
+            <Globe className="w-4 h-4 text-blue-600" />
+            National Geographic Real GIS Intelligence Map
           </h3>
-          <p className="text-xs text-[#6B7280] mt-0.5">
-            Interactive Realistic Satellite &amp; OpenStreetMap Vector Engine • Real GIS State &amp; District Coordinates
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real Leaflet GIS Map • OpenStreetMap Vector &amp; Satellite Engine • 28 States &amp; 8 UTs Active
           </p>
         </div>
 
-        {/* Map Layers & Controls */}
+        {/* Controls Bar */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          {/* Tile Layer Selector */}
+          {/* Layer Style Switcher */}
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
             <Layers className="w-3.5 h-3.5 text-slate-500 ml-1" />
             {(
@@ -368,7 +523,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
                 className={cn(
                   "px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer",
                   mapStyle === style.id
-                    ? "bg-[#2563EB] text-white shadow-xs"
+                    ? "bg-blue-600 text-white shadow-xs font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-white"
                 )}
               >
@@ -387,7 +542,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
                 className={cn(
                   "px-2 py-1 rounded text-[11px] font-semibold transition-all cursor-pointer",
                   filterSeverity === sev
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
+                    ? "bg-white text-slate-900 shadow-xs font-bold border border-slate-300"
                     : "text-slate-600 hover:text-slate-900"
                 )}
               >
@@ -415,7 +570,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
             <button
               onClick={handleReset}
               className="p-1.5 text-slate-700 hover:text-slate-900 hover:bg-white rounded cursor-pointer"
-              title="Reset View"
+              title="Reset View to India"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
@@ -424,7 +579,7 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       </div>
 
       {/* Real Map Canvas Container */}
-      <div className="relative w-full rounded-lg overflow-hidden my-2 border border-slate-200 shadow-inner">
+      <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 shadow-inner">
         <div
           ref={mapContainerRef}
           style={{ height: mapHeight, width: "100%" }}
@@ -435,25 +590,25 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
         {hoveredState && (
           <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md border border-slate-300 rounded-xl p-3.5 shadow-xl max-w-xs pointer-events-none z-50 animate-in fade-in duration-150">
             <div className="flex items-center justify-between gap-3 mb-1.5">
-              <span className="font-bold text-sm text-[#111827]">{hoveredState.state}</span>
-              <RiskBadge severity={hoveredState.risk_category} score={hoveredState.avg_risk_score} size="sm" />
+              <span className="font-bold text-sm text-slate-900">{hoveredState.state}</span>
+              <RiskBadge severity={hoveredState?.risk_category} score={hoveredState?.avg_risk_score} size="sm" />
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100 text-xs">
               <div>
-                <span className="text-[#6B7280] block text-[10px] uppercase tracking-wider font-semibold">Total Works</span>
-                <span className="font-mono font-bold text-slate-900">{hoveredState.total_works.toLocaleString()}</span>
+                <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-semibold">Total Works</span>
+                <span className="font-mono font-bold text-slate-900">{(hoveredState?.total_works || 0).toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block text-[10px] uppercase tracking-wider font-semibold">Expenditure</span>
-                <span className="font-mono font-bold text-slate-900">₹{hoveredState.total_expenditure_cr} Cr</span>
+                <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-semibold">Expenditure</span>
+                <span className="font-mono font-bold text-slate-900">₹{hoveredState?.total_expenditure_cr || 0} Cr</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block text-[10px] uppercase tracking-wider font-semibold">Risk Signals</span>
-                <span className="font-mono font-bold text-red-600">{hoveredState.risk_signals}</span>
+                <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-semibold">Risk Signals</span>
+                <span className="font-mono font-bold text-red-600">{hoveredState?.risk_signals || 0}</span>
               </div>
               <div>
-                <span className="text-[#6B7280] block text-[10px] uppercase tracking-wider font-semibold">Completion</span>
-                <span className="font-mono font-bold text-emerald-600">{hoveredState.completion_rate}%</span>
+                <span className="text-slate-500 block text-[10px] uppercase tracking-wider font-semibold">Completion</span>
+                <span className="font-mono font-bold text-emerald-600">{hoveredState?.completion_rate || 0}%</span>
               </div>
             </div>
           </div>
@@ -461,16 +616,16 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
 
         {/* Selected State Overlay Ribbon */}
         {selectedState && selectedState !== "All States" && (
-          <div className="absolute bottom-3 left-3 bg-[#111827] text-white text-xs px-3.5 py-2 rounded-lg flex items-center gap-2.5 shadow-lg z-50">
-            <MapPin className="w-4 h-4 text-[#EA580C]" />
+          <div className="absolute bottom-4 left-4 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-lg flex items-center gap-3 shadow-xl z-50">
+            <MapPin className="w-4 h-4 text-orange-500" />
             <span>
-              Active Filter: <strong className="text-white font-bold">{selectedState}</strong>
+              Active State Focus: <strong className="text-white font-bold">{selectedState}</strong>
             </span>
             <button
               onClick={() => onSelectState("All States")}
               className="text-amber-300 hover:text-white underline text-[11px] ml-2 font-semibold cursor-pointer"
             >
-              Reset to All India
+              Reset to All India View
             </button>
           </div>
         )}
@@ -479,28 +634,28 @@ export const IndiaMap: React.FC<IndiaMapProps> = ({
       {/* Map Footer & Legend */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs">
         <div className="flex items-center gap-4">
-          <span className="text-[#6B7280] font-semibold">Risk Heatmap Legend:</span>
+          <span className="text-slate-500 font-semibold">Composite Risk Legend:</span>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#16A34A] shrink-0" />
-            <span className="text-[#111827] font-medium">LOW (&lt;40)</span>
+            <span className="w-3 h-3 rounded-full bg-emerald-500 shrink-0" />
+            <span className="text-slate-800 font-medium">LOW (&lt;40)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#EAB308] shrink-0" />
-            <span className="text-[#111827] font-medium">MEDIUM (40-65)</span>
+            <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0" />
+            <span className="text-slate-800 font-medium">MEDIUM (40-65)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#EA580C] shrink-0" />
-            <span className="text-[#111827] font-medium">HIGH (65-80)</span>
+            <span className="w-3 h-3 rounded-full bg-orange-500 shrink-0" />
+            <span className="text-slate-800 font-medium">HIGH (65-80)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#EF4444] shrink-0" />
-            <span className="text-[#111827] font-medium">CRITICAL (&gt;80)</span>
+            <span className="w-3 h-3 rounded-full bg-red-500 shrink-0" />
+            <span className="text-slate-800 font-medium">CRITICAL (&gt;80)</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[11px] text-[#6B7280] font-mono">
-          <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
-          <span>Geo-Coordinates: 28 States &amp; 8 UTs • OpenStreetMap / Esri GIS Data</span>
+        <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+          <span>Real Leaflet OpenStreetMap Engine • MoSPI GIS Database Connected</span>
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ import {
   PauseCircle,
   X,
 } from "lucide-react";
-import { WorkRecord, RiskSeverity, Language } from "../types";
+import { WorkRecord, RiskSeverity, Language, UserRole } from "../types";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { formatINR } from "../lib/utils";
 import { getTranslation, translateText } from "../data/translations";
@@ -28,16 +28,19 @@ interface WorkIntelligenceTableViewProps {
   works: WorkRecord[];
   onSelectWork: (work: WorkRecord) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps> = ({
   works,
   onSelectWork,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const lang: Language = (language as Language) || "en";
   const isHindi = lang === "hi";
   const t = getTranslation(lang);
+  const isCitizen = currentRole === "Users";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -239,35 +242,68 @@ export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps>
         </div>
       )}
 
+      {/* Citizen Transparency Notice */}
+      {isCitizen && (
+        <div className="p-3 bg-amber-50/90 border-l-4 border-amber-500 rounded-r-lg text-amber-900 text-xs font-semibold flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>Public Citizen Transparency Mode — Read-Only Access (Administrative Edit, Attestation & Export Controls Restricted)</span>
+          </div>
+          <span className="text-[10px] uppercase font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-300">
+            Read-Only
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="px-2 py-0.5 bg-[#112E51]/10 text-[#112E51] border border-[#112E51]/20 text-[11px] font-bold rounded font-mono uppercase">
               {isHindi ? "डेटाबेस एक्सप्लोरर एवं लेजर" : "Database Explorer & Ledger"}
             </span>
-            <span className="text-xs text-slate-500 font-mono">
-              {filteredWorks.length} {isHindi ? "संबंधित विकास कार्य सूचीबद्ध" : "matching works in scope"}
-            </span>
+
+            {/* LIVE MONITORING SENSOR ANIMATED BADGE */}
+            <div className="inline-flex items-center gap-2 px-3 py-0.5 bg-emerald-50/90 border border-emerald-300 rounded-full shadow-2xs">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-[11px] font-extrabold text-emerald-950 uppercase tracking-wide">
+                {isHindi ? "लाइव निगरानी सेंसर" : "LIVE MONITORING SENSOR"}
+              </span>
+              <span className="bg-emerald-800 text-white text-[10px] px-2 py-0.5 rounded font-extrabold font-mono uppercase tracking-wider shadow-2xs">
+                NIC-SECURE
+              </span>
+            </div>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">
-            {isHindi ? "संसदीय विकास कार्य इंटेलिजेंस लेजर" : "Works Intelligence Ledger"}
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
+            <FileSpreadsheet className="w-6 h-6 text-blue-600" />
+            {currentRole === "Member of Parliament"
+              ? (isHindi ? "निर्वाचन क्षेत्र परियोजनाएं" : "Constituency Projects")
+              : currentRole === "District Authority"
+              ? (isHindi ? "कार्य स्वीकृति व निधि निर्गमन" : "Work Sanction & Fund Release")
+              : currentRole === "State Nodal Authority"
+              ? (isHindi ? "राज्य परियोजनाएं" : "State Projects Tracker")
+              : (isHindi ? "ऑल इंडिया प्रोजेक्ट्स ट्रैकर" : "All India Works Tracker")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi ? "मशीन-गणना योग्य जोखिम स्कोर, व्यय मील के पत्थर और समयसीमा पूर्वानुमानों के साथ व्यापक ऑडिट मैट्रिक्स।" : "Comprehensive audit matrix with machine-calculated risk scores, expenditure milestones, and timeline forecasts."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExportFilteredCSV}
-            className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-            title="Export all currently filtered projects to CSV"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-500" />
-            <span>{isHindi ? "डेटा एक्सपोर्ट (CSV)" : "Export Data (CSV)"}</span>
-          </button>
-        </div>
+        {!isCitizen && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportFilteredCSV}
+              className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              title="Export all currently filtered projects to CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span>{isHindi ? "डेटा एक्सपोर्ट (CSV)" : "Export Data (CSV)"}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter Bar */}
@@ -377,21 +413,23 @@ export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps>
       <div className="bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100/90 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 select-none">
+            <thead className="bg-slate-100/95 backdrop-blur-md sticky top-0 z-20 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200 select-none shadow-2xs">
               <tr>
-                <th className="py-3 px-3 w-10 text-center">
-                  <button
-                    onClick={handleToggleSelectPage}
-                    className="text-slate-500 hover:text-slate-800 cursor-pointer"
-                    title={isCurrentPageAllSelected ? "Deselect Page" : "Select All on Page"}
-                  >
-                    {isCurrentPageAllSelected ? (
-                      <CheckSquare className="w-4 h-4 text-blue-600" />
-                    ) : (
-                      <Square className="w-4 h-4" />
-                    )}
-                  </button>
-                </th>
+                {!isCitizen && (
+                  <th className="py-3 px-3 w-10 text-center">
+                    <button
+                      onClick={handleToggleSelectPage}
+                      className="text-slate-500 hover:text-slate-800 cursor-pointer"
+                      title={isCurrentPageAllSelected ? "Deselect Page" : "Select All on Page"}
+                    >
+                      {isCurrentPageAllSelected ? (
+                        <CheckSquare className="w-4 h-4 text-blue-600" />
+                      ) : (
+                        <Square className="w-4 h-4" />
+                      )}
+                    </button>
+                  </th>
+                )}
                 <th
                   onClick={() => handleSort("work_id")}
                   className="py-3 px-3 cursor-pointer hover:bg-slate-200/60"
@@ -444,26 +482,28 @@ export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {paginatedWorks.map((work) => {
+              {paginatedWorks.map((work, idx) => {
                 const isSelected = selectedRowIds.includes(work.work_id);
                 return (
                   <tr
-                    key={work.work_id}
+                    key={`${work.work_id}-${idx}`}
                     onClick={() => onSelectWork(work)}
                     className={`hover:bg-slate-50/90 transition-colors cursor-pointer group ${
-                      isSelected ? "bg-blue-50/70" : ""
+                      isSelected && !isCitizen ? "bg-blue-50/70" : ""
                     }`}
                   >
-                    <td
-                      className="py-3 px-3 text-center"
-                      onClick={(e) => handleToggleSelectRow(work.work_id, e)}
-                    >
-                      {isSelected ? (
-                        <CheckSquare className="w-4 h-4 text-blue-600 inline" />
-                      ) : (
-                        <Square className="w-4 h-4 text-slate-400 inline" />
-                      )}
-                    </td>
+                    {!isCitizen && (
+                      <td
+                        className="py-3 px-3 text-center"
+                        onClick={(e) => handleToggleSelectRow(work.work_id, e)}
+                      >
+                        {isSelected ? (
+                          <CheckSquare className="w-4 h-4 text-blue-600 inline" />
+                        ) : (
+                          <Square className="w-4 h-4 text-slate-400 inline" />
+                        )}
+                      </td>
+                    )}
                     <td className="py-3 px-3 font-mono font-bold text-slate-900 group-hover:text-blue-700 whitespace-nowrap">
                       {work.work_id}
                     </td>
@@ -545,8 +585,8 @@ export const WorkIntelligenceTableView: React.FC<WorkIntelligenceTableViewProps>
         </div>
       </div>
 
-      {/* Floating Batch Action Toolbar - Fully Responsive on Mobile & Desktop */}
-      {selectedRowIds.length > 0 && (
+      {/* Floating Batch Action Toolbar - Only for Government Roles */}
+      {!isCitizen && selectedRowIds.length > 0 && (
         <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 text-white px-3 sm:px-5 py-2.5 sm:py-3 rounded-2xl border border-slate-700 shadow-2xl flex flex-wrap items-center justify-between sm:justify-start gap-2 sm:gap-3 max-w-[94vw] sm:max-w-max backdrop-blur-md animate-in slide-in-from-bottom duration-200">
           <div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 border-r border-slate-700">
             <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-mono text-[11px] sm:text-xs font-bold">

@@ -10,16 +10,19 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { ComplianceRule, Language } from "../types";
+import { ComplianceRule, Language, UserRole } from "../types";
 import { MetricCard } from "../components/common/MetricCard";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { getTranslation } from "../data/translations";
+
+import { DEFAULT_COMPLIANCE_RULES } from "../data/complianceRules";
 
 interface ComplianceCenterViewProps {
   rules: ComplianceRule[];
   onSelectRule?: (rule: ComplianceRule) => void;
   onOpenPolicy?: () => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const ComplianceCenterView: React.FC<ComplianceCenterViewProps> = ({
@@ -27,6 +30,7 @@ export const ComplianceCenterView: React.FC<ComplianceCenterViewProps> = ({
   onSelectRule,
   onOpenPolicy,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
@@ -34,7 +38,9 @@ export const ComplianceCenterView: React.FC<ComplianceCenterViewProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSeverity, setSelectedSeverity] = useState("ALL");
 
-  const filteredRules = rules.filter((r) => {
+  const rulesToUse = rules && rules.length > 0 ? rules : DEFAULT_COMPLIANCE_RULES;
+
+  const filteredRules = rulesToUse.filter((r) => {
     const matchSearch =
       r.rule_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,7 +64,9 @@ export const ComplianceCenterView: React.FC<ComplianceCenterViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-emerald-600" />
-            {isHindi ? "अनुपालन निगरानी केंद्र" : "Compliance Surveillance Center"}
+            {currentRole === "State Nodal Authority"
+              ? (isHindi ? "राज्य अनुपालन लेखापरीक्षा" : "State Audit Ledger")
+              : (isHindi ? "नियम उल्लंघन लेखापरीक्षक" : "Rule Violation Auditor")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi

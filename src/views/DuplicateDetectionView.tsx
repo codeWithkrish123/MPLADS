@@ -12,7 +12,7 @@ import {
   IndianRupee,
   Layers,
 } from "lucide-react";
-import { WorkRecord, Language } from "../types";
+import { WorkRecord, Language, UserRole } from "../types";
 import { formatINR } from "../lib/utils";
 import { getTranslation } from "../data/translations";
 import { EmptyState } from "../components/common/EmptyState";
@@ -21,12 +21,14 @@ interface DuplicateDetectionViewProps {
   works: WorkRecord[];
   onSelectWork: (work: WorkRecord) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const DuplicateDetectionView: React.FC<DuplicateDetectionViewProps> = ({
   works,
   onSelectWork,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
@@ -114,7 +116,9 @@ export const DuplicateDetectionView: React.FC<DuplicateDetectionViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <Copy className="w-6 h-6 text-amber-600" />
-            {isHindi ? "संभावित दोहरे कार्य (Duplicate Work) विश्लेषक" : "Near-Duplicate Work Intelligence"}
+            {currentRole === "District Authority"
+              ? (isHindi ? "दोहरे भुगतान सत्यापन" : "Double Payment Verification")
+              : (isHindi ? "दोहरे भुगतान की पहचान" : "Double Payment Audit")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi

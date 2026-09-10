@@ -9,20 +9,24 @@ import {
   IndianRupee,
   Download,
 } from "lucide-react";
-import { DistrictSummary, Language } from "../types";
+import { DistrictSummary, Language, UserRole } from "../types";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { getTranslation } from "../data/translations";
+
+import { DEFAULT_DISTRICT_SUMMARIES } from "../data/districtSummaries";
 
 interface StateNodalDashboardViewProps {
   districts: DistrictSummary[];
   onSelectDistrict: (district: string) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const StateNodalDashboardView: React.FC<StateNodalDashboardViewProps> = ({
   districts,
   onSelectDistrict,
   language = "en",
+  currentRole = "State Nodal Authority",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
@@ -32,6 +36,8 @@ export const StateNodalDashboardView: React.FC<StateNodalDashboardViewProps> = (
     "Patna",
     "Thane",
   ]);
+
+  const activeDistricts = districts && districts.length > 0 ? districts : DEFAULT_DISTRICT_SUMMARIES;
 
   const toggleDistrictSelection = (name: string) => {
     if (selectedDistrictNames.includes(name)) {
@@ -45,7 +51,7 @@ export const StateNodalDashboardView: React.FC<StateNodalDashboardViewProps> = (
     }
   };
 
-  const comparedDistricts = districts.filter((d) =>
+  const comparedDistricts = activeDistricts.filter((d) =>
     selectedDistrictNames.includes(d.district)
   );
 
@@ -64,7 +70,7 @@ export const StateNodalDashboardView: React.FC<StateNodalDashboardViewProps> = (
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <Globe className="w-6 h-6 text-indigo-700" />
-            {isHindi ? "अंतर-जिला प्रदर्शन एवं जोखिम तुलना" : "Cross-District Performance & Risk Comparison"}
+            {isHindi ? "राज्य नोडल डैशबोर्ड" : "State Nodal Workspace"}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi

@@ -17,16 +17,18 @@ import {
   HelpCircle,
   FileSpreadsheet,
 } from "lucide-react";
-import { WorkRecord, RiskSeverity, WorkStatus, Language } from "../types";
+import { WorkRecord, RiskSeverity, WorkStatus, Language, UserRole } from "../types";
 import { MOCK_WORKS } from "../data/mockData";
 import { getTranslation, translateText } from "../data/translations";
+import { exportToCSV } from "../utils/exportUtils";
 
 interface CustomDatasetViewProps {
   onOpenWorkDetail?: (work: WorkRecord) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
-export const CustomDatasetView: React.FC<CustomDatasetViewProps> = ({ onOpenWorkDetail, language = "en" }) => {
+export const CustomDatasetView: React.FC<CustomDatasetViewProps> = ({ onOpenWorkDetail, language = "en", currentRole = "Ministry" }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
@@ -187,7 +189,11 @@ export const CustomDatasetView: React.FC<CustomDatasetViewProps> = ({ onOpenWork
             <Database className="w-4 h-4" /> {isHindi ? "कस्टम डेटासेट स्टूडियो एवं इंजेसन इंजन" : "Custom Dataset Studio & Ingestion Engine"}
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold font-sans text-slate-900 tracking-tight">
-            {isHindi ? "डेटासेट एवं सीएसवी विश्लेषक" : "Dataset & CSV Analyzer"}
+            {currentRole === "Member of Parliament"
+              ? (isHindi ? "परियोजना डेटा डाउनलोड" : "Download Constituency Records")
+              : currentRole === "District Authority"
+              ? (isHindi ? "जिला रिकॉर्ड डाउनलोड" : "Download District Records")
+              : (isHindi ? "परियोजना रिकॉर्ड डाउनलोड" : "Download Project Records")}
           </h1>
           <p className="text-sm text-slate-600 mt-1 max-w-2xl">
             {isHindi
@@ -202,6 +208,21 @@ export const CustomDatasetView: React.FC<CustomDatasetViewProps> = ({ onOpenWork
             <span>{isHindi ? "सीएसवी / जेएसओएन अपलोड करें" : "Upload CSV / JSON"}</span>
             <input type="file" accept=".csv,.json" onChange={handleFileUpload} className="hidden" />
           </label>
+
+          <button
+            onClick={() => {
+              if (datasetRecords.length === 0) {
+                alert("No dataset records available to export.");
+                return;
+              }
+              exportToCSV("MPLADS_Custom_Dataset_Export.csv", datasetRecords);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+            title="Export processed dataset to CSV file"
+          >
+            <Download className="w-4 h-4 text-[#FF9933]" />
+            <span>{isHindi ? "डेटासेट निर्यात (CSV)" : "Export CSV"}</span>
+          </button>
 
           <button
             onClick={() => setIsAddModalOpen(true)}

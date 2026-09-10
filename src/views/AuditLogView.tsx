@@ -11,14 +11,15 @@ import {
   Printer,
   X,
 } from "lucide-react";
-import { AuditLogEntry, Language } from "../types";
+import { AuditLogEntry, Language, UserRole } from "../types";
 
 interface AuditLogViewProps {
   logs: AuditLogEntry[];
   language?: Language;
+  currentRole?: UserRole;
 }
 
-export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, language = "en" }) => {
+export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, language = "en", currentRole = "Ministry" }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const [searchTerm, setSearchTerm] = useState("");
@@ -97,7 +98,9 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, language = "en
                 <Lock className="w-3 h-3" /> IT Act Sec 2(1-A) - Protected
               </p>
               <h1 className="text-2xl font-bold text-slate-900 mt-1">
-                {isHindi ? "राष्ट्रीय सांसद निधि इलेक्ट्रॉनिक ऑडिट ट्रेल" : "National MPLADS Electronic Audit Trail & Statutory Verification Ledger"}
+                {currentRole === "District Authority"
+                  ? (isHindi ? "प्रमाणन एवं लेखा बही" : "District Audit & Attestation Ledger")
+                  : (isHindi ? "अपरिवर्तनीय लेखा बही" : "Cryptographic Audit Ledger")}
               </h1>
               <p className="text-xs text-slate-600 mt-1">
                 {isHindi ? "सभी प्रशासनिक कार्यों का अपरिवर्तनीय डिजिटल साक्ष्य, PFMS निधि रिहाई, भौतिक निरीक्षण और मैनुअल ओवरराइड" : "Immutable digital evidence of administrative sanctions, PFMS fund releases, physical inspections & manual overrides"}
@@ -337,111 +340,157 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, language = "en
         </p>
       </div>
 
-      {/* MODAL - VIEW ORDER - PROFESSIONAL GOVERNMENT DOCKET */}
+      {/* MODAL - VIEW ORDER - OFFICIAL GOVERNMENT GAZETTE DOCKET */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Tricolor Header Stripe */}
-            <div className="h-2 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-6 transition-all duration-300 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* National Tricolor Top Bar */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] shrink-0" />
 
-            {/* Modal Header with Logo */}
-            <div className="flex items-start justify-between p-6 border-b-2 border-gray-300 bg-white">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#003399] text-white flex items-center justify-center shrink-0 font-bold text-xs">
-                  IN
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                  <Lock className="w-4 h-4 text-amber-400" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Official Administrative Order Docket</h2>
-                  <p className="text-xs text-gray-600 mt-0.5">Docket ID: {selectedOrder.id}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded">
+                      Statutory Audit Docket
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-300 font-semibold">{selectedOrder.id}</span>
+                  </div>
+                  <h2 className="text-base font-extrabold text-white tracking-tight mt-0.5" style={{ color: '#FFFFFF' }}>
+                    Official Administrative Sanction Docket
+                  </h2>
                 </div>
               </div>
+
               <button 
                 onClick={() => setSelectedOrder(null)}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                title="Close Docket"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Modal Content - Government Letterhead Format */}
-            <div className="p-8 space-y-6 bg-white">
-              {/* Government Letterhead */}
-              <div className="text-center space-y-2 pb-4 border-b-2 border-gray-300">
-                <p className="text-xs font-bold text-gray-700 tracking-widest">भारत सरकार • सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय</p>
-                <p className="text-sm font-bold text-gray-800">GOVERNMENT OF INDIA • MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</p>
-                <p className="text-xs text-gray-600">राष्ट्रीय सांसद स्थानीय क्षेत्र विकास योजना</p>
+            {/* Modal Scrollable Body */}
+            <div className="p-6 sm:p-7 space-y-5 overflow-y-auto bg-slate-50/50 font-sans">
+              {/* Government Official Letterhead */}
+              <div className="relative text-center space-y-1.5 pb-5 pt-2 bg-white p-5 rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                {/* Background Official Crest Stamp */}
+                <div className="absolute right-3 top-3 opacity-5 pointer-events-none">
+                  <BarChart3 className="w-24 h-24 text-slate-900" />
+                </div>
+
+                <div className="flex items-center justify-center gap-2 text-slate-700">
+                  <span className="text-[11px] font-bold tracking-widest uppercase">भारत सरकार • GOVERNMENT OF INDIA</span>
+                </div>
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
+                  Ministry of Statistics & Programme Implementation
+                </h3>
+                <p className="text-[11px] text-blue-900 font-bold uppercase tracking-wider">
+                  National MPLADS Executive Command & Statutory Audit Ledger
+                </p>
+                <div className="w-24 h-0.5 bg-gradient-to-r from-amber-500 via-blue-900 to-emerald-600 mx-auto mt-2 rounded-full" />
               </div>
 
-              {/* Reference and Date */}
-              <div className="flex items-start justify-between">
+              {/* Order Reference Number & Date Bar */}
+              <div className="grid grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs text-xs">
                 <div>
-                  <p className="text-xs font-bold text-gray-700 uppercase">Ref No:</p>
-                  <p className="text-sm font-bold text-gray-900">{selectedOrder.id}/GOI/2026</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Gazette Reference Order No:</span>
+                  <span className="font-mono font-bold text-slate-900 text-xs mt-0.5 block">{selectedOrder.id}/GOI/2026</span>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold text-gray-700 uppercase">Date:</p>
-                  <p className="text-sm font-bold text-gray-900">{selectedOrder.timestamp}</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Timestamp of Authentication:</span>
+                  <span className="font-mono font-bold text-slate-900 text-xs mt-0.5 block">{selectedOrder.timestamp}</span>
                 </div>
               </div>
 
-              {/* Order Details Box */}
-              <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50 space-y-3">
-                {/* Authorized Officer */}
-                <div>
-                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Authorized Officer:</p>
-                  <p className="text-sm font-bold text-gray-900">{selectedOrder.user} <span className="text-gray-600">({selectedOrder.role})</span></p>
+              {/* Core Order Metadata Cards */}
+              <div className="border border-slate-200 rounded-xl p-5 bg-white shadow-2xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Executing Officer</span>
+                    <span className="text-sm font-extrabold text-slate-900 block mt-0.5">{selectedOrder.user}</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold rounded-lg font-mono">
+                    Role: {selectedOrder.role}
+                  </span>
                 </div>
 
-                {/* Target Entity and Action */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Target Entity:</p>
-                    <p className="text-sm font-bold text-blue-700 mt-1">{selectedOrder.entity}</p>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Work / Entity</span>
+                    <span className="text-xs font-bold text-blue-700 block mt-1">{selectedOrder.entity}</span>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Action Type:</p>
-                    <p className="text-sm font-bold text-gray-900 mt-1">{selectedOrder.action}</p>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Statutory Action Executed</span>
+                    <span className="text-xs font-bold text-slate-900 block mt-1">{selectedOrder.action}</span>
                   </div>
                 </div>
 
-                {/* Value Transition */}
-                <div>
-                  <p className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Value Transition:</p>
-                  <div className="bg-white border border-gray-300 rounded p-3 flex items-center gap-3">
-                    <p className="text-sm text-gray-600 line-through">{selectedOrder.old_value}</p>
-                    <span className="text-gray-700 font-bold">→</span>
-                    <p className="text-sm font-bold text-green-700 bg-green-50 px-2 py-1 rounded">{selectedOrder.new_value}</p>
+                {/* State / Value Transition Visualizer */}
+                <div className="pt-3 border-t border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                    Verified State Transition Log
+                  </span>
+                  <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Prior State</span>
+                      <span className="text-xs text-slate-500 line-through bg-slate-200/70 px-2.5 py-1 rounded font-medium block">
+                        {selectedOrder.old_value}
+                      </span>
+                    </div>
+                    <span className="text-slate-400 font-extrabold hidden sm:block">→</span>
+                    <div className="space-y-0.5 text-right sm:text-left">
+                      <span className="text-[10px] font-bold text-emerald-700 uppercase block">Authorized State</span>
+                      <span className="text-xs font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-2.5 py-1 rounded block">
+                        {selectedOrder.new_value}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Rule Citation */}
-              <div className="bg-gray-50 border-l-4 border-blue-700 p-4">
-                <p className="text-sm font-bold text-gray-900 mb-2">ORDER UNDER RULE 12(3) OF MPLADS REVISED GUIDELINES 2023:</p>
-                <p className="text-xs leading-relaxed text-gray-700">
+              {/* Statutory Clause / Guideline Rule Citation */}
+              <div className="bg-blue-50/80 border-l-4 border-blue-900 rounded-r-xl p-4 space-y-1 shadow-2xs">
+                <div className="flex items-center gap-1.5 text-blue-950 font-extrabold text-xs tracking-wide uppercase">
+                  <CheckCircle className="w-4 h-4 text-blue-800" />
+                  <span>Order Executed Under Rule 12(3) of MPLADS Revised Guidelines 2023</span>
+                </div>
+                <p className="text-xs leading-relaxed text-slate-700 font-medium">
                   The competent authority having examined the technical estimate, physical Measurement Book (MB) verification, and financial status of the specified project, has authorized this determination. This administrative sanction is entered into the Central e-Ledger for Comptroller & Auditor General (CAG) audit certification.
                 </p>
               </div>
 
-              {/* Digital Signature Box */}
-              <div className="border-2 border-green-400 bg-green-50 rounded-lg p-4 flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-700 shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-green-800 uppercase tracking-wider mb-1">Valid Electronic Signature (DSC)</p>
-                  <p className="text-xs font-mono text-green-700 break-all">{selectedOrder.hash_signature}</p>
-                  <p className="text-xs font-bold text-green-700 mt-2">SEC LEVEL 4</p>
+              {/* NIC-CA Digital Signature Certificate Box */}
+              <div className="border border-emerald-300 bg-emerald-50/80 rounded-xl p-4 flex items-start gap-3 shadow-2xs">
+                <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold mt-0.5">
+                  <CheckCircle className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                      NIC Digital Signature Certificate (DSC) Verified
+                    </span>
+                    <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-200/90 px-2 py-0.5 rounded font-mono">
+                      SEC LEVEL 4
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono font-bold text-emerald-800 break-all mt-1">
+                    {selectedOrder.hash_signature}
+                  </p>
+                  <p className="text-[10px] text-emerald-700 mt-1 font-medium">
+                    Authenticated under Section 7(A) of Information Technology Act 2000 • Non-Repudiable Evidence
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t-2 border-gray-300 bg-gray-50">
-              <button
-                onClick={() => setSelectedOrder(null)}
-                className="px-6 py-2 bg-white border-2 border-gray-400 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors"
-              >
-                Close
-              </button>
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50 shrink-0">
               <button
                 onClick={() => {
                   const printWindow = window.open("", "", "width=950,height=1200");
@@ -527,9 +576,17 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, language = "en
                     printWindow.print();
                   }
                 }}
-                className="px-6 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition-colors flex items-center gap-2"
+                className="px-4.5 py-2.5 bg-blue-900 hover:bg-blue-950 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
               >
-                <Printer className="w-4 h-4" /> Print Order
+                <Printer className="w-4 h-4 text-blue-200" />
+                <span>Print Certified Order</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="px-4.5 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+              >
+                Close Docket
               </button>
             </div>
           </div>

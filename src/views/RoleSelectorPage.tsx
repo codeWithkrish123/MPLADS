@@ -19,6 +19,19 @@ export const RoleSelectorPage: React.FC<RoleSelectorPageProps> = ({
     features: string[];
   }[] = [
     {
+      id: "Users",
+      title: "Public Users / Citizens",
+      description: "Access public information about MPLADS projects in your area and track development activities.",
+      icon: Landmark,
+      badge: "Public Scope",
+      scope: "All Citizens & Members of Public",
+      features: [
+        "View projects in your constituency",
+        "Track project status & progress",
+        "Access public project details & timelines",
+      ],
+    },
+    {
       id: "Member of Parliament",
       title: "Member of Parliament",
       description: "Track recommended works, sanction milestones and constituency-level development performance.",

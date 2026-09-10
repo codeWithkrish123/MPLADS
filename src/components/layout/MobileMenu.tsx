@@ -51,9 +51,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const roles: UserRole[] = [
     "Ministry",
-    "Member of Parliament",
-    "District Authority",
     "State Nodal Authority",
+    "District Authority",
+    "Member of Parliament",
+    "Users",
   ];
 
   const navigationLinks = [

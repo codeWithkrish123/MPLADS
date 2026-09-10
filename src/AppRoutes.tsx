@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
+import { SentinelDashboard } from "./components/Dashboard/SentinelDashboard";
 
 /**
  * AppRoutes - Wrapper component that sets up all routing paths with proper URL structure
@@ -23,8 +24,13 @@ export const AppRoutes: React.FC = () => {
       {/* Main Dashboard Routes */}
       <Route path="/overview" element={<App />} />
       <Route path="/works" element={<App />} />
+      <Route path="/work-monitoring" element={<App />} />
       <Route path="/custom-dataset" element={<App />} />
       <Route path="/ai-assistant" element={<App />} />
+
+      {/* ML Sentinel Real-Time Dashboard */}
+      <Route path="/dashboard/sentinel" element={<SentinelDashboard />} />
+      <Route path="/dashboard/live" element={<SentinelDashboard />} />
 
       {/* Primary Intelligence Routes */}
       <Route path="/alerts" element={<App />} />
@@ -35,6 +41,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/duplicate" element={<App />} />
       <Route path="/expenditure" element={<App />} />
       <Route path="/delay" element={<App />} />
+      <Route path="/live-command" element={<App />} />
+      <Route path="/labour-intelligence" element={<App />} />
+      <Route path="/ghost-verification" element={<App />} />
+      <Route path="/case-management" element={<App />} />
+      <Route path="/scenario-simulation" element={<App />} />
 
       {/* Jurisdiction & Workspace Routes */}
       <Route path="/state-intelligence" element={<App />} />
@@ -60,6 +71,11 @@ export const AppRoutes: React.FC = () => {
       <Route path="/stateNodal" element={<Navigate to="/state-nodal" replace />} />
       <Route path="/roleSelector" element={<Navigate to="/role-selector" replace />} />
       <Route path="/auditLogs" element={<Navigate to="/audit-logs" replace />} />
+      <Route path="/liveCommand" element={<Navigate to="/live-command" replace />} />
+      <Route path="/labour" element={<Navigate to="/labour-intelligence" replace />} />
+      <Route path="/ghostVerification" element={<Navigate to="/ghost-verification" replace />} />
+      <Route path="/caseManagement" element={<Navigate to="/case-management" replace />} />
+      <Route path="/scenarioSimulation" element={<Navigate to="/scenario-simulation" replace />} />
 
       {/* Catch-all: redirect to landing */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -13,7 +13,16 @@ export type UserRole =
   | "Ministry" 
   | "State Nodal Authority" 
   | "District Authority" 
-  | "Member of Parliament";
+  | "Member of Parliament"
+  | "Users";
+
+export interface User {
+  id: string;
+  email: string;
+  role: string;
+  department?: string;
+  name?: string;
+}
 
 export type Language = "en" | "hi";
 
@@ -190,6 +199,7 @@ export interface ComplianceRule {
   source_document: string;
   threshold_description: string;
   detection_logic: string;
+  policy_statement: string;
 }
 
 export interface AuditLogEntry {
@@ -226,3 +236,150 @@ export interface GlobalFilterState {
   riskSeverityFilter: string;
   language: Language;
 }
+
+// ============================================================================
+// Work Assignment & Progress Monitoring Types
+// ============================================================================
+
+export interface WorkAssignmentRecord {
+  id?: string;
+  project_id: string;
+  work_id: string;
+  work_description: string;
+  assigned_date: string;
+  planned_start_date: string;
+  planned_end_date: string;
+  assigned_quantity: number;
+  unit: string;
+  assigned_amount: number;
+  contractor?: string;
+  department?: string;
+  location?: string;
+  remarks?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface WorkProgressRecord {
+  id?: string;
+  project_id: string;
+  work_id: string;
+  report_date: string;
+  completed_quantity: number;
+  unit: string;
+  reported_progress_percent: number;
+  reported_amount_spent: number;
+  calculated_progress_percent?: number;
+  remarks?: string;
+  reported_by?: string;
+  created_at?: string;
+}
+
+export type SignalSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export interface WorkMonitoringSignalItem {
+  id: string;
+  project_id: string;
+  work_id?: string;
+  signal_type:
+    | "WORK_PROGRESS_DELAY"
+    | "FINANCIAL_PROGRESS_MISMATCH"
+    | "REPORTED_PROGRESS_DISCREPANCY"
+    | "WORK_ASSIGNMENT_NOT_FOUND"
+    | "OVERDUE_WORK"
+    | "LOW_PROGRESS_HIGH_EXPENDITURE"
+    | "RAPID_EXPENDITURE_WITH_LOW_PROGRESS"
+    | "NO_PROGRESS_REPORT"
+    | "PROGRESS_STAGNATION"
+    | "WORK_COMPLETED_AHEAD_OF_SCHEDULE"
+    | "VISUAL_PROGRESS_CONTRADICTION"
+    | "LABOUR_PROGRESS_CONTRADICTION"
+    | "LOW_LABOUR_SUPPORT_FOR_REPORTED_PROGRESS"
+    | "REPORTED_EXPENDITURE_VERIFICATION_MISMATCH"
+    | "DUPLICATE_PROGRESS_REPORT";
+  severity: SignalSeverity;
+  signal_score: number; // 0 - 100
+  signal_status: "ACTIVE" | "RESOLVED";
+  detected_at: string;
+  reason: string;
+  evidence: Record<string, any>;
+  requires_human_investigation: boolean;
+  resolved_at?: string;
+}
+
+export interface MonitoringTimelineEvent {
+  date: string;
+  reported_progress: number;
+  calculated_progress: number;
+  visual_progress?: number;
+  financial_progress: number;
+  time_elapsed: number;
+  risk_score: number;
+  signals: string[];
+}
+
+export type InvestigationDecision = 
+  | "NO_REVIEW_REQUIRED" 
+  | "MONITOR" 
+  | "HUMAN_REVIEW_RECOMMENDED" 
+  | "URGENT_HUMAN_REVIEW";
+
+export interface InvestigationRecommendation {
+  project_id: string;
+  decision: InvestigationDecision;
+  priority: SignalSeverity;
+  risk_score: number;
+  signals: { type: string; severity: SignalSeverity }[];
+  reasons: string[];
+  recommended_checks: string[];
+  requires_human_investigation: boolean;
+}
+
+export interface CSVValidationError {
+  row: number;
+  field: string;
+  message: string;
+}
+
+export interface CSVUploadResult {
+  success: boolean;
+  imported_count: number;
+  total_rows: number;
+  errors: CSVValidationError[];
+  message: string;
+}
+
+export interface MultimodalEvidenceSummary {
+  project_id: string;
+  domains: {
+    documents: {
+      verified_expenditure_percent: number;
+      financial_anomaly_detected: boolean;
+      total_invoices_verified: number;
+      discrepancy_amount: number;
+    };
+    labour: {
+      worker_days: number;
+      labour_anomaly_detected: boolean;
+      active_workers_count: number;
+      muster_roll_verified: boolean;
+    };
+    field_images: {
+      visual_progress_percent: number;
+      quality_score: number;
+      relevance_score: number;
+      image_count: number;
+      duplicate_images_detected: boolean;
+    };
+    work_progress: {
+      physical_progress_percent: number;
+      financial_progress_percent: number;
+      schedule_progress_percent: number;
+      calculated_vs_reported_gap: number;
+    };
+  };
+  contradiction_detected: boolean;
+  contradiction_reasons: string[];
+  composite_risk_score: number;
+}
+

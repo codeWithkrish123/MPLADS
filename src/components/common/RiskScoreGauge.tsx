@@ -22,7 +22,8 @@ export const RiskScoreGauge: React.FC<RiskScoreGaugeProps> = ({
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const displayScore = typeof score === "number" && !isNaN(score) ? Math.round(score) : 0;
+  const strokeDashoffset = circumference - (displayScore / 100) * circumference;
 
   const getColor = () => {
     switch (severity) {
@@ -54,7 +55,7 @@ export const RiskScoreGauge: React.FC<RiskScoreGaugeProps> = ({
 
   return (
     <div
-      id={id || `risk-score-gauge-${score}`}
+      id={id || `risk-score-gauge-${displayScore}`}
       className={cn("flex flex-col items-center justify-center p-3 text-center", className)}
     >
       <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -81,16 +82,16 @@ export const RiskScoreGauge: React.FC<RiskScoreGaugeProps> = ({
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold font-mono tracking-tight text-slate-900">
-            {score}
+          <span className="text-3xl font-extrabold font-mono tracking-tight text-slate-900">
+            {displayScore}
           </span>
-          <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-500">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
             / 100
           </span>
         </div>
       </div>
       <div className="mt-3">
-        <RiskBadge severity={severity} score={score} size="md" />
+        <RiskBadge severity={severity} score={displayScore} size="md" />
       </div>
     </div>
   );

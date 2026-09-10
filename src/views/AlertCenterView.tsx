@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Download,
 } from "lucide-react";
-import { RiskAlert, WorkRecord, Language } from "../types";
+import { RiskAlert, WorkRecord, Language, UserRole } from "../types";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { getTranslation, translateText } from "../data/translations";
 import { EmptyState } from "../components/common/EmptyState";
@@ -20,6 +20,7 @@ interface AlertCenterViewProps {
   works: WorkRecord[];
   onSelectWork: (work: WorkRecord) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const AlertCenterView: React.FC<AlertCenterViewProps> = ({
@@ -27,6 +28,7 @@ export const AlertCenterView: React.FC<AlertCenterViewProps> = ({
   works,
   onSelectWork,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
@@ -89,7 +91,13 @@ export const AlertCenterView: React.FC<AlertCenterViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-red-600" />
-            {isHindi ? "जोखिम संकेत व विसंगति ट्रियाज इनबॉक्स" : "Risk Signal & Anomaly Triage Inbox"}
+            {currentRole === "Member of Parliament"
+              ? (isHindi ? "स्थानीय विसंगति अलर्ट" : "Local Project Anomaly Alerts")
+              : currentRole === "District Authority"
+              ? (isHindi ? "जिला परियोजना अलर्ट" : "District Anomaly Alerts")
+              : currentRole === "State Nodal Authority"
+              ? (isHindi ? "राज्य परियोजना अलर्ट" : "State Irregularity Alerts")
+              : (isHindi ? "प्रोजेक्ट विसंगति अलर्ट" : "Project Irregularity Alerts")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi

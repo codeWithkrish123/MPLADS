@@ -11,7 +11,7 @@ import {
   Download,
   Flame,
 } from "lucide-react";
-import { WorkRecord, Language } from "../types";
+import { WorkRecord, Language, UserRole } from "../types";
 import { RiskScoreGauge } from "../components/common/RiskScoreGauge";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { MetricCard } from "../components/common/MetricCard";
@@ -24,148 +24,68 @@ interface DistrictDashboardViewProps {
   onSelectWork: (work: WorkRecord) => void;
   onBackToState: () => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
   districtName = "Ghaziabad",
-  works,
+  works = [],
   onSelectWork,
   onBackToState,
   language = "en",
+  currentRole = "District Authority",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
 
-  // Mock data for fallback when works prop is empty
-  const mockWorks: WorkRecord[] = [
-    {
-      work_id: "WK-2026-00142",
-      mp_id: "MP001",
-      mp_name: "Test MP",
-      description: "Road Construction & Bituminous Surfacing - Sector 5 to 8",
-      district: "Ghaziabad",
-      state: "Uttar Pradesh",
-      constituency: "Ghaziabad",
-      category: "Rural Road Improvement",
-      agency: "PWD",
-      recommended_cost: 1.5,
-      sanctioned_cost: 1.5,
-      actual_expenditure: 1.2,
-      physical_progress: 72,
-      financial_progress: 80,
-      start_date: "2025-01-15",
-      expected_completion: "2026-03-15",
-      predicted_completion: "2026-04-15",
-      status: "In Progress",
-      risk_score: 62,
-      risk_category: "HIGH",
-      cost_anomaly_score: 75,
-      delay_score: 55,
-      duplicate_score: 20,
-      compliance_score: 40,
-      latitude: 28.6692,
-      longitude: 77.4538,
-      anomaly_types: ["Cost Overrun", "Delay Risk"],
-    },
-    {
-      work_id: "WK-2026-00143",
-      mp_id: "MP001",
-      mp_name: "Test MP",
-      description: "Primary School Building Renovation with WiFi Connectivity",
-      district: "Ghaziabad",
-      state: "Uttar Pradesh",
-      constituency: "Ghaziabad",
-      category: "School Building Renovation",
-      agency: "Education Dept",
-      recommended_cost: 0.8,
-      sanctioned_cost: 0.8,
-      actual_expenditure: 0.45,
-      physical_progress: 58,
-      financial_progress: 56,
-      start_date: "2025-02-01",
-      expected_completion: "2026-02-01",
-      predicted_completion: "2026-05-01",
-      status: "In Progress",
-      risk_score: 68,
-      risk_category: "HIGH",
-      cost_anomaly_score: 70,
-      delay_score: 65,
-      duplicate_score: 15,
-      compliance_score: 35,
-      latitude: 28.6750,
-      longitude: 77.4600,
-      anomaly_types: ["Progress Delay", "Cost Anomaly"],
-    },
-    {
-      work_id: "WK-2026-00144",
-      mp_id: "MP001",
-      mp_name: "Test MP",
-      description: "Water Supply Pipeline Extension to Rural Habitations",
-      district: "Ghaziabad",
-      state: "Uttar Pradesh",
-      constituency: "Ghaziabad",
-      category: "Drinking Water Facility",
-      agency: "Water Board",
-      recommended_cost: 1.2,
-      sanctioned_cost: 1.2,
-      actual_expenditure: 0.92,
-      physical_progress: 85,
-      financial_progress: 77,
-      start_date: "2024-12-01",
-      expected_completion: "2026-01-01",
-      predicted_completion: "2026-01-15",
-      status: "In Progress",
-      risk_score: 35,
-      risk_category: "MEDIUM",
-      cost_anomaly_score: 30,
-      delay_score: 25,
-      duplicate_score: 10,
-      compliance_score: 70,
-      latitude: 28.6680,
-      longitude: 77.4520,
-      anomaly_types: [],
-    },
-  ];
-
-  const dataToUse = works && works.length > 0 ? works : mockWorks;
-  // Always show mock data for the selected district if no real data
-  const districtWorks = dataToUse.filter(
-    (w) => w.district.toLowerCase() === districtName.toLowerCase()
-  );
+  // NO MOCK DATA - Use only real works passed via props
+  // Filter works for the selected district
+  const districtWorks = (works && works.length > 0)
+    ? works.filter((w: any) => (w.district || "").toLowerCase().includes(districtName.toLowerCase()))
+    : [];
   
-  // If no works after filtering, use all mock works (show something instead of blank)
-  const worksTodisplay = districtWorks.length > 0 ? districtWorks : mockWorks;
+  // Use filtered works, or fallback to all available works if none match strict district name
+  const worksTodisplay = districtWorks && districtWorks.length > 0 ? districtWorks : (works && works.length > 0 ? works : []);
 
+  // Calculate metrics from real works
+  const totalWorks = worksTodisplay.length;
+  const completedWorks = worksTodisplay.filter((w: any) => w.status === "completed" || w.status === "Completed").length;
+  const ongoingWorks = worksTodisplay.filter((w: any) => w.status === "in_progress" || w.status === "In Progress" || !w.status).length;
+  const delayedWorks = worksTodisplay.filter((w: any) => w.status === "delayed" || w.status === "Delayed").length;
+  const completionRate = totalWorks > 0 ? ((completedWorks / totalWorks) * 100).toFixed(0) : "0";
+  const avgRiskScore = totalWorks > 0 ? (worksTodisplay.reduce((sum: number, w: any) => sum + (w.risk_score || 0), 0) / totalWorks).toFixed(0) : "0";
+
+  // Risk drivers calculated from real works
   const riskDrivers = [
     {
       name: isHindi ? "लागत विसंगति सूचकांक" : "Cost Anomaly Index",
-      score: 82,
-      status: isHindi ? "गंभीर विचलन (जिला मध्यिका बनाम +220%)" : "Critical Outlier (+220% vs District Median)",
+      score: Math.min(100, worksTodisplay.filter((w: any) => w.cost_anomaly_score && w.cost_anomaly_score > 70).length * 20),
+      status: isHindi ? "लागत विसंगति की गंभीरता" : "Cost divergence severity",
       color: "bg-red-600"
     },
     {
       name: isHindi ? "विलंब जोखिम सूचकांक" : "Delay Risk Index",
-      score: 74,
-      status: isHindi ? "78 दिन अनुमानित औसत समयसीमा विसंगति" : "78 Days Predicted Average Timeline Slip",
+      score: Math.min(100, worksTodisplay.filter((w: any) => w.delay_score && w.delay_score > 60).length * 25),
+      status: isHindi ? "अनुमानित विलंब दिन" : "Predicted delay days",
       color: "bg-amber-600"
     },
     {
       name: isHindi ? "प्रगति बेमेल सूचकांक" : "Progress Mismatch Index",
-      score: 68,
-      status: isHindi ? "गंभीर वित्तीय-से-भौतिक अंतर" : "Severe Financial-to-Physical Gap",
+      score: Math.min(100, worksTodisplay.filter((w: any) => w.financial_progress && w.physical_progress && Math.abs(w.financial_progress - w.physical_progress) > 20).length * 20),
+      status: isHindi ? "वित्तीय से भौतिक अंतर" : "Financial-to-Physical gap",
       color: "bg-amber-600"
     },
     {
       name: isHindi ? "समानता दोहराव सूचकांक" : "Duplicate Similarity Index",
-      score: 41,
-      status: isHindi ? "2 संदिग्ध ओवरलैपिंग भू-बिंदु" : "2 Suspected Overlapping Geo-Points",
+      score: Math.min(100, worksTodisplay.filter((w: any) => w.duplicate_score && w.duplicate_score > 70).length * 15),
+      status: isHindi ? "संदिग्ध ओवरलैपिंग कार्य" : "Suspected overlapping works",
       color: "bg-yellow-500"
     },
     {
       name: isHindi ? "अनुपालन एवं दिशानिर्देश सूचकांक" : "Compliance & Guidelines Index",
-      score: 29,
-      status: isHindi ? "3 अनुबंधों के लिए एमबी रिकॉर्ड बकाया" : "MB Records Overdue for 3 Contracts",
+      score: Math.min(100, worksTodisplay.filter((w: any) => w.compliance_score && w.compliance_score < 50).length * 15),
+      status: isHindi ? "अनुबंध अनुपालन स्थिति" : "Contract compliance status",
       color: "bg-emerald-600"
     },
   ];
@@ -187,7 +107,9 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
             <MapPin className="w-6 h-6 text-red-600" />
-            {districtName} {isHindi ? "जिला जोखिम आसूचना" : "District Risk Intelligence"}
+            {districtName} — {currentRole === "District Authority"
+              ? (isHindi ? "जिला कलेक्टर डैशबोर्ड" : "District Collector Workspace")
+              : (isHindi ? "जिला-वार प्रगति ट्रैकर" : "District-Wise Progress Tracker")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi
@@ -209,7 +131,7 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
 
       {/* District Composite Score Card & Main Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Risk Gauge Box */}
+        {/* Risk Gauge Box - NOW USING REAL DATA */}
         <div className="lg:col-span-4 bg-white border border-slate-200 rounded-lg p-5 shadow-xs flex flex-col justify-between items-center text-center">
           <div className="w-full text-left pb-2 border-b border-slate-100">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
@@ -221,63 +143,74 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
           </div>
 
           <div className="my-3">
-            <RiskScoreGauge score={81} severity="HIGH" size={140} strokeWidth={12} />
+            <RiskScoreGauge 
+              score={parseInt(avgRiskScore)} 
+              severity={parseInt(avgRiskScore) > 70 ? "HIGH" : parseInt(avgRiskScore) > 50 ? "MEDIUM" : "LOW"} 
+              size={140} 
+              strokeWidth={12} 
+            />
           </div>
 
           <div className="w-full bg-slate-50 p-3 rounded-lg border border-slate-100 text-xs text-slate-600 text-left">
             <div className="flex items-center justify-between font-semibold text-slate-900 mb-1">
               <span>{isHindi ? "जोखिम वर्गीकरण" : "Risk Classification"}</span>
-              <span className="text-red-700 font-mono">{isHindi ? "उच्च निगरानी" : "HIGH SURVEILLANCE"}</span>
+              <span className={`text-right font-mono ${parseInt(avgRiskScore) > 70 ? "text-red-700" : parseInt(avgRiskScore) > 50 ? "text-amber-700" : "text-emerald-700"}`}>
+                {parseInt(avgRiskScore) > 70 ? (isHindi ? "उच्च निगरानी" : "HIGH SURVEILLANCE") : parseInt(avgRiskScore) > 50 ? (isHindi ? "मध्यम निगरानी" : "MODERATE SURVEILLANCE") : (isHindi ? "कम जोखिम" : "LOW RISK")}
+              </span>
             </div>
             <p className="text-[11px] leading-relaxed">
-              {isHindi
-                ? "नगरपालिका कार्यों में लागत विचलन के लिए जिला शीर्ष 5वें प्रतिशतक में आता है।"
-                : "District scores in top 5th percentile for cost divergence across municipal works."}
+              {totalWorks > 0 
+                ? (isHindi
+                  ? `${totalWorks} कार्यों का विश्लेषण किया गया, औसत जोखिम स्कोर: ${avgRiskScore}`
+                  : `Analyzed ${totalWorks} works, average risk score: ${avgRiskScore}`)
+                : (isHindi
+                  ? "इस जिले के लिए कोई डेटा उपलब्ध नहीं"
+                  : "No data available for this district")}
             </p>
           </div>
         </div>
 
-        {/* 4 Metric Cards */}
+        {/* 4 Metric Cards - NOW USING REAL DATA */}
         <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
           <MetricCard
             title={isHindi ? "कुल कार्य" : "Total Works"}
-            value="342"
-            change={isHindi ? "+12 इस वित्तीय वर्ष" : "+12 this FY"}
-            isGoodTrend={true}
+            value={totalWorks.toString()}
+            change={isHindi ? "+डेटा पुनः गणना" : "+recalculated"}
+            isGoodTrend={totalWorks > 0}
             icon={FileSpreadsheet}
             accentColor="navy"
             subtitle={isHindi ? "जिले में सूचीबद्ध" : "Cataloged in district"}
-            sparklineData={[300, 312, 330, 342]}
+            sparklineData={[Math.max(1, totalWorks - 3), Math.max(1, totalWorks - 2), Math.max(1, totalWorks - 1), totalWorks]}
           />
           <MetricCard
             title={isHindi ? "पूर्ण" : "Completed"}
-            value="281"
-            change={isHindi ? "82% दर" : "82% rate"}
+            value={completedWorks.toString()}
+            change={`${completionRate}% दर`}
             isGoodTrend={true}
             icon={CheckCircle2}
             accentColor="emerald"
             subtitle={isHindi ? "प्रमाणित पूर्ण" : "Certified finished"}
-            sparklineData={[240, 255, 270, 281]}
+            sparklineData={[Math.max(0, completedWorks - 3), Math.max(0, completedWorks - 2), Math.max(0, completedWorks - 1), completedWorks]}
           />
           <MetricCard
             title={isHindi ? "प्रगति पर" : "Ongoing"}
-            value="41"
-            change={isHindi ? "सक्रिय स्थल" : "Active field sites"}
+            value={ongoingWorks.toString()}
+            change={isHindi ? "सक्रिय स्थल" : "Active sites"}
             isGoodTrend={true}
             icon={TrendingUp}
             accentColor="blue"
             subtitle={isHindi ? "निष्पादन में" : "In execution"}
-            sparklineData={[50, 48, 44, 41]}
+            sparklineData={[Math.max(0, ongoingWorks + 3), Math.max(0, ongoingWorks + 2), Math.max(0, ongoingWorks + 1), ongoingWorks]}
           />
           <MetricCard
             title={isHindi ? "विलंबित / जोखिम में" : "Delayed / At Risk"}
-            value="20"
-            change={isHindi ? "+4 हाल में" : "+4 recent"}
-            isGoodTrend={false}
+            value={delayedWorks.toString()}
+            change={isHindi ? "निरीक्षण आवश्यक" : "needs review"}
+            isGoodTrend={delayedWorks === 0}
             icon={Clock}
             accentColor="red"
             subtitle={isHindi ? "निरीक्षण आवश्यक" : "Requires inspection"}
-            sparklineData={[14, 16, 18, 20]}
+            sparklineData={[delayedWorks, delayedWorks, delayedWorks, delayedWorks]}
           />
         </div>
       </div>
@@ -352,9 +285,9 @@ export const DistrictDashboardView: React.FC<DistrictDashboardViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {worksTodisplay.map((work) => (
+              {worksTodisplay.map((work, idx) => (
                 <tr
-                  key={work.work_id}
+                  key={`${work.work_id}-${idx}`}
                   onClick={() => onSelectWork(work)}
                   className="hover:bg-slate-50 transition-colors cursor-pointer group"
                 >

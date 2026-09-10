@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../services/api';
+import { apiGateway } from '../services/apiGateway';
+import config from '../config/featureFlags';
 
 export interface User {
   id: string;
@@ -29,7 +31,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start as true to show loading spinner during initial validation
   const [error, setError] = useState<string | null>(null);
 
   // Auto-load token from localStorage on mount for session persistence
@@ -37,48 +39,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Token is validated with backend before use to ensure it's not stale/expired
   useEffect(() => {
     const loadSavedSession = async () => {
-      const savedToken = localStorage.getItem('auth_token');
-      const savedUser = localStorage.getItem('auth_user');
+      try {
+        const savedToken = localStorage.getItem('auth_token');
+        const savedUser = localStorage.getItem('auth_user');
 
-      if (savedToken && savedUser) {
-        console.log('[AuthContext] Found saved token in storage, validating with backend...');
-        
-        try {
-          // Validate token with backend by fetching user profile
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-          const response = await fetch(`${apiUrl}/auth/profile`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${savedToken}`,
-            },
-          });
-
-          if (response.ok) {
-            // Token is valid - restore session
-            const userData = await response.json();
-            console.log(`✅ [AuthContext] Token validated! Session restored for ${userData.email}`);
-            
+        if (savedToken && savedUser) {
+          if (config.useMockData) {
+            console.log('[AuthContext] Mock mode active: restoring session directly from localStorage');
             setToken(savedToken);
-            setUser(userData);
-          } else {
-            // Token is invalid (expired, revoked, etc.)
-            console.warn('[AuthContext] Token validation failed (status:', response.status, ') - clearing session');
+            setUser(JSON.parse(savedUser));
+            return;
+          }
+
+          console.log('[AuthContext] Found saved token in storage, validating with backend...');
+          
+          try {
+            // Validate token with backend by fetching user profile
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://mplads-backend-gateway.aditya93193.workers.dev/api';
+            const response = await fetch(`${apiUrl}/auth/profile`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${savedToken}`,
+              },
+            });
+
+            if (response.ok) {
+              // Token is valid - restore session
+              const userData = await response.json();
+              const profileUser = userData.user || userData;
+              console.log(`✅ [AuthContext] Token validated! Session restored for ${profileUser.email}`);
+              
+              setToken(savedToken);
+              setUser(profileUser);
+            } else {
+              // Token is invalid (expired, revoked, etc.)
+              console.warn('[AuthContext] Token validation failed (status:', response.status, ') - clearing session');
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('auth_user');
+              setToken(null);
+              setUser(null);
+            }
+          } catch (error) {
+            console.error('[AuthContext] Error validating token:', error);
+            // Clear invalid token to force fresh login
             localStorage.removeItem('auth_token');
             localStorage.removeItem('auth_user');
             setToken(null);
             setUser(null);
           }
-        } catch (error) {
-          console.error('[AuthContext] Error validating token:', error);
-          // Clear invalid token to force fresh login
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
-          setToken(null);
-          setUser(null);
+        } else {
+          console.log('[AuthContext] No saved session found');
         }
-      } else {
-        console.log('[AuthContext] No saved session found');
+      } finally {
+        // CRITICAL: Mark loading as complete so app knows validation finished
+        setIsLoading(false);
       }
     };
 
@@ -87,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (authToken: string) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://mplads-backend-gateway.aditya93193.workers.dev/api';
       const response = await fetch(`${apiUrl}/auth/profile`, {
         method: 'GET',
         headers: {
@@ -122,31 +137,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
 
     try {
-      console.log(`[AuthContext] Attempting real backend login for ${email} with role ${role}`);
+      console.log(`[AuthContext] Attempting login for ${email} with role ${role}`);
+      console.log(`[AuthContext] Using mode: ${config.useMockData ? '📦 MOCK DATA' : '🔌 REAL API'}`);
       
-      // REAL BACKEND API CALL - NOT MOCK
-      const response = await authApi.login(email, password, role);
+      // CLEAR OLD CACHE BEFORE LOGIN
+      console.log('[AuthContext] Clearing old dashboard cache for fresh data...');
+      localStorage.removeItem('dashboard_cache');
+      localStorage.removeItem('projects_cache');
+      localStorage.removeItem('alerts_cache');
+      localStorage.removeItem('signals_cache');
+      localStorage.removeItem('command_center_cache');
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('cache') || key.includes('ml_') || key.includes('sentinel')) {
+          localStorage.removeItem(key);
+        }
+      });
+      console.log('[AuthContext] ✅ Old caches cleared - will load fresh data');
+      
+      // Use apiGateway (routes to mock or real)
+      const response = await apiGateway.login(email, password, role);
+      const res = response as any;
+      
+      const token = res?.token || res?.data?.token;
+      const user = res?.user || res?.data?.user;
 
-      if (response && response.token && response.user) {
-        console.log(`✅ [AuthContext] Real backend login successful!`);
-        console.log(`[AuthContext] Token: ${response.token.substring(0, 20)}...`);
-        console.log(`[AuthContext] User: ${response.user.email}`);
+      if (token && user) {
+        console.log(`✅ [AuthContext] Login successful!`);
         
-        // ✅ FIX: Set token and user in state (was missing!)
-        setToken(response.token);
-        setUser(response.user);
+        // Set token and user with selected role in state
+        const userWithRole = {
+          ...user,
+          role: role || user.role || "Ministry",
+        };
+        setToken(token);
+        setUser(userWithRole);
         
-        // Also store in localStorage for persistence
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('auth_user', JSON.stringify(response.user));
+        // Store in localStorage
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(userWithRole));
         
-        console.log(`[AuthContext] Authentication state updated`);
+        console.log(`[AuthContext] Authentication state updated - ready for data`);
         return true;
       } else {
-        throw new Error('Invalid response from backend');
+        throw new Error(res?.message || res?.error || 'Invalid response from authentication');
       }
     } catch (err: any) {
-      const errorMessage = err.message || 'Login failed - Backend unavailable or credentials invalid';
+      const errorMessage = err.message || 'Login failed';
       console.error(`❌ [AuthContext] Login error:`, errorMessage);
       setError(errorMessage);
       setToken(null);

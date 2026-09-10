@@ -84,80 +84,38 @@ export const Topbar: React.FC<TopbarProps> = ({
       {/* 0. Authentic Tricolor Top Stripe */}
       <div className="india-gov-tricolor-stripe" />
 
-      {/* 1. Official Government Top Utility Bar - RESPONSIVE */}
-      <div className="bg-[#0B192C] text-slate-100 text-[10px] sm:text-[11px] py-2 px-3 sm:px-4 md:px-6 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 font-sans select-none border-b border-slate-700">
-        {/* Left: Official Emblem & Ministry Title - RESPONSIVE */}
-        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <div className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 border-r border-slate-600 min-w-0">
+      {/* 1. Official Government Top Utility Bar - High Visibility & Authentic NIC Deep Navy */}
+      <div className="bg-[#112E51] text-white text-[11px] py-2 px-3 sm:px-4 md:px-6 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-2 sm:gap-3 font-sans select-none border-b border-blue-900/60 shadow-xs">
+        {/* Left: Official Emblem & Ministry Title */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 sm:gap-2.5 pr-3 border-r border-blue-400/30 min-w-0">
             <img 
               src={new URL("../../assets/images/Emblem_of_India.svg", import.meta.url).href}
               alt="Emblem of India"
-              className="h-6 sm:h-7 md:h-8 w-6 sm:w-7 md:w-8 object-contain opacity-100 hover:opacity-100 transition-all drop-shadow-md shrink-0"
+              className="h-7 sm:h-8 w-7 sm:w-8 object-contain filter drop-shadow-sm shrink-0"
             />
-            <div className="flex flex-col text-[9px] sm:text-[10px] md:text-[11px] leading-tight min-w-0">
-              <span className="font-bold text-white truncate text-[9px] sm:text-[10px] md:text-[11px]">
-                {isHindi ? "भारत सरकार" : "GOV OF INDIA"}
+            <div className="flex flex-col text-[10px] sm:text-[11px] leading-tight min-w-0">
+              <span className="font-extrabold text-white tracking-wide uppercase">
+                {isHindi ? "भारत सरकार" : "GOVERNMENT OF INDIA"}
               </span>
-              <span className="text-[8px] sm:text-[9px] md:text-[10px] text-slate-300 font-medium truncate">
-                {isHindi ? "सांख्यिकी" : "MoSPI"}
+              <span className="text-[9px] sm:text-[10px] text-amber-300 font-semibold truncate">
+                {isHindi ? "सांख्यिकी एवं कार्यक्रम कार्यान्वयन मंत्रालय" : "Ministry of Statistics & Programme Implementation"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Right: Citizen Helpline, Font Resizer, Accessibility - RESPONSIVE */}
-        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 text-[9px] sm:text-[10px] md:text-[11px] w-full sm:w-auto justify-end sm:justify-start">
-          {/* Citizen Helpline Number - Hidden on mobile */}
+        {/* Right: Toll-Free Helpline */}
+        <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] w-full sm:w-auto justify-end sm:justify-start">
+          {/* Citizen Helpline Number */}
           <a
             href="tel:1800111992"
-            className="hidden lg:flex items-center gap-0.5 sm:gap-1 text-amber-400 hover:text-amber-300 font-semibold text-[9px] sm:text-[10px] md:text-[11px] whitespace-nowrap"
+            className="flex items-center gap-1.5 text-amber-300 hover:text-amber-200 font-bold text-[10px] sm:text-[11px] whitespace-nowrap bg-blue-950/60 px-2.5 py-1 rounded border border-amber-400/40 shadow-2xs"
             title="Toll Free Citizen Helpline Number"
           >
-            <PhoneCall className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
-            <span className="hidden xl:inline">{isHindi ? "हेल्पलाइन: 1800-11-1992" : "Helpline: 1800-11-1992"}</span>
+            <PhoneCall className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>{isHindi ? "हेल्पलाइन: 1800-11-1992" : "Toll Free Helpline: 1800-11-1992"}</span>
           </a>
-
-          {/* GIGW Accessibility Control Widget - RESPONSIVE */}
-          <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-900 border border-slate-700 rounded px-1.5 sm:px-2 py-0.5 sm:py-1 select-none">
-            <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider pr-1 sm:pr-1.5 border-r border-slate-800">
-              {isHindi ? "A" : "A"}
-            </span>
-            
-            {/* Font Size Cycle Control - RESPONSIVE */}
-            <button
-              onClick={() => {
-                if (fontSize === "small") onChangeFontSize("medium");
-                else if (fontSize === "medium") onChangeFontSize("large");
-                else onChangeFontSize("small");
-              }}
-              className="px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold hover:bg-slate-800 text-slate-200 transition-colors flex items-center gap-0.5 sm:gap-1 min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] justify-center"
-              title={isHindi ? "फ़ॉन्ट आकार बदलें" : "Cycle Font Size (Small / Medium / Large)"}
-              aria-label="Font size control"
-            >
-              <Type className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF9933] shrink-0" />
-              <span className="font-mono text-[8px] sm:text-[9px] uppercase hidden sm:inline">
-                {fontSize === "small" ? "A-" : fontSize === "medium" ? "A" : "A+"}
-              </span>
-            </button>
-
-            <span className="text-slate-700 hidden sm:inline">|</span>
-
-            {/* High Contrast Toggle Control - RESPONSIVE */}
-            <button
-              onClick={onToggleHighContrast}
-              className={cn(
-                "px-1 sm:px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-bold transition-all flex items-center gap-0.5 sm:gap-1 cursor-pointer min-h-[32px] sm:min-h-[36px] min-w-[32px] sm:min-w-[36px] justify-center",
-                isHighContrast
-                  ? "bg-[#FF9933] text-slate-950 font-black shadow-xs"
-                  : "hover:bg-slate-800 text-slate-300"
-              )}
-              title={isHighContrast ? (isHindi ? "सामान्य थीम" : "Normal Theme") : (isHindi ? "उच्च कंट्रास्ट" : "High Contrast")}
-              aria-label="Contrast control"
-            >
-              <Contrast className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#FF9933] shrink-0" />
-              <span className="hidden sm:inline">{isHindi ? "C" : "C"}</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -262,40 +220,6 @@ export const Topbar: React.FC<TopbarProps> = ({
             </select>
           </div>
 
-          {/* Role Selector - Always visible, responsive styling */}
-          <div className="flex items-center">
-            <select
-              id="role-selector"
-              value={currentRole}
-              onChange={(e) => onChangeRole(e.target.value as UserRole)}
-              className="text-[11px] sm:text-xs font-semibold rounded-lg px-2 sm:px-2.5 py-2 border border-primary/30 bg-primary-light text-primary outline-none cursor-pointer transition-colors focus:border-primary ring-offset-0 min-h-[44px]"
-              aria-label={isHindi ? "भूमिका चुनें" : "Select Role"}
-            >
-              <option value="Ministry">{t.roles?.ministry || "Ministry"}</option>
-              <option value="State Nodal Authority">{t.roles?.stateNodal || "State"}</option>
-              <option value="District Authority">{t.roles?.districtAuth || "District"}</option>
-              <option value="Member of Parliament">{t.roles?.mp || "MP"}</option>
-            </select>
-          </div>
-
-          {/* Dynamic Theme Selector - Hidden on mobile, visible on sm+ */}
-          {onChangeTheme && (
-            <div className="hidden sm:flex items-center">
-              <select
-                id="theme-selector"
-                value={currentTheme}
-                onChange={(e) => onChangeTheme(e.target.value as GovTheme)}
-                className="text-xs font-semibold rounded-lg px-2.5 py-2 border border-primary/30 bg-primary-light text-primary outline-none cursor-pointer transition-colors focus:border-primary ring-offset-0 min-h-[44px]"
-                title="Select Portal Theme / पोर्टल थीम चुनें"
-                aria-label={isHindi ? "थीम चुनें" : "Theme"}
-              >
-                <option value="nic-blue">🏛️ Blue</option>
-                <option value="red-rose">🌹 Rose</option>
-                <option value="digital-emerald">🌲 Emerald</option>
-                <option value="finance-indigo">💳 Indigo</option>
-              </select>
-            </div>
-          )}
 
           {/* Language Switcher - Responsive sizing */}
           <button
@@ -331,29 +255,37 @@ export const Topbar: React.FC<TopbarProps> = ({
             )}
           </button>
 
-          {/* Citizen / Official User Avatar & Logout - Hidden on mobile */}
-          <div className="hidden sm:flex items-center gap-1.5 md:gap-2 pl-2 border-l border-[#E2E8F0]">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-primary-border flex items-center justify-center bg-primary-light text-primary shrink-0">
-              <User className="w-4 h-4 sm:w-5 sm:h-5" />
+          {/* Authenticated User Profile & Role Badge - Sleek Integrated Layout */}
+          <div className="hidden sm:flex items-center gap-2 pl-2.5 border-l border-[#E2E8F0]">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-amber-500/40 flex items-center justify-center bg-[#0B2545] text-[#FCD34D] shrink-0 shadow-2xs">
+              <Shield className="w-4 h-4 text-amber-400" />
             </div>
             <div className="hidden lg:flex flex-col text-[11px] sm:text-xs min-w-0">
-              <span className="font-semibold leading-tight text-[#0F172A] truncate">
-                {user?.email ? user.email.split('@')[0].substring(0, 8) : (isHindi ? "नागरिक" : "User")}
+              <span className="font-extrabold leading-tight text-slate-900 truncate">
+                {user?.email ? user.email.split('@')[0] : (isHindi ? "प्रमाणित उपयोगकर्ता" : "Authenticated User")}
               </span>
-              <span className="text-[9px] sm:text-[10px] font-mono text-[#64748B] truncate">
-                {user?.role || "GOV-ID"}
+              <span className="text-[9px] font-extrabold text-blue-700 uppercase tracking-wider truncate">
+                {currentRole === "Ministry"
+                  ? (isHindi ? "सांख्यिकी मंत्रालय" : "Ministry of Statistics & PI")
+                  : currentRole === "State Nodal Authority"
+                  ? (isHindi ? "राज्य नोडल प्राधिकरण" : "State Nodal Authority")
+                  : currentRole === "Member of Parliament"
+                  ? (isHindi ? "सांसद (लोकसभा)" : "Member of Parliament")
+                  : currentRole === "District Authority"
+                  ? (isHindi ? "जिलाधिकारी / DM" : "District Authority / DM")
+                  : (isHindi ? "नागरिक पारदर्शकता" : "Public Citizen")}
               </span>
             </div>
             
-            {/* Logout Button */}
+            {/* Logout / Switch Gateway Button */}
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="ml-1 pl-1.5 md:pl-2 border-l border-[#E2E8F0] p-2 rounded-lg transition-all text-[#64748B] hover:text-red-600 hover:bg-red-50 duration-200 flex items-center gap-1 min-h-[44px] min-w-[44px]"
-                title={isHindi ? "लॉग आउट करें" : "Sign out"}
+                className="ml-1 pl-1.5 md:pl-2 border-l border-[#E2E8F0] p-2 rounded-lg transition-all text-[#64748B] hover:text-red-600 hover:bg-red-50 duration-200 flex items-center gap-1 min-h-[44px] cursor-pointer"
+                title={isHindi ? "लॉग आउट करें / गेटवे बदलें" : "Sign out & Switch Gateway"}
                 aria-label="Logout"
               >
-                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 hover:text-red-600" />
               </button>
             )}
           </div>

@@ -33,11 +33,11 @@
   --font-devanagari: 'Noto Sans Devanagari', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-primary: #003399;        /* Navy default */
-  --color-primary-hover: #002266;  /* Deep Navy hover default */
-  --color-primary-light: #EFF6FF;  /* Light blue (blue-50) default */
-  --color-primary-border: #DBEAFE; /* Border blue (blue-100) default */
-  --color-accent: #E31E24;         /* Crimson default */
+  --color-primary: #0A2740;        /* Dark navy primary for government theme */
+  --color-primary-hover: #091D30;  /* Slightly darker on hover */
+  --color-primary-light: #F0F4FA;  /* Light tint */
+  --color-primary-border: #D1D9E6; /* Border tint */
+  --color-accent: #F2C94C;         /* Gold accent */
   --color-secondary: #FF9933;      /* Saffron default */
   --color-govt-red: #E31E24;       /* Crimson default */
   --color-govt-navy: #003399;      /* Navy default */
@@ -191,7 +191,8 @@ p[lang="hi"],
   
   /* Standardized button styles */
   .btn-primary {
-    @apply px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px];
+    @apply px-6 py-3 bg-primary text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px];
+    @apply hover:bg-primary/90;
   }
   
   .btn-secondary {
@@ -234,8 +235,43 @@ html, body, #root {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Noto Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #1a1a1a;
+  color: inherit;
   letter-spacing: -0.025em; /* Subtle tracking-tight for authoritative, institutional feel */
+}
+
+/* Sequential Moving Pipeline Arrow Animations */
+@keyframes pipelineDash {
+  0% {
+    stroke-dashoffset: 20;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulseTravel {
+  0% {
+    transform: translateX(0px);
+    opacity: 0.2;
+  }
+  30% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(38px);
+    opacity: 0;
+  }
+}
+
+.animate-pipeline-dash {
+  animation: pipelineDash 0.75s linear infinite;
+}
+
+.animate-pulse-travel {
+  animation: pulseTravel 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 /* Landing page heading overrides for Playfair Display */
@@ -351,27 +387,7 @@ input, button, select, textarea {
   flex-shrink: 0;
 }
 
-/* Empowered Primary Button Utility */
-.btn-primary {
-  background-color: #2563EB;
-  color: #FFFFFF;
-  font-family: var(--font-sans);
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 10px 18px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.btn-primary:hover {
-  background-color: #1D4ED8;
-}
-.btn-primary:focus-visible {
-  outline: 2px solid #2563EB;
-  outline-offset: 2px;
-}
+/* Duplicate .btn-primary definition removed – use Tailwind utility defined earlier */
 
 /* Status Badges */
 .badge-live {
@@ -434,8 +450,8 @@ input, button, select, textarea {
 
 /* Institutional Typography Refinements */
 h1, h2, h3, h4, .dashboard-section-title, .section-title {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif !important;
-  color: #1a1a1a !important; /* Deep charcoal */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, 'Noto Sans Devanagari', sans-serif;
+  color: inherit;
 }
 
 /* Ensure body text inside tables, lists, list items, and form labels uses standard system sans-serif */
@@ -978,4 +994,46 @@ div:focus-visible {
 *:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* ========== MODERN UI & MOTION ENHANCEMENT UTILITIES ========== */
+.card-hover-effect {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.08);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.smooth-transition {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.badge-pulse {
+  position: relative;
+}
+
+.badge-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0.4;
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  z-index: -1;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
 }

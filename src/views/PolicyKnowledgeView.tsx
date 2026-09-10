@@ -10,26 +10,31 @@ import {
   Filter,
   Download,
 } from "lucide-react";
-import { ComplianceRule, Language } from "../types";
+import { ComplianceRule, Language, UserRole } from "../types";
 import { getTranslation } from "../data/translations";
+
+import { DEFAULT_COMPLIANCE_RULES } from "../data/complianceRules";
 
 interface PolicyKnowledgeViewProps {
   rules: ComplianceRule[];
   language?: Language;
+  currentRole?: UserRole;
 }
 
-export const PolicyKnowledgeView: React.FC<PolicyKnowledgeViewProps> = ({ rules, language = "en" }) => {
+export const PolicyKnowledgeView: React.FC<PolicyKnowledgeViewProps> = ({ rules, language = "en", currentRole = "Ministry" }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
   const t = getTranslation(currentLang);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
 
-  const filteredRules = rules.filter((r) => {
+  const rulesToUse = rules && rules.length > 0 ? rules : DEFAULT_COMPLIANCE_RULES;
+
+  const filteredRules = rulesToUse.filter((r) => {
     const matchSearch =
       r.rule_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.policy_statement.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.policy_statement || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchCat = selectedCategory === "ALL" || r.category === selectedCategory;
     return matchSearch && matchCat;
@@ -50,7 +55,13 @@ export const PolicyKnowledgeView: React.FC<PolicyKnowledgeViewProps> = ({ rules,
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-blue-600" />
-            {isHindi ? "एमपीलैड्स नीति एवं विनियामक ज्ञान केंद्र" : "MPLADS Policy & Regulatory Knowledge Center"}
+            {currentRole === "Member of Parliament"
+              ? (isHindi ? "सांसद निधि दिशानिर्देश 2023" : "MPLADS 2023 Guidelines")
+              : currentRole === "District Authority"
+              ? (isHindi ? "आधिकारिक योजना दिशानिर्देश" : "Official Scheme Schema")
+              : currentRole === "Users"
+              ? (isHindi ? "नागरिक अधिकार व दिशानिर्देश" : "Citizen Guidelines & Entitlements")
+              : (isHindi ? "आधिकारिक दिशानिर्देश 2023" : "Official Guidelines & Schema")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi

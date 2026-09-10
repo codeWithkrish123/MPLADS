@@ -34,56 +34,142 @@ import {
 } from "recharts";
 import { Language } from "../types";
 import { getTranslation } from "../data/translations";
+import { useRealTimeData } from "../hooks/useRealTimeData";
 
 interface AllIndiaProjectTrackerProps {
   language?: Language;
+  works?: any[];
+  states?: any[];
 }
 
 export const AllIndiaProjectTracker: React.FC<AllIndiaProjectTrackerProps> = ({
   language = "en",
+  works = [],
+  states = [],
 }) => {
   const isHindi = language === "hi";
   const t = getTranslation(language as Language);
   const [animationComplete, setAnimationComplete] = useState(false);
 
+  // If no props passed, try to fetch real data
+  const shouldFetch = !works || works.length === 0 || !states || states.length === 0;
+  const { works: fetchedWorks = [], states: fetchedStates = [] } = 
+    shouldFetch ? useRealTimeData() : { works: [], states: [] };
+
+  // Use props if provided, otherwise use fetched data
+  const displayWorks = (works && works.length > 0) ? works : fetchedWorks;
+  const displayStates = (states && states.length > 0) ? states : fetchedStates;
+
   useEffect(() => {
     setAnimationComplete(true);
   }, []);
 
-  // ==================== DATA ====================
+  // ===== COMPUTE REAL DATA FROM DATA =====
+  
+  // Compute MP Recommended vs Actual from states data
+  const mpRecommendedData = React.useMemo(() => {
+    if (!displayStates || displayStates.length === 0) {
+      return [
+        { state: "Uttar Pradesh", recommended: 0, actual: 0 },
+        { state: "Maharashtra", recommended: 0, actual: 0 },
+      ];
+    }
+    return displayStates.slice(0, 6).map((st: any) => ({
+      state: st.state || st.name,
+      recommended: parseFloat(String(st.sanctioned_cr || 0)) || 0,
+      actual: parseFloat(String(st.expenditure_cr || 0)) || 0,
+    }));
+  }, [displayStates]);
 
-  const mpRecommendedData = [
-    { state: "Uttar Pradesh", recommended: 5.2, actual: 4.8 },
-    { state: "Maharashtra", recommended: 4.1, actual: 3.2 },
-    { state: "Nagpur (MP)", recommended: 3.8, actual: 3.1 },
-    { state: "Chhattisgarh", recommended: 2.9, actual: 2.5 },
-    { state: "Odisha (MP)", recommended: 3.5, actual: 2.8 },
-    { state: "Manipur", recommended: 2.1, actual: 1.8 },
-  ];
+  // Compute project risk data from works
+  const projectRiskData = React.useMemo(() => {
+    if (!displayWorks || displayWorks.length === 0) {
+      return [
+        { name: isHindi ? "कम जोखिम" : "Low Risk", value: 0, fill: "#10B981" },
+        { name: isHindi ? "मध्यम जोखिम" : "Moderate Risk", value: 0, fill: "#F59E0B" },
+        { name: isHindi ? "उच्च जोखिम" : "High Risk", value: 0, fill: "#EF4444" },
+        { name: isHindi ? "गंभीर जोखिम" : "Critical", value: 0, fill: "#7C2D12" },
+      ];
+    }
 
-  const projectRiskData = [
-    { name: isHindi ? "कम जोखिम" : "Low Risk", value: 7381, fill: "#10B981" },
-    { name: isHindi ? "मध्यम जोखिम" : "Moderate Risk", value: 3844, fill: "#F59E0B" },
-    { name: isHindi ? "उच्च जोखिम" : "High Risk", value: 985, fill: "#EF4444" },
-    { name: isHindi ? "गंभीर जोखिम" : "Critical", value: 632, fill: "#7C2D12" },
-  ];
+    return [
+      { 
+        name: isHindi ? "कम जोखिम" : "Low Risk", 
+        value: displayWorks.filter((w: any) => (parseFloat(String(w.risk_score || 0)) || 0) <= 30).length, 
+        fill: "#10B981" 
+      },
+      { 
+        name: isHindi ? "मध्यम जोखिम" : "Moderate Risk", 
+        value: displayWorks.filter((w: any) => {
+          const risk = parseFloat(String(w.risk_score || 0)) || 0;
+          return risk > 30 && risk <= 60;
+        }).length, 
+        fill: "#F59E0B" 
+      },
+      { 
+        name: isHindi ? "उच्च जोखिम" : "High Risk", 
+        value: displayWorks.filter((w: any) => {
+          const risk = parseFloat(String(w.risk_score || 0)) || 0;
+          return risk > 60 && risk <= 80;
+        }).length, 
+        fill: "#EF4444" 
+      },
+      { 
+        name: isHindi ? "गंभीर जोखिम" : "Critical", 
+        value: displayWorks.filter((w: any) => (parseFloat(String(w.risk_score || 0)) || 0) > 80).length, 
+        fill: "#7C2D12" 
+      },
+    ];
+  }, [displayWorks, isHindi]);
 
-  const amenitiesData = [
-    { name: isHindi ? "पीने का पानी" : "Drinking Water", value: 28.5 },
-    { name: isHindi ? "ग्रामीण सड़कें" : "Rural Roads", value: 24.3 },
-    { name: isHindi ? "शिक्षा" : "Education", value: 18.7 },
-    { name: isHindi ? "स्वास्थ्य सेवा" : "Healthcare", value: 14.2 },
-    { name: isHindi ? "अन्य" : "Others", value: 14.3 },
-  ];
+  // Compute amenities distribution from works category
+  const amenitiesData = React.useMemo(() => {
+    if (!displayWorks || displayWorks.length === 0) {
+      return [
+        { name: isHindi ? "पीने का पानी" : "Drinking Water", value: 0 },
+        { name: isHindi ? "ग्रामीण सड़कें" : "Rural Roads", value: 0 },
+        { name: isHindi ? "शिक्षा" : "Education", value: 0 },
+        { name: isHindi ? "स्वास्थ्य सेवा" : "Healthcare", value: 0 },
+        { name: isHindi ? "अन्य" : "Others", value: 0 },
+      ];
+    }
 
-  const stateComparisonData = [
-    { state: "Uttar Pradesh", sanctioned: 24, completion: 82 },
-    { state: "Maharashtra", sanctioned: 18, completion: 78 },
-    { state: "Bihar", sanctioned: 14, completion: 65 },
-    { state: "Rajasthan", sanctioned: 16, completion: 71 },
-    { state: "Tamil Nadu", sanctioned: 12, completion: 88 },
-    { state: "Gujarat", sanctioned: 11, completion: 79 },
-  ];
+    const categoryMap = new Map<string, number>();
+    displayWorks.forEach((work: any) => {
+      const category = work.category || "Others";
+      categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+    });
+
+    // Map to amenities
+    const amenityLabels = [
+      { key: "water", en: "Drinking Water", hi: "पीने का पानी" },
+      { key: "roads", en: "Rural Roads", hi: "ग्रामीण सड़कें" },
+      { key: "education", en: "Education", hi: "शिक्षा" },
+      { key: "healthcare", en: "Healthcare", hi: "स्वास्थ्य सेवा" },
+      { key: "others", en: "Others", hi: "अन्य" },
+    ];
+
+    return amenityLabels.map(label => {
+      const count = categoryMap.get(label.key) || 0;
+      const total = displayWorks.length;
+      return {
+        name: isHindi ? label.hi : label.en,
+        value: total > 0 ? (count / total) * 100 : 0,
+      };
+    });
+  }, [displayWorks, isHindi]);
+
+  // Compute state comparison from states + works data
+  const stateComparisonData = React.useMemo(() => {
+    if (!displayStates || displayStates.length === 0) {
+      return [];
+    }
+    return displayStates.slice(0, 6).map((st: any) => ({
+      state: st.state || st.name,
+      sanctioned: parseFloat(String(st.sanctioned_cr || 0)) || 0,
+      completion: parseFloat(String(st.completion_percent || st.avg_progress || 0)) || 0,
+    }));
+  }, [displayStates]);
 
   // ==================== STAT CARD ====================
 
@@ -183,29 +269,29 @@ export const AllIndiaProjectTracker: React.FC<AllIndiaProjectTrackerProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <StatCard
           title={isHindi ? "MP अनुशंसित" : "MP Recommended"}
-          value="₹85 Cr"
-          subtitle={isHindi ? "तुलना में वास्तविक व्यय" : "vs Actual Spent"}
+          value={`₹${mpRecommendedData.reduce((sum: number, s: any) => sum + (s.recommended || 0), 0).toFixed(0)} Cr`}
+          subtitle={isHindi ? "कुल अनुमोदित निधि" : "Total Sanctioned"}
           icon={TrendingUp}
           color="#1B3A7A"
         />
         <StatCard
           title={isHindi ? "परियोजना जोखिम स्तर" : "Project Risk Levels"}
-          value="12,842"
+          value={displayWorks.length.toLocaleString()}
           subtitle={isHindi ? "कार्य निगरानी अधीन" : "Works monitored"}
           icon={AlertTriangle}
           color="#E31E24"
         />
         <StatCard
           title={isHindi ? "सार्वजनिक सुविधाएं" : "Public Amenities"}
-          value="6"
+          value={new Set(displayWorks.map((w: any) => w.category)).size}
           subtitle={isHindi ? "क्षेत्र श्रेणियां" : "Sector categories"}
           icon={CheckCircle2}
           color="#047A1E"
         />
         <StatCard
           title={isHindi ? "उच्च जोखिम कार्य" : "Highest Risk Works"}
-          value="₹24.6 Cr"
-          subtitle={isHindi ? "82% औसत पूर्ण" : "82% Avg Complete"}
+          value={`₹${(displayWorks.filter((w: any) => (parseFloat(String(w.risk_score || 0)) || 0) > 60).reduce((sum: number, w: any) => sum + (parseFloat(String(w.actual_expenditure || 0)) || 0), 0) / 10000000).toFixed(1)} Cr`}
+          subtitle={isHindi ? `${Math.round(displayWorks.filter((w: any) => (parseFloat(String(w.physical_progress || 0)) || 0) > 0).length / Math.max(displayWorks.length, 1) * 100)}% औसत पूर्ण` : `${Math.round(displayWorks.filter((w: any) => (parseFloat(String(w.physical_progress || 0)) || 0) > 0).length / Math.max(displayWorks.length, 1) * 100)}% Avg Complete`}
           icon={MapPin}
           color="#FF6B00"
         />
@@ -318,7 +404,7 @@ export const AllIndiaProjectTracker: React.FC<AllIndiaProjectTrackerProps> = ({
       <ChartCard
         title={isHindi ? "सार्वजनिक सुविधाएं व्यय (₹ Cr)" : "Public Amenities Spend (₹ Cr)"}
         subtitle={isHindi ? "जहां सार्वजनिक निधि सीधे गांव और शहर सुविधाओं में सुधार करती है" : "Where public funds directly improve village & city facilities"}
-        icon={BarChartIcon}
+        icon={BarChart3}
       >
         <ResponsiveContainer width="100%" height={280}>
           <BarChart

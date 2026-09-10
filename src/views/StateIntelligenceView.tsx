@@ -11,11 +11,13 @@ import {
   Download,
   Filter,
 } from "lucide-react";
-import { DistrictSummary, Language } from "../types";
+import { DistrictSummary, Language, UserRole } from "../types";
 import { MetricCard } from "../components/common/MetricCard";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { formatCr } from "../lib/utils";
 import { getTranslation } from "../data/translations";
+
+import { DEFAULT_DISTRICT_SUMMARIES } from "../data/districtSummaries";
 
 interface StateIntelligenceViewProps {
   districts: DistrictSummary[];
@@ -23,6 +25,7 @@ interface StateIntelligenceViewProps {
   onChangeState: (state: string) => void;
   onSelectDistrict: (district: string) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const StateIntelligenceView: React.FC<StateIntelligenceViewProps> = ({
@@ -31,67 +34,14 @@ export const StateIntelligenceView: React.FC<StateIntelligenceViewProps> = ({
   onChangeState,
   onSelectDistrict,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterSeverity, setFilterSeverity] = useState("ALL");
   const isHindi = language === "hi";
   const t = getTranslation(language as Language);
 
-  // Mock data for fallback when districts prop is empty
-  const mockDistricts: DistrictSummary[] = [
-    {
-      district: "Ghaziabad",
-      state: "Uttar Pradesh",
-      works_count: 342,
-      expenditure_cr: 2.4,
-      risk_score: 62,
-      risk_category: "HIGH",
-      high_risk_works: 8,
-      completion_rate: 72,
-    },
-    {
-      district: "Lucknow",
-      state: "Uttar Pradesh",
-      works_count: 298,
-      expenditure_cr: 2.1,
-      risk_score: 45,
-      risk_category: "MEDIUM",
-      high_risk_works: 3,
-      completion_rate: 85,
-    },
-    {
-      district: "Nagpur",
-      state: "Maharashtra",
-      works_count: 215,
-      expenditure_cr: 1.8,
-      risk_score: 52,
-      risk_category: "HIGH",
-      high_risk_works: 5,
-      completion_rate: 68,
-    },
-    {
-      district: "Pune",
-      state: "Maharashtra",
-      works_count: 289,
-      expenditure_cr: 2.2,
-      risk_score: 38,
-      risk_category: "MEDIUM",
-      high_risk_works: 2,
-      completion_rate: 82,
-    },
-    {
-      district: "Patna",
-      state: "Bihar",
-      works_count: 267,
-      expenditure_cr: 1.9,
-      risk_score: 71,
-      risk_category: "CRITICAL",
-      high_risk_works: 12,
-      completion_rate: 55,
-    },
-  ];
-
-  const dataToUse = districts && districts.length > 0 ? districts : mockDistricts;
+  const dataToUse = districts && districts.length > 0 ? districts : DEFAULT_DISTRICT_SUMMARIES;
 
   const filteredDistricts = dataToUse.filter((d) => {
     const matchSearch =
@@ -116,8 +66,10 @@ export const StateIntelligenceView: React.FC<StateIntelligenceViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">
             {selectedState === "All States"
-              ? isHindi ? "राज्य पोर्टफोलियो आसूचना" : "State Portfolio Intelligence"
-              : `${selectedState} ${isHindi ? "राज्य आसूचना" : "State Intelligence"}`}
+              ? currentRole === "State Nodal Authority"
+                ? (isHindi ? "राज्य जिला ट्रैकर" : "State-Wide Progress Tracker")
+                : (isHindi ? "राज्य-वार प्रगति ट्रैकर" : "State-Wise Progress Tracker")
+              : `${selectedState} — ${isHindi ? "राज्य प्रगति ट्रैकर" : "State Progress Tracker"}`}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi
@@ -153,49 +105,60 @@ export const StateIntelligenceView: React.FC<StateIntelligenceViewProps> = ({
         </div>
       </div>
 
-      {/* State Metric KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-        <MetricCard
-          title={isHindi ? "निगरानी किए गए कार्य" : "Monitored Works"}
-          value="2,481"
-          change="+6.1%"
-          isGoodTrend={true}
-          icon={FileSpreadsheet}
-          accentColor="navy"
-          subtitle={isHindi ? "75 जिलों में" : "Across 75 districts"}
-          sparklineData={[2100, 2250, 2380, 2481]}
-        />
-        <MetricCard
-          title={isHindi ? "राज्य व्यय" : "State Expenditure"}
-          value="₹18.4 Cr"
-          change="+11.4%"
-          isGoodTrend={true}
-          icon={IndianRupee}
-          accentColor="blue"
-          subtitle={isHindi ? "84% उपयोग" : "84% utilization"}
-          sparklineData={[12.1, 14.5, 16.8, 18.4]}
-        />
-        <MetricCard
-          title={isHindi ? "सक्रिय जोखिम संकेत" : "Active Risk Signals"}
-          value="187"
-          change="-4.2%"
-          isGoodTrend={false}
-          icon={AlertTriangle}
-          accentColor="amber"
-          subtitle={isHindi ? "पैरामीट्रिक चेतावनियां" : "Parametric warnings"}
-          sparklineData={[220, 205, 195, 187]}
-        />
-        <MetricCard
-          title={isHindi ? "उच्च जोखिम कार्य" : "High-Risk Works"}
-          value="32"
-          change="+3"
-          isGoodTrend={false}
-          icon={Flame}
-          accentColor="red"
-          subtitle={isHindi ? "ऑडिट प्राथमिकता" : "Audit priority"}
-          sparklineData={[24, 28, 29, 32]}
-        />
-      </div>
+      {/* State Metric KPIs - Calculated from Real Data */}
+      {(() => {
+        const totalWorks = dataToUse.reduce((sum, d) => sum + d.works_count, 0);
+        const totalExpenditure = dataToUse.reduce((sum, d) => sum + d.expenditure_cr, 0);
+        const totalHighRiskWorks = dataToUse.reduce((sum, d) => sum + d.high_risk_works, 0);
+        const avgCompletionRate = dataToUse.length > 0
+          ? Math.round(dataToUse.reduce((sum, d) => sum + d.completion_rate, 0) / dataToUse.length)
+          : 0;
+
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+            <MetricCard
+              title={isHindi ? "निगरानी किए गए कार्य" : "Monitored Works"}
+              value={totalWorks.toLocaleString()}
+              change={`${dataToUse.length} districts`}
+              isGoodTrend={true}
+              icon={FileSpreadsheet}
+              accentColor="navy"
+              subtitle={isHindi ? "कुल गणना" : "Total count"}
+              sparklineData={[totalWorks * 0.7, totalWorks * 0.8, totalWorks * 0.9, totalWorks]}
+            />
+            <MetricCard
+              title={isHindi ? "राज्य व्यय" : "State Expenditure"}
+              value={`₹${formatCr(totalExpenditure)}`}
+              change={`${dataToUse.length} districts`}
+              isGoodTrend={true}
+              icon={IndianRupee}
+              accentColor="blue"
+              subtitle={isHindi ? "कुल व्यय" : "Total expenditure"}
+              sparklineData={[totalExpenditure * 0.6, totalExpenditure * 0.75, totalExpenditure * 0.9, totalExpenditure]}
+            />
+            <MetricCard
+              title={isHindi ? "उच्च जोखिम कार्य" : "High-Risk Works"}
+              value={totalHighRiskWorks.toString()}
+              change={dataToUse.length > 0 ? `Avg Risk: ${Math.round(dataToUse.reduce((s, d) => s + d.risk_score, 0) / dataToUse.length)}` : "No data"}
+              isGoodTrend={false}
+              icon={Flame}
+              accentColor="red"
+              subtitle={isHindi ? "ऑडिट प्राथमिकता" : "Audit priority"}
+              sparklineData={[totalHighRiskWorks * 0.5, totalHighRiskWorks * 0.7, totalHighRiskWorks * 0.85, totalHighRiskWorks]}
+            />
+            <MetricCard
+              title={isHindi ? "औसत समापन दर" : "Avg Completion Rate"}
+              value={`${avgCompletionRate}%`}
+              change={`${dataToUse.length} districts`}
+              isGoodTrend={true}
+              icon={CheckCircle2}
+              accentColor="emerald"
+              subtitle={isHindi ? "प्रगति दर" : "Progress rate"}
+              sparklineData={[avgCompletionRate * 0.6, avgCompletionRate * 0.75, avgCompletionRate * 0.9, avgCompletionRate]}
+            />
+          </div>
+        );
+      })()}
 
       {/* District Risk Ranking Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">

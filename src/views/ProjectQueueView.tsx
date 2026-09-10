@@ -403,7 +403,7 @@ export const ProjectQueueView: React.FC<ProjectQueueViewProps> = ({
                 const risk = riskDetails(project.risk_level);
                 return (
                   <tr
-                    key={project.work_id}
+                    key={`${project.work_id}-${idx}`}
                     onClick={() => onSelectProject?.(project.work_id)}
                     className="border-b border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
                   >

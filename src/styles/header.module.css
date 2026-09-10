@@ -1,0 +1,27 @@
+.gov-header {
+  background: rgba(17, 46, 81, 0.6);
+  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.1));
+  border-radius: 0.75rem; /* matches Tailwind rounded-xl */
+  padding: 1.5rem; /* matches p-6 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated underline for title */
+.gov-header h1 {
+  position: relative;
+  display: inline-block;
+}
+.gov-header h1::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 2px;
+  width: 0;
+  background: #f2c94c; /* accent color */
+  transition: width 0.3s ease;
+}
+.gov-header h1:hover::after {
+  width: 100%;
+}

@@ -65,8 +65,8 @@ export async function searchProjects(query: string) {
     const result = await projectApi.getAll({ limit: 100 });
     
     const filtered = result.data.filter(p =>
-      p.name?.toLowerCase().includes(query.toLowerCase()) ||
-      p.location?.toLowerCase().includes(query.toLowerCase())
+      p.description?.toLowerCase().includes(query.toLowerCase()) ||
+      p.mp_name?.toLowerCase().includes(query.toLowerCase())
     );
 
     console.log(`[ProjectService] Found ${filtered.length} matching projects`);
@@ -84,17 +84,11 @@ export async function getProjectDetails(projectId: string) {
   try {
     console.log(`[ProjectService] Loading project ${projectId}`);
     
-    const [project, analysis] = await Promise.all([
-      projectApi.getById(projectId),
-      analysisApi.getProjectAnalysis(projectId).catch(() => null),
-    ]);
+    const project = await projectApi.getById(projectId);
 
-    console.log(`[ProjectService] Loaded project: ${project.name}`);
+    console.log(`[ProjectService] Loaded project: ${project.mp_name}`);
 
-    return {
-      ...project,
-      ...analysis,
-    };
+    return project;
   } catch (error) {
     console.error(`[ProjectService] Failed to load project ${projectId}:`, error);
     throw error;
@@ -155,11 +149,11 @@ export async function getDelayedProjects() {
  */
 export async function createProject(projectData: Partial<WorkRecord>) {
   try {
-    console.log('[ProjectService] Creating new project:', projectData.name);
+    console.log('[ProjectService] Creating new project:', projectData.description || projectData.work_id);
     
     const project = await projectApi.create(projectData);
     
-    console.log('[ProjectService] Project created:', project.id);
+    console.log('[ProjectService] Project created:', project.work_id);
     return project;
   } catch (error) {
     console.error('[ProjectService] Failed to create project:', error);

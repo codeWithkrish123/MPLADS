@@ -4,7 +4,7 @@
  * Handles all HTTP requests with proper error handling and logging
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mplads-backend-gateway.aditya93193.workers.dev/api';
 
 interface ApiResponse<T> {
   success: boolean;

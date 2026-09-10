@@ -151,9 +151,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 Monitored Works ({filteredWorks.length})
               </div>
               <div className="space-y-1">
-                {filteredWorks.slice(0, 5).map((work) => (
+                {filteredWorks.slice(0, 5).map((work, idx) => (
                   <div
-                    key={work.work_id}
+                    key={`${work.work_id}-${idx}`}
                     onClick={() => {
                       onSelectWork(work);
                       onClose();
@@ -186,9 +186,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 Districts ({filteredDistricts.length})
               </div>
               <div className="space-y-1">
-                {filteredDistricts.slice(0, 3).map((dist) => (
+                {filteredDistricts.slice(0, 3).map((dist, idx) => (
                   <div
-                    key={dist.district}
+                    key={`${dist.district}-${idx}`}
                     onClick={() => {
                       onNavigate("districtIntel");
                       onClose();

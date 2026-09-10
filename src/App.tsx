@@ -15,6 +15,7 @@ import {
 
 // Data Fetching Hooks
 import { useFetchProjects, useFetchAlerts } from "./hooks/useFetchData";
+import { useRealTimeData } from "./hooks/useRealTimeData";
 
 // Services
 import { alertService } from "./services/analysisService";
@@ -30,15 +31,19 @@ import { OnboardingTour } from "./components/common/OnboardingTour";
 // Views
 import { LandingPage } from "./views/LandingPage";
 import { LoginPage } from "./views/LoginPage";
+import { LoginModal } from "./components/auth/LoginModal";
 import { ContactPage } from "./views/ContactPage";
 import { RoleSelectorPage } from "./views/RoleSelectorPage";
 import { NationalOverviewView } from "./views/NationalOverviewView";
+import { isViewAllowedForRole } from "./config/rolePermissions";
+import { ShieldAlert } from "lucide-react";
 import { StateIntelligenceView } from "./views/StateIntelligenceView";
 import { DistrictDashboardView } from "./views/DistrictDashboardView";
 import { WorkIntelligenceTableView } from "./views/WorkIntelligenceTableView";
 import { DuplicateDetectionView } from "./views/DuplicateDetectionView";
 import { CostAnomalyView } from "./views/CostAnomalyView";
 import { ExpenditureProgressView } from "./views/ExpenditureProgressView";
+import { WorkMonitoringView } from "./views/WorkMonitoringView";
 import { DelayPredictionView } from "./views/DelayPredictionView";
 import { ComplianceCenterView } from "./views/ComplianceCenterView";
 import { PolicyKnowledgeView } from "./views/PolicyKnowledgeView";
@@ -50,6 +55,15 @@ import { AlertCenterView } from "./views/AlertCenterView";
 import { AuditLogView } from "./views/AuditLogView";
 import { CustomDatasetView } from "./views/CustomDatasetView";
 import { MapIntelligenceView } from "./views/MapIntelligenceView";
+import { UserDashboard } from "./views/UserDashboard";
+import { UserNotifications } from "./views/UserNotifications";
+import { LiveCommandView } from "./views/LiveCommandView";
+import { LabourIntelligenceView } from "./views/LabourIntelligenceView";
+import { GhostVerificationView } from "./views/GhostVerificationView";
+import { CaseManagementView } from "./views/CaseManagementView";
+import { ScenarioSimulationView } from "./views/ScenarioSimulationView";
+import { getDerivedComplianceRules } from "./data/complianceRules";
+import { deriveDistrictsFromWorks } from "./data/districtSummaries";
 
 export default function App() {
   // Get authentication state
@@ -58,21 +72,12 @@ export default function App() {
   const location = useLocation();
   
   // Show loading spinner while validating authentication on app init
-  if (authLoading && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/' && location.pathname !== '/contact' && location.pathname !== '/role-selector') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-          </div>
-          <p className="text-slate-600 font-medium">Validating session...</p>
-        </div>
-      </div>
-    );
-  }
+  // BUT: We must render this AFTER hooks, not BEFORE!
+  // So we'll use a conditional return INSIDE state/effects
   
-  // Navigation State
+  // Navigation State - MUST be before any conditional returns
   const [currentView, setCurrentView] = useState<string>("landing");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [currentRole, setCurrentRole] = useState<UserRole>("Ministry");
   const [currentState, setCurrentState] = useState<string>("All States");
   const [currentDistrict, setCurrentDistrict] = useState<string>("Ghaziabad");
@@ -130,6 +135,29 @@ export default function App() {
   const [savedThemeBeforeContrast, setSavedThemeBeforeContrast] = useState<GovTheme>("nic-blue");
 
   // ==================== REAL DATA FETCHING ====================
+  // MUST call useRealTimeData unconditionally (React Rules of Hooks)
+  // The hook itself handles conditional fetching based on authentication
+  const realTimeHookResult = useRealTimeData();
+  
+  const [realTimeData, setRealTimeData] = useState({ works: [], states: [], districts: [] });
+  
+  // Update real-time data when hook returns results
+  useEffect(() => {
+    if (realTimeHookResult?.works && realTimeHookResult.works.length > 0) {
+      console.log('[App] Real-time data available:', realTimeHookResult.works.length, 'works');
+      setRealTimeData({
+        works: realTimeHookResult.works || [],
+        states: realTimeHookResult.states || [],
+        districts: realTimeHookResult.districts || [],
+      });
+    }
+  }, [realTimeHookResult?.works?.length, realTimeHookResult?.states?.length]);
+  
+  // Extract data from state or direct hook result
+  const realWorks = realTimeData.works.length > 0 ? realTimeData.works : (realTimeHookResult?.works || []);
+  const realStates = realTimeData.states.length > 0 ? realTimeData.states : (realTimeHookResult?.states || []);
+  const districts = realTimeData.districts.length > 0 ? realTimeData.districts : (realTimeHookResult?.districts || []);
+  
   // Only fetch projects if authenticated (skip if not logged in)
   const { data: projectsData, loading: projectsLoading, error: projectsError, refetch: refetchProjects } = useFetchProjects();
   const [projects, setProjects] = useState<WorkRecord[]>([]);
@@ -137,13 +165,19 @@ export default function App() {
   // Only fetch alerts if authenticated (skip if not logged in)
   const { data: alertsData, loading: alertsLoading, error: alertsDataError, refetch: refetchAlerts } = useFetchAlerts();
 
-  // Update projects when data is fetched (only after authenticated)
+  // Update projects when data is fetched or realWorks changes
   useEffect(() => {
-    if (projectsData?.projects) {
+    if (projectsData?.projects && projectsData.projects.length > 0) {
       console.log('[App] Updating projects from backend:', projectsData.projects.length, 'projects');
       setProjects(projectsData.projects);
+    } else if (realWorks && realWorks.length > 0) {
+      console.log('[App] Using realWorks from useRealTimeData:', realWorks.length, 'works');
+      setProjects(realWorks);
     }
-  }, [projectsData]);
+  }, [projectsData, realWorks]);
+
+  const complianceRules = React.useMemo(() => getDerivedComplianceRules(projects), [projects]);
+  const derivedDistricts = React.useMemo(() => deriveDistrictsFromWorks(projects), [projects]);
 
   // Update alerts when data is fetched (only after authenticated)
   useEffect(() => {
@@ -173,9 +207,13 @@ export default function App() {
   // Set initial view based on authentication status
   useEffect(() => {
     if (isAuthenticated && currentView === "landing") {
-      setCurrentView("overview");
+      if (currentRole === "Users") {
+        setCurrentView("workMonitoring");
+      } else {
+        setCurrentView("overview");
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentRole]);
 
   // Wrapper function to navigate both URL and state
   const navigateTo = (view: string) => {
@@ -210,6 +248,14 @@ export default function App() {
       "/compliance": "compliance",
       "/policy": "policy",
       "/audit-logs": "auditLogs",
+      "/user-dashboard": "userDashboard",
+      "/user-notifications": "userNotifications",
+      "/work-monitoring": "workMonitoring",
+      "/live-command": "liveCommand",
+      "/labour-intelligence": "labour",
+      "/ghost-verification": "ghostVerification",
+      "/case-management": "caseManagement",
+      "/scenario-simulation": "scenarioSimulation",
     };
 
     return pathMap[pathname] || "landing";
@@ -433,15 +479,15 @@ export default function App() {
 
   const handleRoleSelection = (role: UserRole) => {
     setCurrentRole(role);
+    setIsLoginModalOpen(false);
     
-    // Simulate authentication with credentials from login modal
-    // In production, this would use actual credentials passed from the modal
+    // Select mock credentials for the chosen role
     const mockEmail = role === "Member of Parliament" 
       ? "mp.constituency@sansad.nic.in"
       : role === "District Authority"
       ? "dm.ghaziabad@nic.in"
-      : role === "State Nodal Authority"
-      ? "nodal.planning@state.gov.in"
+      : role === "Users"
+      ? "citizen.public@nic.in"
       : "admin.mospi@nic.in";
     
     const mockPassword = "password123";
@@ -454,14 +500,13 @@ export default function App() {
           navigateTo("mpDashboard");
         } else if (role === "District Authority") {
           navigateTo("districtIntel");
-        } else if (role === "State Nodal Authority") {
-          navigateTo("stateNodal");
+        } else if (role === "Users") {
+          navigateTo("overview");
         } else {
           navigateTo("overview");
         }
       } else {
         console.error("Authentication failed");
-        // Stay on landing page if auth fails
       }
     });
   };
@@ -480,20 +525,38 @@ export default function App() {
     navigateTo("districtIntel");
   };
 
-  // If on public Landing Page or Role Selector
+  // If on public Landing Page
   if (currentView === "landing") {
     return (
       <div className="flex flex-col min-h-screen">
         <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
         <LandingPage
-          onExplore={() => {
-            // Open the login modal on the landing page
-            // LandingPage handles the modal state internally
-          }}
-          onSelectRole={handleRoleSelection}
+          onExplore={() => setIsLoginModalOpen(true)}
+          onSelectRole={() => setIsLoginModalOpen(true)}
           language={language}
           onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
         />
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onLoginSuccess={handleRoleSelection}
+          language={language}
+          onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
+        />
+      </div>
+    );
+  }
+
+  // Show loading spinner while validating authentication on app init
+  if (authLoading && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/' && location.pathname !== '/contact' && location.pathname !== '/role-selector') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          </div>
+          <p className="text-slate-600 font-medium">Validating session...</p>
+        </div>
       </div>
     );
   }
@@ -502,11 +565,16 @@ export default function App() {
     return <ContactPage language={language} />;
   }
 
-  if (currentView === "roleSelector") {
+  // Dedicated Login Gateway View (/login or /role-selector)
+  if (currentView === "login" || currentView === "roleSelector") {
     return (
-      <div className="flex flex-col min-h-screen">
-        <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
-        <RoleSelectorPage onSelectRole={handleRoleSelection} />
+      <div className="min-h-screen bg-[#0B1528] flex items-center justify-center p-3 sm:p-6 md:p-8">
+        <LoginPage
+          onLoginSuccess={handleRoleSelection}
+          onClose={() => navigateTo("landing")}
+          language={language}
+          onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
+        />
       </div>
     );
   }
@@ -514,12 +582,10 @@ export default function App() {
   // Protected Route: Check authentication before showing dashboard
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col min-h-screen">
-        <div className="h-[4px] w-full bg-gradient-to-r from-[#FF9933] via-[#FFFFFF] to-[#138808] shrink-0 z-50" />
+      <div className="min-h-screen bg-[#0B1528] flex items-center justify-center p-3 sm:p-6 md:p-8">
         <LoginPage
-          onLoginSuccess={() => {
-            navigateTo("overview");
-          }}
+          onLoginSuccess={handleRoleSelection}
+          onClose={() => navigateTo("landing")}
           language={language}
           onToggleLanguage={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
         />
@@ -530,7 +596,7 @@ export default function App() {
   return (
     <div
       id="mplads-sentinel-app"
-      className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-900 selection:bg-blue-600 selection:text-white"
+      className="h-screen overflow-hidden bg-slate-100 flex flex-col font-sans text-slate-900 selection:bg-blue-600 selection:text-white"
       lang={language === "hi" ? "hi-IN" : "en-US"}
     >
       {/* Permanent Tricolor Strip */}
@@ -576,7 +642,7 @@ export default function App() {
       />
 
       {/* Main Layout Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-0 overflow-hidden relative">
         {/* Navigation Sidebar */}
         <Sidebar
           currentView={currentView}
@@ -595,14 +661,47 @@ export default function App() {
           id="main-content"
           role="main"
           aria-label={language === "hi" ? "मुख्य सामग्री" : "Main content"}
-          className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ease-in-out p-3 sm:p-4 md:p-6 lg:p-8 ${
-            isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
-          }`}
+          className="flex-1 min-w-0 h-full overflow-y-auto transition-all duration-200 ease-in-out p-3 sm:p-4 md:p-6 lg:p-8"
         >
           <div className="max-w-7xl mx-auto space-y-6">
-            {currentView === "overview" && (
+            {!isViewAllowedForRole(currentRole, currentView) ? (
+              <div className="p-8 max-w-xl mx-auto my-12 bg-white rounded-2xl border border-red-200 shadow-md text-center space-y-4 animate-in fade-in">
+                <div className="w-14 h-14 mx-auto rounded-full bg-red-50 text-red-600 flex items-center justify-center">
+                  <ShieldAlert className="w-7 h-7" />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold text-slate-900">Access Restricted</h2>
+                  <p className="text-xs font-semibold text-red-600 uppercase tracking-wider">
+                    Statutory Governance Compliance
+                  </p>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
+                  This screen is restricted to authorized government credentials. Your current role:{" "}
+                  <span className="font-bold text-slate-800">{currentRole}</span> does not have access
+                  to this feature under official GIGW compliance guidelines.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() =>
+                      navigateTo(
+                        currentRole === "Member of Parliament"
+                          ? "mpDashboard"
+                          : currentRole === "District Authority"
+                          ? "districtIntel"
+                          : "overview"
+                      )
+                    }
+                    className="px-6 py-2.5 bg-[#0B3B7B] hover:bg-[#082d61] text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+                  >
+                    Return to Authorized Dashboard
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {currentView === "overview" && (
               <NationalOverviewView
-                states={[]}
+                states={realStates && realStates.length > 0 ? realStates : []}
                 works={projects}
                 selectedState={currentState}
                 onSelectState={handleSelectStateDrilldown}
@@ -612,16 +711,18 @@ export default function App() {
                 language={language}
                 selectedDistrict={currentDistrict}
                 onAddGrievanceAlert={handleAddGrievanceAlert}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "stateIntel" && (
               <StateIntelligenceView
-                districts={[]}
+                districts={derivedDistricts}
                 selectedState={currentState}
                 onChangeState={handleSelectStateDrilldown}
                 onSelectDistrict={handleSelectDistrictDrilldown}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
@@ -632,6 +733,7 @@ export default function App() {
                 onSelectWork={handleOpenWorkDetail}
                 onBackToState={() => navigateTo("stateIntel")}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
@@ -640,6 +742,14 @@ export default function App() {
                 works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
+              />
+            )}
+
+            {currentView === "workMonitoring" && (
+              <WorkMonitoringView
+                language={language}
+                onSelectWork={handleOpenWorkDetail}
               />
             )}
 
@@ -647,6 +757,7 @@ export default function App() {
               <CustomDatasetView
                 onOpenWorkDetail={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
@@ -656,6 +767,7 @@ export default function App() {
                 works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
@@ -669,88 +781,144 @@ export default function App() {
                 onNavigateToDistrict={handleSelectDistrictDrilldown}
                 onNavigateToMP={() => navigateTo("mpDashboard")}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "costAnomaly" && (
               <CostAnomalyView
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "duplicate" && (
               <DuplicateDetectionView
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "expenditure" && (
               <ExpenditureProgressView
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "delay" && (
               <DelayPredictionView
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "compliance" && (
               <ComplianceCenterView
-                rules={[]}
+                rules={complianceRules}
                 onOpenPolicy={() => navigateTo("policy")}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "policy" && (
-              <PolicyKnowledgeView rules={[]} language={language} />
+              <PolicyKnowledgeView rules={complianceRules} language={language} currentRole={currentRole} />
             )}
 
             {currentView === "aiAssistant" && (
               <AIAssistantView
-                onNavigateToWorks={() => navigateTo("works")}
-                onNavigateToDistrict={handleSelectDistrictDrilldown}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "mpDashboard" && (
               <MPDashboardView
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "stateNodal" && (
               <StateNodalDashboardView
-                districts={[]}
+                districts={derivedDistricts}
                 onSelectDistrict={handleSelectDistrictDrilldown}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "agencies" && (
               <AgencyRiskView
                 agencies={[]}
-                works={[]}
+                works={projects}
                 onSelectWork={handleOpenWorkDetail}
                 language={language}
+                currentRole={currentRole}
               />
             )}
 
             {currentView === "auditLogs" && (
-              <AuditLogView logs={auditLogs} language={language} />
+              <AuditLogView logs={auditLogs} language={language} currentRole={currentRole} />
+            )}
+
+            {currentView === "userDashboard" && (
+              <UserDashboard />
+            )}
+
+            {currentView === "userNotifications" && (
+              <UserNotifications />
+            )}
+
+            {currentView === "liveCommand" && (
+              <LiveCommandView
+                language={language}
+                onSelectWork={handleOpenWorkDetail}
+              />
+            )}
+
+            {currentView === "labour" && (
+              <LabourIntelligenceView
+                language={language}
+                onSelectWork={handleOpenWorkDetail}
+              />
+            )}
+
+            {currentView === "ghostVerification" && (
+              <GhostVerificationView
+                language={language}
+                onSelectWork={handleOpenWorkDetail}
+              />
+            )}
+
+            {currentView === "caseManagement" && (
+              <CaseManagementView
+                language={language}
+                onSelectWork={handleOpenWorkDetail}
+              />
+            )}
+
+            {currentView === "scenarioSimulation" && (
+              <ScenarioSimulationView
+                language={language}
+              />
+            )}
+
+            {currentView === "contact" && (
+              <ContactPage language={language} />
+            )}
+              </>
             )}
           </div>
         </main>

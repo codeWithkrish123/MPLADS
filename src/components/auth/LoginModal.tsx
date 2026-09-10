@@ -1,34 +1,20 @@
-import React, { useState } from "react";
-import { X } from "lucide-react";
+import React, { useEffect } from "react";
 import { LoginPage } from "../../views/LoginPage";
-import { Language } from "../../types";
+import { Language, UserRole } from "../../types";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (role: string) => void;
+  onLoginSuccess: (role: UserRole) => void;
   language?: Language;
   onToggleLanguage?: () => void;
 }
 
 /**
  * LoginModal Component
- * 
- * Wraps LoginPage in a modal dialog for use in other pages
- * 
- * Usage:
- * ```
- * const [showLogin, setShowLogin] = useState(false);
- * 
- * <LoginModal
- *   isOpen={showLogin}
- *   onClose={() => setShowLogin(false)}
- *   onLoginSuccess={(role) => {
- *     console.log('Logged in as:', role);
- *     // Navigate to dashboard
- *   }}
- * />
- * ```
+ *
+ * Renders the NIC Single Sign-On Gateway as a centered modal dialog
+ * on a darkened, subtly blurred portal backdrop matching the government portal design.
  */
 export const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
@@ -37,27 +23,47 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   language = "en",
   onToggleLanguage,
 }) => {
-  const handleLoginSuccess = (role: string) => {
-    onLoginSuccess(role);
-    onClose();
-  };
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="relative w-full max-h-screen overflow-auto">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="fixed top-4 right-4 z-[100] bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
-        >
-          <X className="w-6 h-6 text-gray-600" />
-        </button>
-
-        {/* Login Page */}
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="National Single Sign-On Gateway"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto bg-[#0B1528]/80 backdrop-blur-sm transition-all duration-200"
+      onClick={(e) => {
+        // Close if backdrop clicked directly
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="relative w-full max-w-5xl my-auto animate-in fade-in zoom-in-95 duration-200">
         <LoginPage
-          onLoginSuccess={handleLoginSuccess}
+          onLoginSuccess={(role) => {
+            onLoginSuccess(role);
+            onClose();
+          }}
+          onClose={onClose}
           language={language}
           onToggleLanguage={onToggleLanguage}
         />

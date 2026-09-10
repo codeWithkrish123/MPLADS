@@ -10,7 +10,7 @@ import {
   Download,
   Sparkles,
 } from "lucide-react";
-import { WorkRecord, Language } from "../types";
+import { WorkRecord, Language, UserRole } from "../types";
 import { formatINR } from "../lib/utils";
 import { getTranslation } from "../data/translations";
 import { EmptyState } from "../components/common/EmptyState";
@@ -19,12 +19,14 @@ interface CostAnomalyViewProps {
   works: WorkRecord[];
   onSelectWork: (work: WorkRecord) => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 export const CostAnomalyView: React.FC<CostAnomalyViewProps> = ({
   works,
   onSelectWork,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const currentLang: Language = (language || "en") as Language;
   const isHindi = currentLang === "hi";
@@ -75,7 +77,9 @@ export const CostAnomalyView: React.FC<CostAnomalyViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-red-600" />
-            {isHindi ? "लागत विसंगति एवं बेंचमार्क विश्लेषक" : "Cost Anomaly & Benchmark Intelligence"}
+            {currentRole === "District Authority"
+              ? (isHindi ? "उच्च लागत भविष्यवाणी ऑडिट" : "High Cost Prediction Audit")
+              : (isHindi ? "उच्च लागत भविष्यवाणी" : "High Cost Prediction Check")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi

@@ -21,7 +21,7 @@ import {
 } from "../types";
 
 // Configure API base URL from environment
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_API_URL || "https://mplads-backend-gateway.aditya93193.workers.dev/api";
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // milliseconds
 
@@ -151,14 +151,14 @@ export async function apiCall<T>(
     } catch (error) {
       lastError = error as ApiError;
 
-      // Determine if retryable
+      // Check if it's actually an ApiError with the method
       const isRetryable =
-        lastError.isNetworkError() ||
-        (lastError.isServerError() && lastError.status !== 503);
+        (lastError && typeof lastError.isNetworkError === 'function' && lastError.isNetworkError()) ||
+        (lastError && typeof lastError.isServerError === 'function' && lastError.isServerError() && lastError.status !== 503);
 
       if (!isRetryable || attempt >= retries) {
         clearTimeout(timeoutId);
-        console.error(`✗ [${lastError.status}] ${options.method || "GET"} ${endpoint}`, lastError.message);
+        console.error(`✗ [${lastError?.status || 'unknown'}] ${options.method || "GET"} ${endpoint}`, lastError?.message || error);
         throw lastError;
       }
 
@@ -237,12 +237,22 @@ export const projectApi = {
     if (filters?.page) params.append("page", String(filters.page));
     if (filters?.limit) params.append("limit", String(filters.limit));
 
-    return apiCall<{
-      data: WorkRecord[];
-      total: number;
-      page: number;
-      limit: number;
+    const res = await apiCall<{
+      data?: WorkRecord[];
+      projects?: WorkRecord[];
+      total?: number;
+      page?: number;
+      limit?: number;
     }>(`/data/projects?${params.toString()}`);
+
+    const projectsList = res.data || res.projects || [];
+    return {
+      data: projectsList,
+      projects: projectsList,
+      total: res.total || projectsList.length,
+      page: res.page || 1,
+      limit: res.limit || 50,
+    };
   },
 
   getById: async (projectId: string) => {
@@ -315,7 +325,8 @@ export const alertApi = {
     if (filters?.status) params.append("status", filters.status);
     if (filters?.severity) params.append("severity", filters.severity);
 
-    return apiCall<RiskAlert[]>(`/analysis/risks?${params.toString()}`);
+    const res = await apiCall<any>(`/analysis/risks?${params.toString()}`);
+    return Array.isArray(res) ? res : (res.data || res.alerts || res.risks || []);
   },
 
   getByProject: async (projectId: string) => {
@@ -397,7 +408,8 @@ export const auditApi = {
 
 export const stateApi = {
   getAll: async () => {
-    return apiCall<StateSummary[]>("/data/states");
+    const res = await apiCall<any>("/data/states");
+    return Array.isArray(res) ? res : (res.data || []);
   },
 
   getById: async (stateName: string) => {
@@ -407,7 +419,8 @@ export const stateApi = {
 
 export const districtApi = {
   getByState: async (stateName: string) => {
-    return apiCall<DistrictSummary[]>(`/data/districts/${stateName}`);
+    const res = await apiCall<any>(`/data/districts/${stateName}`);
+    return Array.isArray(res) ? res : (res.data || []);
   },
 
   getById: async (stateName: string, districtName: string) => {

@@ -26,7 +26,7 @@ import {
   FileSpreadsheet,
   IndianRupee,
 } from "lucide-react";
-import { StateSummary, WorkRecord, Language, RiskSeverity } from "../types";
+import { StateSummary, WorkRecord, Language, RiskSeverity, UserRole } from "../types";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { IndiaMap } from "../components/common/IndiaMap";
 import { formatCr, formatINR } from "../lib/utils";
@@ -41,6 +41,7 @@ interface MapIntelligenceViewProps {
   onNavigateToDistrict: (district: string) => void;
   onNavigateToMP: () => void;
   language?: Language;
+  currentRole?: UserRole;
 }
 
 // Extended MP Constituency & State Geospatial Dataset
@@ -252,6 +253,7 @@ export const MapIntelligenceView: React.FC<MapIntelligenceViewProps> = ({
   onNavigateToDistrict,
   onNavigateToMP,
   language = "en",
+  currentRole = "Ministry",
 }) => {
   const isHindi = language === "hi";
   const t = getTranslation(language as Language);
@@ -335,7 +337,11 @@ export const MapIntelligenceView: React.FC<MapIntelligenceViewProps> = ({
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
             <MapIcon className="w-6 h-6 text-[#1D4ED8]" />
-            {isHindi ? "राष्ट्रीय भौगोलिक जोखिम आसूचना" : "National Geographic & Constituency Map Intelligence"}
+            {currentRole === "Member of Parliament"
+              ? (isHindi ? "निर्वाचन क्षेत्र जीआईएस मानचित्र" : "Constituency GIS Map")
+              : currentRole === "Users"
+              ? (isHindi ? "इंटरएक्टिव जीआईएस मैप" : "Interactive GIS Project Map")
+              : (isHindi ? "राष्ट्रीय जीआईएस मानचित्र" : "National GIS Project Map")}
           </h1>
           <p className="text-xs text-slate-600">
             {isHindi
@@ -485,8 +491,10 @@ export const MapIntelligenceView: React.FC<MapIntelligenceViewProps> = ({
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-4">
           <IndiaMap
             states={states}
+            works={works}
             selectedState={selectedState}
             onSelectState={onSelectState}
+            onSelectWork={onSelectWork}
             mapHeight="560px"
             id="real-gis-map-intelligence"
           />
@@ -622,9 +630,9 @@ export const MapIntelligenceView: React.FC<MapIntelligenceViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {currentWorks.map((work) => (
+          {currentWorks.map((work, idx) => (
             <div
-              key={work.work_id}
+              key={`${work.work_id}-${idx}`}
               onClick={() => onSelectWork(work)}
               className="p-4 bg-slate-50/80 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 rounded-xl transition-all cursor-pointer group space-y-2"
             >

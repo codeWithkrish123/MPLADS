@@ -54,7 +54,7 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const roles: UserRole[] = ["Ministry", "Member of Parliament", "District Authority", "State Nodal Authority"];
+  const roles: UserRole[] = ["Ministry", "State Nodal Authority", "District Authority", "Member of Parliament", "Users"];
 
   return (
     <div className="w-full sticky top-0 z-50 flex flex-col bg-white shadow-md">
@@ -91,31 +91,6 @@ export const TopbarFixed: React.FC<TopbarFixedProps> = ({
 
         {/* Right: Accessibility & Links */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Font Size - Hidden on mobile */}
-          <button
-            onClick={() => {
-              if (fontSize === "small") onChangeFontSize("medium");
-              else if (fontSize === "medium") onChangeFontSize("large");
-              else onChangeFontSize("small");
-            }}
-            className="hidden md:flex items-center gap-1 hover:text-orange-400 transition-colors text-xs"
-            title={isHindi ? "फ़ॉन्ट आकार" : "Font Size"}
-          >
-            <Type className="w-4 h-4" />
-            <span>{fontSize === "small" ? "A-" : fontSize === "medium" ? "A" : "A+"}</span>
-          </button>
-
-          {/* Contrast - Hidden on mobile */}
-          <button
-            onClick={onToggleHighContrast}
-            className={`hidden md:flex items-center gap-1 transition-colors text-xs ${
-              isHighContrast ? "text-orange-400" : "hover:text-orange-400"
-            }`}
-            title={isHindi ? "कंट्रास्ट" : "Contrast"}
-          >
-            <Contrast className="w-4 h-4" />
-            <span>{isHindi ? "कंट्रास्ट" : "Contrast"}</span>
-          </button>
 
           {/* Language */}
           <button

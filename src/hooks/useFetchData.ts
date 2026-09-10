@@ -171,14 +171,37 @@ export function useFetchAlerts() {
 
 /**
  * Specialized hook for dashboard metrics
+ * Fetches real monitoring data from backend ML API
  */
 export function useFetchDashboardMetrics() {
-  const { dashboardService } = require('../services/analysisService');
+  const { mlApi } = require('../services/ml');
+  const { ResponseMappers } = require('../utils/ml-response-mappers');
 
   return useFetchData(
-    () => dashboardService.getSummary(),
+    async () => {
+      try {
+        // Fetch command center data from new ML API
+        const response = await mlApi.getMonitoringCommandCenter();
+        
+        // Map to dashboard format expected by component
+        return {
+          totalProjects: response.portfolioHealth?.totalProjects || 0,
+          activeProjects: response.portfolioHealth?.activeProjects || 0,
+          totalBudget: response.portfolioHealth?.totalBudget || 0,
+          totalExpenditure: response.portfolioHealth?.totalExpenditure || 0,
+          completionRate: response.portfolioHealth?.avgProgress || 0,
+          delayedProjects: response.riskDistribution?.HIGH || 0,
+          riskAlerts: response.riskDistribution?.CRITICAL || 0,
+          // Additional mapped data
+          commandCenter: response,
+        };
+      } catch (error) {
+        console.error('[useFetchDashboardMetrics] Error:', error);
+        throw error;
+      }
+    },
     {
-      refetchInterval: 30000, // Refresh every 30 seconds
+      refetchInterval: 30000, // Refresh every 30 seconds (cache TTL is 30s)
       retryCount: 3,
     }
   );
