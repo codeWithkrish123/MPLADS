@@ -201,18 +201,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <span>{isHindi ? "EN" : "हि"}</span>
               </button>
             )}
-            <a
-              href="/signup"
-              onClick={(e) => {
-                e.preventDefault();
-                window.history.pushState({}, "", "/signup");
-                window.dispatchEvent(new PopStateEvent("popstate"));
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-md shadow transition-colors cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>{isHindi ? "पंजीकरण" : "Sign Up"}</span>
-            </a>
             <button
               onClick={() => onSelectRole("Ministry")}
               className="flex items-center gap-2 px-4 py-2 bg-[#1B3A7A] hover:bg-[#142d63] text-white text-[13px] font-bold rounded-md shadow transition-colors cursor-pointer"
@@ -220,6 +208,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <User className="w-4 h-4" />
               <span>{isHindi ? "लॉगिन" : "Login"}</span>
             </button>
+
 
           </div>
 
@@ -357,18 +346,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span>{isHindi ? "डैशबोर्ड का अन्वेषण करें" : "Explore Dashboard"}</span>
                 </button>
 
-                <a
-                  href="/signup"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.history.pushState({}, "", "/signup");
-                    window.dispatchEvent(new PopStateEvent("popstate"));
-                  }}
-                  className="flex items-center gap-2.5 px-7 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[15px] rounded-xl shadow-lg transition-all duration-300 cursor-pointer"
-                >
-                  <UserPlus className="w-5 h-5 text-white" />
-                  <span>{isHindi ? "नागरिक पंजीकरण" : "Citizen Registration"}</span>
-                </a>
 
                 <button
                   onClick={() =>
