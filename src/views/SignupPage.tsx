@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import { Link, useNavigate } from "react-router-dom";
 import { Users, Landmark, MapPin, Award, CheckCircle2, ArrowRight } from "lucide-react";
 import { GovernmentCarousel } from "../components/common/GovernmentCarousel";
@@ -231,17 +232,15 @@ export const SignupPage: React.FC = () => {
                               setSelectedRole(role.id);
                             }
                           }}
-                          className={`p-3.5 rounded-lg border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between min-h-[92px] focus:outline-none focus:ring-2 focus:ring-blue-600 ${
-                            isSelected
+                          className={`p-3.5 rounded-lg border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between min-h-[92px] focus:outline-none focus:ring-2 focus:ring-blue-600 ${isSelected
                               ? "border-blue-600 bg-blue-50/70 ring-1 ring-blue-600 shadow-sm"
                               : "border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50/50"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <div
-                              className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
-                                isSelected ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"
-                              }`}
+                              className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${isSelected ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"
+                                }`}
                             >
                               <Icon className="w-4 h-4" />
                             </div>
@@ -271,9 +270,8 @@ export const SignupPage: React.FC = () => {
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
                     required
-                    className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${
-                      formErrors.fullName ? "border-red-500" : "border-slate-300"
-                    }`}
+                    className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${formErrors.fullName ? "border-red-500" : "border-slate-300"
+                      }`}
                   />
                   {formErrors.fullName && <p className="text-[11px] text-red-600">{formErrors.fullName}</p>}
                 </div>
@@ -291,9 +289,8 @@ export const SignupPage: React.FC = () => {
                       placeholder="10-digit mobile number"
                       maxLength={10}
                       required
-                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${
-                        formErrors.mobileNumber ? "border-red-500" : "border-slate-300"
-                      }`}
+                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${formErrors.mobileNumber ? "border-red-500" : "border-slate-300"
+                        }`}
                     />
                     {formErrors.mobileNumber && <p className="text-[11px] text-red-600">{formErrors.mobileNumber}</p>}
                   </div>
@@ -308,9 +305,8 @@ export const SignupPage: React.FC = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@example.gov.in"
                       required
-                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${
-                        formErrors.email ? "border-red-500" : "border-slate-300"
-                      }`}
+                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${formErrors.email ? "border-red-500" : "border-slate-300"
+                        }`}
                     />
                     {formErrors.email && <p className="text-[11px] text-red-600">{formErrors.email}</p>}
                   </div>
@@ -371,9 +367,8 @@ export const SignupPage: React.FC = () => {
                           : "e.g. District Collectorate / DM Official Code"
                       }
                       required
-                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${
-                        formErrors.officialId ? "border-red-500" : "border-slate-300"
-                      }`}
+                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${formErrors.officialId ? "border-red-500" : "border-slate-300"
+                        }`}
                     />
                     {formErrors.officialId && <p className="text-[11px] text-red-600">{formErrors.officialId}</p>}
                   </div>
@@ -392,9 +387,8 @@ export const SignupPage: React.FC = () => {
                       placeholder="Min 8 characters"
                       required
                       minLength={8}
-                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${
-                        formErrors.password ? "border-red-500" : "border-slate-300"
-                      }`}
+                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${formErrors.password ? "border-red-500" : "border-slate-300"
+                        }`}
                     />
                     {formErrors.password && <p className="text-[11px] text-red-600">{formErrors.password}</p>}
                   </div>
@@ -409,9 +403,8 @@ export const SignupPage: React.FC = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Re-enter password"
                       required
-                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${
-                        formErrors.confirmPassword ? "border-red-500" : "border-slate-300"
-                      }`}
+                      className={`w-full h-10 px-3 text-xs bg-white text-slate-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all ${formErrors.confirmPassword ? "border-red-500" : "border-slate-300"
+                        }`}
                     />
                     {formErrors.confirmPassword && (
                       <p className="text-[11px] text-red-600">{formErrors.confirmPassword}</p>
