@@ -18,8 +18,10 @@ export const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       <Route path="/" element={<App />} />
       <Route path="/login" element={<App />} />
+      <Route path="/signup" element={<App />} />
       <Route path="/contact" element={<App />} />
       <Route path="/role-selector" element={<App />} />
+
 
       {/* Main Dashboard Routes */}
       <Route path="/overview" element={<App />} />

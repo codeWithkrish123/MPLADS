@@ -45,6 +45,14 @@ export const ROUTE_CONFIG: Record<string, RouteConfig> = {
     labelHi: "साइन इन",
     requiresAuth: false,
   },
+  signup: {
+    path: "/signup",
+    name: "signup",
+    label: "Register",
+    labelHi: "पंजीकरण करें",
+    requiresAuth: false,
+  },
+
   contact: {
     path: "/contact",
     name: "contact",

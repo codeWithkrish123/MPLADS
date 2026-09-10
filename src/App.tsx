@@ -33,6 +33,7 @@ import { LandingPage } from "./views/LandingPage";
 import { LoginPage } from "./views/LoginPage";
 import { LoginModal } from "./components/auth/LoginModal";
 import { ContactPage } from "./views/ContactPage";
+import { SignupPage } from "./views/SignupPage";
 import { RoleSelectorPage } from "./views/RoleSelectorPage";
 import { NationalOverviewView } from "./views/NationalOverviewView";
 import { isViewAllowedForRole } from "./config/rolePermissions";
@@ -228,6 +229,7 @@ export default function App() {
     const pathMap: Record<string, string> = {
       "/": "landing",
       "/login": "login",
+      "/signup": "signup",
       "/contact": "contact",
       "/role-selector": "roleSelector",
       "/overview": "overview",
@@ -267,7 +269,7 @@ export default function App() {
     const viewName = urlToViewName(pathname);
 
     // PROTECTION: If not authenticated and trying to access protected route, redirect to landing
-    const publicRoutes = ["landing", "login", "contact", "roleSelector"];
+    const publicRoutes = ["landing", "login", "signup", "contact", "roleSelector"];
     const isPublicRoute = publicRoutes.includes(viewName);
     
     // Wait for auth to finish loading before checking authentication status
@@ -548,7 +550,7 @@ export default function App() {
   }
 
   // Show loading spinner while validating authentication on app init
-  if (authLoading && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/' && location.pathname !== '/contact' && location.pathname !== '/role-selector') {
+  if (authLoading && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/signup' && location.pathname !== '/' && location.pathname !== '/contact' && location.pathname !== '/role-selector') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
@@ -563,6 +565,10 @@ export default function App() {
 
   if (currentView === "contact") {
     return <ContactPage language={language} />;
+  }
+
+  if (currentView === "signup") {
+    return <SignupPage />;
   }
 
   // Dedicated Login Gateway View (/login or /role-selector)

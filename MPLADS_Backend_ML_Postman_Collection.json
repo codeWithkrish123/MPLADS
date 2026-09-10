@@ -1,0 +1,401 @@
+{
+  "info": {
+    "_postman_id": "mplads-backend-ml-system-v2",
+    "name": "MPLADS Sentinel - Complete Backend & ML Integration API",
+    "description": "Comprehensive Postman collection for testing all MPLADS Express Backend APIs, PostgreSQL database records, Redis Caching, and Live Render ML Integration Engine.\n\nBase URLs:\n- Local Express Backend: http://localhost:8080\n- Cloudflare Workers Gateway: https://mplads-backend-gateway.aditya93193.workers.dev\n- Live Render ML Engine: https://sih-2026-23oy.onrender.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "workersUrl",
+      "value": "https://mplads-backend-gateway.aditya93193.workers.dev",
+      "type": "string"
+    },
+    {
+      "key": "mlEngineUrl",
+      "value": "https://sih-2026-23oy.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication APIs",
+      "item": [
+        {
+          "name": "GovID Role Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.mospi@nic.in\",\n  \"password\": \"password\",\n  \"role\": \"ministry\",\n  \"department\": \"Ministry of Statistics\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login-with-role",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login-with-role"]
+            },
+            "description": "Authenticate user with email, password, and role selection. Auto-creates account if first login."
+          }
+        },
+        {
+          "name": "Standard Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin.mospi@nic.in\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Standard login returning JWT access token."
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Validates active JWT token and returns authenticated user profile."
+          }
+        },
+        {
+          "name": "Request OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@nic.in\",\n  \"channel\": \"email\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/otp/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "otp", "request"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Roles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "roles"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Data & Portfolio APIs",
+      "item": [
+        {
+          "name": "Get All Projects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/data/projects?page=1&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "data", "projects"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "50" }
+              ]
+            },
+            "description": "Retrieves work records from PostgreSQL database works table."
+          }
+        },
+        {
+          "name": "Filter Projects by State",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/data/projects/filter?state_id=UP",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "data", "projects", "filter"],
+              "query": [
+                { "key": "state_id", "value": "UP" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Project by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/data/projects/WK-2026-00146",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "data", "projects", "WK-2026-00146"]
+            }
+          }
+        },
+        {
+          "name": "Get State Summary List",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/data/states",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "data", "states"]
+            }
+          }
+        },
+        {
+          "name": "Search Projects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/data/search?q=road",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "data", "search"],
+              "query": [
+                { "key": "q", "value": "road" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get National Dashboard Metrics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/national",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "national"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. ML Integration & Risk Intelligence APIs",
+      "item": [
+        {
+          "name": "Real-Time Single Project Analysis (ML Engine)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"work_id\": \"WS/MP203/2023-2024/10748\",\n  \"state\": \"DL\",\n  \"district\": \"Delhi North\",\n  \"house\": \"Lok Sabha\",\n  \"work_category\": \"Community Infrastructure\",\n  \"sanctioned_amount\": 2500000,\n  \"total_expenditure\": 2650000,\n  \"work_description\": \"Construction of Community Hall at Village Rampur under MPLADS\",\n  \"work_status\": \"in_progress\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/project",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "project"]
+            },
+            "description": "Sends project data to Live Render ML Engine (https://sih-2026-23oy.onrender.com) and returns 5-factor risk score, signals, and actionable recommendations."
+          }
+        },
+        {
+          "name": "Get Anomaly Detection Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/anomalies?type=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "anomalies"],
+              "query": [
+                { "key": "type", "value": "all" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Delay Analysis Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/delay-analysis?minDays=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "delay-analysis"],
+              "query": [
+                { "key": "minDays", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Risk Assessment (Project Specific)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/risk-assessment?projectId=WK-2026-00146",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "risk-assessment"],
+              "query": [
+                { "key": "projectId", "value": "WK-2026-00146" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Fraud Detection Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/fraud-detection",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "fraud-detection"]
+            }
+          }
+        },
+        {
+          "name": "Get All Risk Alerts (Alert Center)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/risks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "risks"]
+            },
+            "description": "Evaluates database works against ML risk scoring engine and returns risk alerts for frontend AlertCenterView."
+          }
+        },
+        {
+          "name": "POST Predict Delays (ML Service)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"work_id\": \"WK-2026-00146\",\n  \"state_id\": \"UP\",\n  \"sanctioned_amount\": 1500000,\n  \"total_expenditure\": 750000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/analysis/predict-delays",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analysis", "predict-delays"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Audit Logs & System Health APIs",
+      "item": [
+        {
+          "name": "Log Activity Audit Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"POSTMAN_AUDIT_TEST\",\n  \"details\": {\n    \"source\": \"Postman API Test\",\n    \"verified\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/audit-logs/log",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit-logs", "log"]
+            }
+          }
+        },
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/audit-logs?limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "audit-logs"],
+              "query": [
+                { "key": "limit", "value": "50" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Health Check Endpoint",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Direct Live Render ML API Endpoints",
+      "item": [
+        {
+          "name": "Render ML Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{mlEngineUrl}}/health",
+              "host": ["{{mlEngineUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Render ML OpenAPI JSON Spec",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{mlEngineUrl}}/openapi.json",
+              "host": ["{{mlEngineUrl}}"],
+              "path": ["openapi.json"]
+            }
+          }
+        },
+        {
+          "name": "Direct Render ML Analyze Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"work_id\": \"WS/MP203/2023-2024/10748\",\n  \"state\": \"DL\",\n  \"district\": \"Delhi North\",\n  \"house\": \"Lok Sabha\",\n  \"work_category\": \"Community Infrastructure\",\n  \"sanctioned_amount\": 2500000,\n  \"total_expenditure\": 2650000,\n  \"work_description\": \"Construction of Community Hall at Village Rampur\",\n  \"work_status\": \"in_progress\"\n}"
+            },
+            "url": {
+              "raw": "{{mlEngineUrl}}/api/analysis/project",
+              "host": ["{{mlEngineUrl}}"],
+              "path": ["api", "analysis", "project"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
