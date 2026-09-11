@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-
 import { Link, useNavigate } from "react-router-dom";
 import { Users, Landmark, MapPin, Award, CheckCircle2, ArrowRight } from "lucide-react";
 import { GovernmentCarousel } from "../components/common/GovernmentCarousel";
 import { CaptchaInput } from "../components/common/CaptchaInput";
 import { INDIAN_STATES_AND_CONSTITUENCIES, ALL_INDIAN_STATES } from "../data/indianStatesAndConstituencies";
+import emblemOfIndia from "../assets/images/Emblem_of_India.svg";
 
 export type SignupRole = "Public Citizen" | "Ministry Official" | "District Authority" | "Member of Parliament";
 
@@ -152,8 +152,8 @@ export const SignupPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top 4px Gradient Bar */}
-      <div className="h-[4px] w-full bg-gradient-to-r from-[#2563EB] via-[#7C3AED] to-[#16A34A] shrink-0 z-50" />
+      {/* Top Authentic Indian Tricolor Accent Strip (Saffron, White, Green) */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-[#FF9933] via-white to-[#138808] shrink-0 z-50 shadow-sm" />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto">
@@ -173,20 +173,35 @@ export const SignupPage: React.FC = () => {
         {/* RIGHT PANEL — SIGNUP FORM (~55% Width Desktop) */}
         <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-8 md:p-12 bg-white">
           <div className="w-full max-w-xl space-y-6">
-            {/* Header */}
-            <div>
+            {/* Government Official Header Badge & Title */}
+            <div className="space-y-2 border-b border-slate-100 pb-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <img src={emblemOfIndia} alt="National Emblem of India" className="h-7 w-auto object-contain" />
+                  <span className="px-2.5 py-1 bg-slate-100 border border-slate-200 text-[#0B3D91] text-[10px] font-extrabold rounded font-mono uppercase tracking-wider">
+                    NATIONAL E-GOVERNANCE GATEWAY
+                  </span>
+                </div>
+                {/* Micro Tricolor Pill */}
+                <div className="flex h-1.5 w-8 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                  <div className="flex-1 bg-[#FF9933]" />
+                  <div className="flex-1 bg-white" />
+                  <div className="flex-1 bg-[#138808]" />
+                </div>
+              </div>
               <h2
-                className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight"
+                className="text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight pt-1"
                 style={{ fontFamily: "'Lora', serif" }}
               >
                 Citizen Registration
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1 font-sans">
-                Select your role to continue.
+              <p className="text-xs sm:text-sm text-slate-500 font-sans">
+                Select your role to register on the official e-SAKSHI MPLADS portal.
               </p>
             </div>
 
             {/* Registration Success Banner */}
+
             {submitSuccess ? (
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 text-center space-y-4 animate-fadeIn">
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">

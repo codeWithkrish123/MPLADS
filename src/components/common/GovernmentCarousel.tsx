@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, CheckCircle2, MapPin, Phone, Mail, Clock } from "lucide-react";
+import emblemOfIndia from "../../assets/images/Emblem_of_India.svg";
 
 export interface CarouselSlide {
   id: string;
@@ -162,7 +163,7 @@ export const GovernmentCarousel: React.FC<GovernmentCarouselProps> = ({
       <div
         className="absolute inset-0 z-20 pointer-events-none"
         style={{
-          background: "linear-gradient(180deg, rgba(11, 31, 77, 0.65) 0%, rgba(10, 49, 112, 0.90) 100%)"
+          background: "linear-gradient(180deg, rgba(11, 31, 77, 0.70) 0%, rgba(10, 49, 112, 0.92) 100%)"
         }}
       />
 
@@ -171,24 +172,41 @@ export const GovernmentCarousel: React.FC<GovernmentCarouselProps> = ({
 
       {/* Foreground Content Container */}
       <div className="relative z-30 flex flex-col justify-between h-full p-6 sm:p-8 md:p-10 text-white">
-        {/* Top Header: Badge + Label + Main Heading */}
+        {/* Top Header: National Emblem + Government Badge & Portal Title */}
         <div className="space-y-6">
-          {/* Badge & Portal Label */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-white text-[#0B3D91] flex items-center justify-center font-bold text-xs tracking-wider shadow-md border border-white/20">
-              IN
-            </div>
-            <div>
-              <span className="text-[11px] font-semibold tracking-widest text-blue-200 uppercase block">
-                GOVERNMENT OF INDIA
+          <div className="flex items-center gap-3.5 bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/15 shadow-lg max-w-max">
+            {/* National Emblem of India with Saffron Motto */}
+            <div className="flex flex-col items-center justify-center shrink-0 pr-1.5 border-r border-white/20">
+              <img
+                src={emblemOfIndia}
+                alt="National Emblem of India"
+                className="h-9 w-auto object-contain filter brightness-0 invert"
+              />
+              <span className="text-[7px] font-extrabold tracking-widest text-[#FF9933] mt-0.5 uppercase">
+                सत्यमेव जयते
               </span>
-              <span className="text-xs font-bold tracking-wider text-white uppercase block">
-                MPLADS PORTAL
+            </div>
+
+            {/* Official Title & Tricolor Indicator Strip */}
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold tracking-widest text-[#93C5FD] uppercase block">
+                  GOVERNMENT OF INDIA
+                </span>
+                {/* Micro Tricolor Pill */}
+                <div className="flex h-1.5 w-6 rounded-full overflow-hidden shrink-0 border border-white/20">
+                  <div className="flex-1 bg-[#FF9933]" />
+                  <div className="flex-1 bg-white" />
+                  <div className="flex-1 bg-[#138808]" />
+                </div>
+              </div>
+              <span className="text-xs font-black tracking-wider text-white uppercase block mt-0.5">
+                MPLADS PORTAL <span className="text-[10px] font-normal text-slate-300 font-mono">(e-SAKSHI)</span>
               </span>
             </div>
           </div>
 
-          {/* Dynamic Serif Heading & Subtext */}
+          {/* Dynamic Serif Heading & Subtext with Tricolor Line Accent */}
           <div className="max-w-md pt-2 space-y-3">
             <h1
               className="text-2xl sm:text-[28px] font-semibold text-white leading-tight"
@@ -196,11 +214,20 @@ export const GovernmentCarousel: React.FC<GovernmentCarouselProps> = ({
             >
               {heading}
             </h1>
+
+            {/* Elegant Tricolor Accent Bar */}
+            <div className="flex h-1 w-24 rounded-full overflow-hidden shadow-sm my-2">
+              <div className="flex-1 bg-[#FF9933]" />
+              <div className="flex-1 bg-white" />
+              <div className="flex-1 bg-[#138808]" />
+            </div>
+
             <p className="text-[13px] text-[#C9D6EC] leading-relaxed font-sans font-normal">
               {description}
             </p>
           </div>
         </div>
+
 
         {/* Bottom Panel: Trust Points / Contact Details + Pagination Dots */}
         <div className="space-y-6 pt-8 border-t border-white/10">
