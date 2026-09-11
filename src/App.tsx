@@ -277,6 +277,16 @@ export default function App() {
       return; // Don't navigate yet, still validating token
     }
     
+    // PROTECTION: If authenticated and trying to access login/signup, redirect to dashboard
+    if (isAuthenticated && (viewName === "login" || viewName === "signup" || viewName === "roleSelector")) {
+      const targetView = currentRole === "Users" ? "workMonitoring" : "overview";
+      const targetPath = currentRole === "Users" ? "/work-monitoring" : "/overview";
+      console.log(`[App] Session active: Redirecting authenticated user from ${viewName} to ${targetView}`);
+      setCurrentView(targetView);
+      navigate(targetPath, { replace: true });
+      return;
+    }
+
     if (!isAuthenticated && !isPublicRoute) {
       // User not logged in but trying to access protected route (e.g., /overview)
       // Force redirect to landing page
@@ -285,6 +295,7 @@ export default function App() {
       navigate("/", { replace: true });
       return;
     }
+
 
     // Only update if different to avoid infinite loops
     if (viewName !== currentView) {

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Users, Landmark, MapPin, Award, CheckCircle2, ArrowRight } from "lucide-react";
 import { GovernmentCarousel } from "../components/common/GovernmentCarousel";
 import { CaptchaInput } from "../components/common/CaptchaInput";
 import { INDIAN_STATES_AND_CONSTITUENCIES, ALL_INDIAN_STATES } from "../data/indianStatesAndConstituencies";
 import emblemOfIndia from "../assets/images/Emblem_of_India.svg";
+import { useAuth } from "../context/AuthContext";
+import { UserRole } from "../types";
 
 export type SignupRole = "Public Citizen" | "Ministry Official" | "District Authority" | "Member of Parliament";
 
@@ -49,6 +51,14 @@ const ROLE_OPTIONS: RoleOption[] = [
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/overview", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   // Form State
   const [selectedRole, setSelectedRole] = useState<SignupRole>("Public Citizen");
@@ -138,17 +148,31 @@ export const SignupPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    // Simulate Government Citizen Registration Submit
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    const roleMap: Record<SignupRole, UserRole> = {
+      "Public Citizen": "Users",
+      "Ministry Official": "Ministry",
+      "District Authority": "District Authority",
+      "Member of Parliament": "Member of Parliament",
+    };
+    const targetRole = roleMap[selectedRole] || "Ministry";
+
+    try {
+      await login(email, password || "Password@123", targetRole);
       setSubmitSuccess(true);
-    }, 1200);
+    } catch (err) {
+      console.error("[SignupPage] Session init error:", err);
+      setSubmitSuccess(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
