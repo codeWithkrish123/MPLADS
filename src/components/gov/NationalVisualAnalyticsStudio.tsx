@@ -81,12 +81,27 @@ export const NationalVisualAnalyticsStudio: React.FC<NationalVisualAnalyticsStud
   }, [selectedHouse]);
 
   // 2. Risk Stratification Pie Data
-  const riskDistributionData = [
-    { name: "Low Risk (0-30)", value: 9480, percentage: 73.8, color: "#10B981", label: "Low Risk" },
-    { name: "Moderate Risk (31-60)", value: 2114, percentage: 16.5, color: "#F97316", label: "Moderate" },
-    { name: "High Risk (61-80)", value: 1161, percentage: 9.0, color: "#EF4444", label: "High Risk" },
-    { name: "Critical (81-100)", value: 87, percentage: 0.7, color: "#991B1B", label: "Critical" },
-  ];
+  const riskDistributionData = useMemo(() => {
+    if (works && works.length > 0) {
+      const low = works.filter(w => (w.risk_score || 0) <= 30).length;
+      const mod = works.filter(w => (w.risk_score || 0) > 30 && (w.risk_score || 0) <= 60).length;
+      const high = works.filter(w => (w.risk_score || 0) > 60 && (w.risk_score || 0) <= 80).length;
+      const crit = works.filter(w => (w.risk_score || 0) > 80 || w.risk_category === "CRITICAL").length;
+      const total = works.length;
+      return [
+        { name: "Low Risk (0-30)", value: low, percentage: parseFloat(((low / total) * 100).toFixed(1)), color: "#10B981", label: "Low Risk" },
+        { name: "Moderate Risk (31-60)", value: mod, percentage: parseFloat(((mod / total) * 100).toFixed(1)), color: "#F97316", label: "Moderate" },
+        { name: "High Risk (61-80)", value: high, percentage: parseFloat(((high / total) * 100).toFixed(1)), color: "#EF4444", label: "High Risk" },
+        { name: "Critical (81-100)", value: crit, percentage: parseFloat(((crit / total) * 100).toFixed(1)), color: "#991B1B", label: "Critical" },
+      ];
+    }
+    return [
+      { name: "Low Risk (0-30)", value: 9480, percentage: 73.8, color: "#10B981", label: "Low Risk" },
+      { name: "Moderate Risk (31-60)", value: 2114, percentage: 16.5, color: "#F97316", label: "Moderate" },
+      { name: "High Risk (61-80)", value: 1161, percentage: 9.0, color: "#EF4444", label: "High Risk" },
+      { name: "Critical (81-100)", value: 87, percentage: 0.7, color: "#991B1B", label: "Critical" },
+    ];
+  }, [works]);
 
   // 3. Public Amenities Sector Data
   const amenitiesSectorData = [

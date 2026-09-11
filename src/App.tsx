@@ -9,8 +9,8 @@ import { useAuth } from "./context/AuthContext";
 import { getRoutePath } from "./routes/routeConfig";
 
 // API Service Layer
-import { 
-  alertApi, 
+import {
+  alertApi,
 } from "./services/api";
 
 // Data Fetching Hooks
@@ -71,11 +71,11 @@ export default function App() {
   const { isAuthenticated, user, role, logout, login, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Show loading spinner while validating authentication on app init
   // BUT: We must render this AFTER hooks, not BEFORE!
   // So we'll use a conditional return INSIDE state/effects
-  
+
   // Navigation State - MUST be before any conditional returns
   const [currentView, setCurrentView] = useState<string>("landing");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
@@ -123,13 +123,13 @@ export default function App() {
     },
   ]);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
-  
+
   // Data Loading States
   const [isLoadingAlerts, setIsLoadingAlerts] = useState<boolean>(false);
   const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState<boolean>(false);
   const [alertsError, setAlertsError] = useState<string | null>(null);
   const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
-  
+
   // Accessibility Control States
   const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
   const [isHighContrast, setIsHighContrast] = useState<boolean>(false);
@@ -139,9 +139,9 @@ export default function App() {
   // MUST call useRealTimeData unconditionally (React Rules of Hooks)
   // The hook itself handles conditional fetching based on authentication
   const realTimeHookResult = useRealTimeData();
-  
+
   const [realTimeData, setRealTimeData] = useState({ works: [], states: [], districts: [] });
-  
+
   // Update real-time data when hook returns results
   useEffect(() => {
     if (realTimeHookResult?.works && realTimeHookResult.works.length > 0) {
@@ -153,12 +153,12 @@ export default function App() {
       });
     }
   }, [realTimeHookResult?.works?.length, realTimeHookResult?.states?.length]);
-  
+
   // Extract data from state or direct hook result
   const realWorks = realTimeData.works.length > 0 ? realTimeData.works : (realTimeHookResult?.works || []);
   const realStates = realTimeData.states.length > 0 ? realTimeData.states : (realTimeHookResult?.states || []);
   const districts = realTimeData.districts.length > 0 ? realTimeData.districts : (realTimeHookResult?.districts || []);
-  
+
   // Only fetch projects if authenticated (skip if not logged in)
   const { data: projectsData, loading: projectsLoading, error: projectsError, refetch: refetchProjects } = useFetchProjects();
   const [projects, setProjects] = useState<WorkRecord[]>([]);
@@ -271,20 +271,10 @@ export default function App() {
     // PROTECTION: If not authenticated and trying to access protected route, redirect to landing
     const publicRoutes = ["landing", "login", "signup", "contact", "roleSelector"];
     const isPublicRoute = publicRoutes.includes(viewName);
-    
+
     // Wait for auth to finish loading before checking authentication status
     if (authLoading) {
       return; // Don't navigate yet, still validating token
-    }
-    
-    // PROTECTION: If authenticated and trying to access login/signup, redirect to dashboard
-    if (isAuthenticated && (viewName === "login" || viewName === "signup" || viewName === "roleSelector")) {
-      const targetView = currentRole === "Users" ? "workMonitoring" : "overview";
-      const targetPath = currentRole === "Users" ? "/work-monitoring" : "/overview";
-      console.log(`[App] Session active: Redirecting authenticated user from ${viewName} to ${targetView}`);
-      setCurrentView(targetView);
-      navigate(targetPath, { replace: true });
-      return;
     }
 
     if (!isAuthenticated && !isPublicRoute) {
@@ -295,7 +285,6 @@ export default function App() {
       navigate("/", { replace: true });
       return;
     }
-
 
     // Only update if different to avoid infinite loops
     if (viewName !== currentView) {
@@ -392,7 +381,7 @@ export default function App() {
       minute: "2-digit",
       second: "2-digit",
     });
-    const randomHash = "SHA256:" + Array.from({ length: 64 }, () => 
+    const randomHash = "SHA256:" + Array.from({ length: 64 }, () =>
       "0123456789abcdef"[Math.floor(Math.random() * 16)]
     ).join("");
 
@@ -423,21 +412,21 @@ export default function App() {
       minute: "2-digit",
       second: "2-digit",
     });
-    
-    const randomHash = "SHA256:" + Array.from({ length: 64 }, () => 
+
+    const randomHash = "SHA256:" + Array.from({ length: 64 }, () =>
       "0123456789abcdef"[Math.floor(Math.random() * 16)]
     ).join("");
 
     const newLog: AuditLogEntry = {
       id: `AUD-ATTEST-${Date.now().toString().slice(-4)}`,
       timestamp,
-      user: currentRole === "Ministry" 
-        ? "Dr. K. S. Murthy (Director, Monitoring)" 
+      user: currentRole === "Ministry"
+        ? "Dr. K. S. Murthy (Director, Monitoring)"
         : currentRole === "District Authority"
-        ? `District Magistrate, ${currentDistrict}`
-        : currentRole === "State Nodal Authority"
-        ? `State Nodal Officer (${currentState})`
-        : `Member of Parliament (${currentDistrict})`,
+          ? `District Magistrate, ${currentDistrict}`
+          : currentRole === "State Nodal Authority"
+            ? `State Nodal Officer (${currentState})`
+            : `Member of Parliament (${currentDistrict})`,
       role: currentRole,
       action: "Certified & Attested",
       entity: `Work Attestation (${work.work_id})`,
@@ -493,18 +482,18 @@ export default function App() {
   const handleRoleSelection = (role: UserRole) => {
     setCurrentRole(role);
     setIsLoginModalOpen(false);
-    
+
     // Select mock credentials for the chosen role
-    const mockEmail = role === "Member of Parliament" 
+    const mockEmail = role === "Member of Parliament"
       ? "mp.constituency@sansad.nic.in"
       : role === "District Authority"
-      ? "dm.ghaziabad@nic.in"
-      : role === "Users"
-      ? "citizen.public@nic.in"
-      : "admin.mospi@nic.in";
-    
+        ? "dm.ghaziabad@nic.in"
+        : role === "Users"
+          ? "citizen.public@nic.in"
+          : "admin.mospi@nic.in";
+
     const mockPassword = "password123";
-    
+
     // Call login to set authentication state
     login(mockEmail, mockPassword, role).then((success) => {
       if (success) {
@@ -704,8 +693,8 @@ export default function App() {
                         currentRole === "Member of Parliament"
                           ? "mpDashboard"
                           : currentRole === "District Authority"
-                          ? "districtIntel"
-                          : "overview"
+                            ? "districtIntel"
+                            : "overview"
                       )
                     }
                     className="px-6 py-2.5 bg-[#0B3B7B] hover:bg-[#082d61] text-white text-xs font-bold rounded-lg transition-all shadow-sm cursor-pointer"
@@ -717,224 +706,224 @@ export default function App() {
             ) : (
               <>
                 {currentView === "overview" && (
-              <NationalOverviewView
-                states={realStates && realStates.length > 0 ? realStates : []}
-                works={projects}
-                selectedState={currentState}
-                onSelectState={handleSelectStateDrilldown}
-                onSelectWork={handleOpenWorkDetail}
-                onNavigateToWorks={() => navigateTo("works")}
-                onNavigateToAlerts={() => navigateTo("alerts")}
-                language={language}
-                selectedDistrict={currentDistrict}
-                onAddGrievanceAlert={handleAddGrievanceAlert}
-                currentRole={currentRole}
-              />
-            )}
+                  <NationalOverviewView
+                    states={realStates && realStates.length > 0 ? realStates : []}
+                    works={projects}
+                    selectedState={currentState}
+                    onSelectState={handleSelectStateDrilldown}
+                    onSelectWork={handleOpenWorkDetail}
+                    onNavigateToWorks={() => navigateTo("works")}
+                    onNavigateToAlerts={() => navigateTo("alerts")}
+                    language={language}
+                    selectedDistrict={currentDistrict}
+                    onAddGrievanceAlert={handleAddGrievanceAlert}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "stateIntel" && (
-              <StateIntelligenceView
-                districts={derivedDistricts}
-                selectedState={currentState}
-                onChangeState={handleSelectStateDrilldown}
-                onSelectDistrict={handleSelectDistrictDrilldown}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "stateIntel" && (
+                  <StateIntelligenceView
+                    districts={derivedDistricts}
+                    selectedState={currentState}
+                    onChangeState={handleSelectStateDrilldown}
+                    onSelectDistrict={handleSelectDistrictDrilldown}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "districtIntel" && (
-              <DistrictDashboardView
-                districtName={currentDistrict}
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                onBackToState={() => navigateTo("stateIntel")}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "districtIntel" && (
+                  <DistrictDashboardView
+                    districtName={currentDistrict}
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    onBackToState={() => navigateTo("stateIntel")}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "works" && (
-              <WorkIntelligenceTableView
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "works" && (
+                  <WorkIntelligenceTableView
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "workMonitoring" && (
-              <WorkMonitoringView
-                language={language}
-                onSelectWork={handleOpenWorkDetail}
-              />
-            )}
+                {currentView === "workMonitoring" && (
+                  <WorkMonitoringView
+                    language={language}
+                    onSelectWork={handleOpenWorkDetail}
+                  />
+                )}
 
-            {currentView === "customDataset" && (
-              <CustomDatasetView
-                onOpenWorkDetail={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "customDataset" && (
+                  <CustomDatasetView
+                    onOpenWorkDetail={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "alerts" && (
-              <AlertCenterView
-                alerts={alerts}
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "alerts" && (
+                  <AlertCenterView
+                    alerts={alerts}
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "map" && (
-              <MapIntelligenceView
-                states={[]}
-                works={projects}
-                selectedState={currentState}
-                onSelectState={handleSelectStateDrilldown}
-                onSelectWork={handleOpenWorkDetail}
-                onNavigateToDistrict={handleSelectDistrictDrilldown}
-                onNavigateToMP={() => navigateTo("mpDashboard")}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "map" && (
+                  <MapIntelligenceView
+                    states={[]}
+                    works={projects}
+                    selectedState={currentState}
+                    onSelectState={handleSelectStateDrilldown}
+                    onSelectWork={handleOpenWorkDetail}
+                    onNavigateToDistrict={handleSelectDistrictDrilldown}
+                    onNavigateToMP={() => navigateTo("mpDashboard")}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "costAnomaly" && (
-              <CostAnomalyView
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "costAnomaly" && (
+                  <CostAnomalyView
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "duplicate" && (
-              <DuplicateDetectionView
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "duplicate" && (
+                  <DuplicateDetectionView
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "expenditure" && (
-              <ExpenditureProgressView
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "expenditure" && (
+                  <ExpenditureProgressView
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "delay" && (
-              <DelayPredictionView
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "delay" && (
+                  <DelayPredictionView
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "compliance" && (
-              <ComplianceCenterView
-                rules={complianceRules}
-                onOpenPolicy={() => navigateTo("policy")}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "compliance" && (
+                  <ComplianceCenterView
+                    rules={complianceRules}
+                    onOpenPolicy={() => navigateTo("policy")}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "policy" && (
-              <PolicyKnowledgeView rules={complianceRules} language={language} currentRole={currentRole} />
-            )}
+                {currentView === "policy" && (
+                  <PolicyKnowledgeView rules={complianceRules} language={language} currentRole={currentRole} />
+                )}
 
-            {currentView === "aiAssistant" && (
-              <AIAssistantView
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "aiAssistant" && (
+                  <AIAssistantView
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "mpDashboard" && (
-              <MPDashboardView
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "mpDashboard" && (
+                  <MPDashboardView
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "stateNodal" && (
-              <StateNodalDashboardView
-                districts={derivedDistricts}
-                onSelectDistrict={handleSelectDistrictDrilldown}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "stateNodal" && (
+                  <StateNodalDashboardView
+                    districts={derivedDistricts}
+                    onSelectDistrict={handleSelectDistrictDrilldown}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "agencies" && (
-              <AgencyRiskView
-                agencies={[]}
-                works={projects}
-                onSelectWork={handleOpenWorkDetail}
-                language={language}
-                currentRole={currentRole}
-              />
-            )}
+                {currentView === "agencies" && (
+                  <AgencyRiskView
+                    agencies={[]}
+                    works={projects}
+                    onSelectWork={handleOpenWorkDetail}
+                    language={language}
+                    currentRole={currentRole}
+                  />
+                )}
 
-            {currentView === "auditLogs" && (
-              <AuditLogView logs={auditLogs} language={language} currentRole={currentRole} />
-            )}
+                {currentView === "auditLogs" && (
+                  <AuditLogView logs={auditLogs} language={language} currentRole={currentRole} />
+                )}
 
-            {currentView === "userDashboard" && (
-              <UserDashboard />
-            )}
+                {currentView === "userDashboard" && (
+                  <UserDashboard />
+                )}
 
-            {currentView === "userNotifications" && (
-              <UserNotifications />
-            )}
+                {currentView === "userNotifications" && (
+                  <UserNotifications />
+                )}
 
-            {currentView === "liveCommand" && (
-              <LiveCommandView
-                language={language}
-                onSelectWork={handleOpenWorkDetail}
-              />
-            )}
+                {currentView === "liveCommand" && (
+                  <LiveCommandView
+                    language={language}
+                    onSelectWork={handleOpenWorkDetail}
+                  />
+                )}
 
-            {currentView === "labour" && (
-              <LabourIntelligenceView
-                language={language}
-                onSelectWork={handleOpenWorkDetail}
-              />
-            )}
+                {currentView === "labour" && (
+                  <LabourIntelligenceView
+                    language={language}
+                    onSelectWork={handleOpenWorkDetail}
+                  />
+                )}
 
-            {currentView === "ghostVerification" && (
-              <GhostVerificationView
-                language={language}
-                onSelectWork={handleOpenWorkDetail}
-              />
-            )}
+                {currentView === "ghostVerification" && (
+                  <GhostVerificationView
+                    language={language}
+                    onSelectWork={handleOpenWorkDetail}
+                  />
+                )}
 
-            {currentView === "caseManagement" && (
-              <CaseManagementView
-                language={language}
-                onSelectWork={handleOpenWorkDetail}
-              />
-            )}
+                {currentView === "caseManagement" && (
+                  <CaseManagementView
+                    language={language}
+                    onSelectWork={handleOpenWorkDetail}
+                  />
+                )}
 
-            {currentView === "scenarioSimulation" && (
-              <ScenarioSimulationView
-                language={language}
-              />
-            )}
+                {currentView === "scenarioSimulation" && (
+                  <ScenarioSimulationView
+                    language={language}
+                  />
+                )}
 
-            {currentView === "contact" && (
-              <ContactPage language={language} />
-            )}
+                {currentView === "contact" && (
+                  <ContactPage language={language} />
+                )}
               </>
             )}
           </div>

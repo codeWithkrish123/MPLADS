@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Users, Landmark, MapPin, Award, CheckCircle2, ArrowRight } from "lucide-react";
 import { GovernmentCarousel } from "../components/common/GovernmentCarousel";
 import { CaptchaInput } from "../components/common/CaptchaInput";
 import { INDIAN_STATES_AND_CONSTITUENCIES, ALL_INDIAN_STATES } from "../data/indianStatesAndConstituencies";
 import emblemOfIndia from "../assets/images/Emblem_of_India.svg";
-import { useAuth } from "../context/AuthContext";
-import { UserRole } from "../types";
 
 export type SignupRole = "Public Citizen" | "Ministry Official" | "District Authority" | "Member of Parliament";
 
@@ -51,14 +49,6 @@ const ROLE_OPTIONS: RoleOption[] = [
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
-
-  // Redirect if user is already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/overview", { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
 
   // Form State
   const [selectedRole, setSelectedRole] = useState<SignupRole>("Public Citizen");
@@ -148,31 +138,17 @@ export const SignupPage: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-
-    const roleMap: Record<SignupRole, UserRole> = {
-      "Public Citizen": "Users",
-      "Ministry Official": "Ministry",
-      "District Authority": "District Authority",
-      "Member of Parliament": "Member of Parliament",
-    };
-    const targetRole = roleMap[selectedRole] || "Ministry";
-
-    try {
-      await login(email, password || "Password@123", targetRole);
-      setSubmitSuccess(true);
-    } catch (err) {
-      console.error("[SignupPage] Session init error:", err);
-      setSubmitSuccess(true);
-    } finally {
+    // Simulate Government Citizen Registration Submit
+    setTimeout(() => {
       setIsSubmitting(false);
-    }
+      setSubmitSuccess(true);
+    }, 1200);
   };
-
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white">
@@ -272,8 +248,8 @@ export const SignupPage: React.FC = () => {
                             }
                           }}
                           className={`p-3.5 rounded-lg border text-left cursor-pointer transition-all duration-150 flex flex-col justify-between min-h-[92px] focus:outline-none focus:ring-2 focus:ring-blue-600 ${isSelected
-                              ? "border-blue-600 bg-blue-50/70 ring-1 ring-blue-600 shadow-sm"
-                              : "border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50/50"
+                            ? "border-blue-600 bg-blue-50/70 ring-1 ring-blue-600 shadow-sm"
+                            : "border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50/50"
                             }`}
                         >
                           <div className="flex items-center gap-2.5">
